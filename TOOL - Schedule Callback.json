@@ -1,0 +1,153 @@
+{
+  "name": "TOOL - Schedule Callback",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "client_id",
+              "type": "number"
+            },
+            {
+              "name": "preferred_datetime",
+              "type": "string"
+            },
+            {
+              "name": "timezone",
+              "type": "string"
+            },
+            {
+              "name": "topic",
+              "type": "string"
+            },
+            {
+              "name": "notes",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [-400, 300],
+      "id": "tool-trigger",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize and validate input\nconst input = $input.first().json || {};\n\nconst client_id = Number(input.client_id ?? input.clientId ?? null);\n\nif (!client_id || !Number.isFinite(client_id)) {\n  return [{\n    ok: false,\n    error: 'Missing or invalid client_id.',\n    tool: 'schedule_callback'\n  }];\n}\n\n// Parse preferred datetime\nlet preferredDatetime = input.preferred_datetime;\nlet parsedDate = null;\n\nif (preferredDatetime) {\n  // Try to parse various formats\n  parsedDate = new Date(preferredDatetime);\n  if (isNaN(parsedDate.getTime())) {\n    // Try relative parsing\n    const tomorrow = new Date();\n    tomorrow.setDate(tomorrow.getDate() + 1);\n    \n    if (/tomorrow/i.test(preferredDatetime)) {\n      parsedDate = tomorrow;\n      parsedDate.setHours(10, 0, 0, 0);\n    } else if (/next week/i.test(preferredDatetime)) {\n      parsedDate = new Date();\n      parsedDate.setDate(parsedDate.getDate() + 7);\n      parsedDate.setHours(10, 0, 0, 0);\n    } else {\n      parsedDate = null;\n    }\n  }\n}\n\n// Default to next business day at 10 AM if no valid date\nif (!parsedDate || isNaN(parsedDate.getTime())) {\n  parsedDate = new Date();\n  parsedDate.setDate(parsedDate.getDate() + 1);\n  // Skip weekends\n  while (parsedDate.getDay() === 0 || parsedDate.getDay() === 6) {\n    parsedDate.setDate(parsedDate.getDate() + 1);\n  }\n  parsedDate.setHours(10, 0, 0, 0);\n}\n\n// Validate timezone or default to UTC+4 (Dubai)\nconst timezone = input.timezone || 'UTC+4';\n\n// Topic and notes\nconst topic = String(input.topic || 'General consultation').slice(0, 200);\nconst notes = String(input.notes || '').slice(0, 1000);\n\nreturn [{ \n  client_id, \n  preferred_datetime: parsedDate.toISOString(),\n  preferred_datetime_formatted: parsedDate.toLocaleString('en-US', {\n    weekday: 'long',\n    year: 'numeric',\n    month: 'long',\n    day: 'numeric',\n    hour: '2-digit',\n    minute: '2-digit'\n  }),\n  timezone,\n  topic,\n  notes\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-200, 300],
+      "id": "normalize-input",
+      "name": "Normalize Input"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.ok}}",
+              "value2": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [0, 300],
+      "id": "check-error",
+      "name": "IF - Input Error?"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO scheduled_callbacks (\n  client_id,\n  preferred_datetime,\n  timezone,\n  topic,\n  notes,\n  status,\n  created_at\n)\nVALUES (\n  {{ $json.client_id }},\n  '{{ $json.preferred_datetime }}',\n  '{{ $json.timezone }}',\n  '{{ $json.topic.replace(/'/g, \"''\") }}',\n  '{{ $json.notes.replace(/'/g, \"''\") }}',\n  'pending',\n  NOW()\n)\nRETURNING booking_id, id;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [200, 200],
+      "id": "db-create-callback",
+      "name": "DB - Create Callback",
+      "credentials": {
+        "postgres": {
+          "id": "yNVFJmXSqNtKGgso",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format callback scheduling response\nconst dbResult = $input.first().json || {};\nconst input = $('Normalize Input').item.json;\n\n// Generate booking ID if not returned from DB\nconst bookingId = dbResult.booking_id || dbResult.id || `CB-${Date.now()}`;\n\n// Demo agent assignment\nconst agents = [\n  { name: 'Michael Chen', title: 'Senior Relationship Manager' },\n  { name: 'Sarah Johnson', title: 'Account Executive' },\n  { name: 'Ahmed Hassan', title: 'Client Relations Manager' },\n  { name: 'Emma Williams', title: 'Senior Account Manager' }\n];\nconst assignedAgent = agents[Math.floor(Math.random() * agents.length)];\n\nreturn [{\n  ok: true,\n  callback_scheduled: true,\n  booking_details: {\n    booking_id: bookingId,\n    status: 'pending_confirmation',\n    requested_datetime: input.preferred_datetime_formatted,\n    timezone: input.timezone,\n    topic: input.topic,\n    duration: '30 minutes'\n  },\n  assigned_to: {\n    name: assignedAgent.name,\n    title: assignedAgent.title,\n    note: 'Your Relationship Manager will confirm the appointment shortly'\n  },\n  next_steps: [\n    `Callback request #${bookingId} has been submitted`,\n    'You will receive a confirmation email within 2 hours',\n    'If the requested time is unavailable, we will propose alternatives',\n    'A calendar invite will be sent upon confirmation'\n  ],\n  preparation_tips: [\n    'Have your account login details ready',\n    'Prepare any specific questions you want to discuss',\n    'Ensure you have a stable phone connection'\n  ],\n  cancellation_policy: 'You can reschedule or cancel up to 2 hours before the scheduled time by contacting support.',\n  timestamp: new Date().toISOString()\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [400, 200],
+      "id": "format-output",
+      "name": "Format Response"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "IF - Input Error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Input Error?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "DB - Create Callback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB - Create Callback": {
+      "main": [
+        [
+          {
+            "node": "Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1.0.0",
+  "meta": {
+    "instanceId": "broker-ai-tool-schedule-callback"
+  },
+  "id": "TOOL_SCHEDULE_CALLBACK",
+  "tags": ["tool", "escalation"]
+}
+

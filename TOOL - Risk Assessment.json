@@ -1,0 +1,153 @@
+{
+  "name": "TOOL - Risk Assessment",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "client_id",
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [-400, 300],
+      "id": "tool-trigger",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize input\nconst input = $input.first().json || {};\n\nconst client_id = Number(input.client_id ?? input.clientId ?? null);\n\nif (!client_id || !Number.isFinite(client_id)) {\n  return [{\n    ok: false,\n    error: 'Missing or invalid client_id.',\n    tool: 'get_risk_assessment'\n  }];\n}\n\nreturn [{ client_id }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-200, 300],
+      "id": "normalize-input",
+      "name": "Normalize Input"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.ok}}",
+              "value2": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [0, 300],
+      "id": "check-error",
+      "name": "IF - Input Error?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://mycms.cmsprime.com/rest/risk/assessment?version=1.0.0",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer 805e6648071ff54087a78d1f5e0a5508a3ed4fd92f692c704b4e3120991fcf3df3d2eab8d57ffb782d6e4d4fba12648fb04cc76c807ff684c96e5d24"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"userId\": $json.client_id } }}",
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [200, 200],
+      "id": "api-get-risk",
+      "name": "API - Get Risk Data"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format risk assessment response\nconst data = $input.first().json || {};\nconst input = $('Normalize Input').item.json;\n\n// Demo risk assessment (would come from actual calculations in production)\nconst demoRisk = {\n  account_summary: {\n    equity: 15420.50,\n    balance: 15000.00,\n    margin_used: 2850.00,\n    free_margin: 12570.50,\n    margin_level: 541.05,\n    unrealized_pnl: 420.50\n  },\n  positions: [\n    { symbol: 'EURUSD', volume: 2.0, direction: 'buy', profit: 320.00, exposure: 21690 },\n    { symbol: 'XAUUSD', volume: 0.5, direction: 'sell', profit: -150.00, exposure: 101750 },\n    { symbol: 'GBPUSD', volume: 1.0, direction: 'buy', profit: 250.50, exposure: 12650 }\n  ]\n};\n\nconst riskData = data.risk || demoRisk;\nconst account = riskData.account_summary || demoRisk.account_summary;\nconst positions = riskData.positions || demoRisk.positions;\n\n// Calculate risk metrics\nconst totalExposure = positions.reduce((sum, p) => sum + p.exposure, 0);\nconst marginUsagePercent = (account.margin_used / account.equity * 100).toFixed(1);\nconst leverageUsed = (totalExposure / account.equity).toFixed(1);\n\n// Exposure by currency\nconst currencyExposure = {};\npositions.forEach(pos => {\n  const baseCurrency = pos.symbol.substring(0, 3);\n  const quoteCurrency = pos.symbol.substring(3, 6);\n  \n  if (!currencyExposure[baseCurrency]) currencyExposure[baseCurrency] = 0;\n  if (!currencyExposure[quoteCurrency]) currencyExposure[quoteCurrency] = 0;\n  \n  currencyExposure[baseCurrency] += pos.direction === 'buy' ? pos.exposure : -pos.exposure;\n  currencyExposure[quoteCurrency] += pos.direction === 'buy' ? -pos.exposure : pos.exposure;\n});\n\n// Calculate risk score (0-100, higher = more risky)\nlet riskScore = 0;\n\n// Factor 1: Margin usage (0-40 points)\nriskScore += Math.min(40, marginUsagePercent * 0.8);\n\n// Factor 2: Leverage (0-30 points)\nriskScore += Math.min(30, leverageUsed * 3);\n\n// Factor 3: Concentration (0-20 points)\nconst largestPosition = positions.reduce((max, p) => Math.max(max, p.exposure), 0);\nconst concentrationRatio = (largestPosition / totalExposure * 100);\nriskScore += Math.min(20, concentrationRatio * 0.3);\n\n// Factor 4: P/L volatility (0-10 points)\nconst unrealizedPnlPercent = Math.abs(account.unrealized_pnl / account.equity * 100);\nriskScore += Math.min(10, unrealizedPnlPercent);\n\nriskScore = Math.round(riskScore);\n\n// Risk level determination\nlet riskLevel, riskColor, riskEmoji;\nif (riskScore < 25) {\n  riskLevel = 'Low';\n  riskColor = 'green';\n  riskEmoji = '🟢';\n} else if (riskScore < 50) {\n  riskLevel = 'Moderate';\n  riskColor = 'yellow';\n  riskEmoji = '🟡';\n} else if (riskScore < 75) {\n  riskLevel = 'High';\n  riskColor = 'orange';\n  riskEmoji = '🟠';\n} else {\n  riskLevel = 'Critical';\n  riskColor = 'red';\n  riskEmoji = '🔴';\n}\n\n// Generate recommendations\nconst recommendations = [];\n\nif (marginUsagePercent > 50) {\n  recommendations.push({\n    priority: 'high',\n    message: 'Your margin usage is above 50%. Consider reducing position sizes or adding funds.',\n    action: 'reduce_exposure'\n  });\n}\n\nif (leverageUsed > 10) {\n  recommendations.push({\n    priority: 'high',\n    message: `Your effective leverage (${leverageUsed}x) is high. This amplifies both gains and losses.`,\n    action: 'reduce_leverage'\n  });\n}\n\nif (concentrationRatio > 60) {\n  recommendations.push({\n    priority: 'medium',\n    message: 'Your portfolio is concentrated in few positions. Consider diversifying.',\n    action: 'diversify'\n  });\n}\n\nif (positions.some(p => !p.stop_loss)) {\n  recommendations.push({\n    priority: 'medium',\n    message: 'Some positions have no stop-loss. Consider setting protective stops.',\n    action: 'set_stops'\n  });\n}\n\nif (recommendations.length === 0) {\n  recommendations.push({\n    priority: 'info',\n    message: 'Your risk levels appear healthy. Continue monitoring your positions.',\n    action: 'monitor'\n  });\n}\n\n// Largest position details\nconst largestPos = positions.reduce((max, p) => p.exposure > (max?.exposure || 0) ? p : max, null);\n\nreturn [{\n  ok: true,\n  client_id: input.client_id,\n  risk_summary: {\n    risk_score: riskScore,\n    risk_level: riskLevel,\n    risk_indicator: riskEmoji,\n    risk_description: `${riskEmoji} ${riskLevel} Risk (Score: ${riskScore}/100)`\n  },\n  account_metrics: {\n    equity: `$${account.equity.toFixed(2)}`,\n    margin_used: `$${account.margin_used.toFixed(2)}`,\n    margin_usage: `${marginUsagePercent}%`,\n    margin_level: `${account.margin_level.toFixed(0)}%`,\n    free_margin: `$${account.free_margin.toFixed(2)}`,\n    effective_leverage: `${leverageUsed}x`,\n    unrealized_pnl: account.unrealized_pnl >= 0 ? `+$${account.unrealized_pnl.toFixed(2)}` : `-$${Math.abs(account.unrealized_pnl).toFixed(2)}`\n  },\n  exposure_analysis: {\n    total_exposure: `$${totalExposure.toLocaleString()}`,\n    positions_count: positions.length,\n    largest_position: largestPos ? {\n      symbol: largestPos.symbol,\n      volume: `${largestPos.volume} lots`,\n      exposure: `$${largestPos.exposure.toLocaleString()}`,\n      exposure_percent: `${(largestPos.exposure / totalExposure * 100).toFixed(1)}%`\n    } : null,\n    currency_exposure: Object.entries(currencyExposure)\n      .filter(([_, val]) => Math.abs(val) > 1000)\n      .map(([currency, exposure]) => ({\n        currency,\n        net_exposure: exposure > 0 ? `Long $${Math.abs(exposure).toLocaleString()}` : `Short $${Math.abs(exposure).toLocaleString()}`\n      }))\n  },\n  recommendations: recommendations,\n  risk_warnings: riskScore >= 50 ? [\n    'Your current risk level requires attention',\n    'Consider reducing position sizes in volatile markets',\n    'Ensure you have adequate stop-losses in place',\n    'Monitor margin level closely'\n  ] : [],\n  margin_call_distance: {\n    current_margin_level: `${account.margin_level.toFixed(0)}%`,\n    margin_call_level: '100%',\n    stop_out_level: '50%',\n    buffer_to_margin_call: `${(account.margin_level - 100).toFixed(0)}%`\n  },\n  disclaimer: 'This risk assessment is for informational purposes only. Past performance does not guarantee future results. Always trade responsibly.',\n  timestamp: new Date().toISOString()\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [400, 200],
+      "id": "format-output",
+      "name": "Calculate Risk Assessment"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "IF - Input Error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Input Error?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "API - Get Risk Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API - Get Risk Data": {
+      "main": [
+        [
+          {
+            "node": "Calculate Risk Assessment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1.0.0",
+  "meta": {
+    "instanceId": "broker-ai-tool-risk-assessment"
+  },
+  "id": "TOOL_RISK_ASSESSMENT",
+  "tags": ["tool", "risk"]
+}
+

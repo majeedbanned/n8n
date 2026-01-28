@@ -1,0 +1,173 @@
+{
+  "name": "TOOL - Transactions Enhanced",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "client_id",
+              "type": "number"
+            },
+            {
+              "name": "type",
+              "type": "string"
+            },
+            {
+              "name": "status",
+              "type": "string"
+            },
+            {
+              "name": "date_from",
+              "type": "string"
+            },
+            {
+              "name": "date_to",
+              "type": "string"
+            },
+            {
+              "name": "limit",
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [-400, 300],
+      "id": "tool-trigger",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize and validate input\nconst input = $input.first().json || {};\n\nconst client_id = Number(input.client_id ?? input.clientId ?? null);\n\nif (!client_id || !Number.isFinite(client_id)) {\n  return [{\n    ok: false,\n    error: 'Missing or invalid client_id.',\n    tool: 'get_transactions'\n  }];\n}\n\n// Normalize type filter\nconst validTypes = ['deposit', 'withdrawal', 'transfer', 'bonus', 'all'];\nlet type = String(input.type || 'all').toLowerCase();\nif (!validTypes.includes(type)) type = 'all';\n\n// Normalize status filter\nconst validStatuses = ['pending', 'completed', 'failed', 'cancelled', 'all'];\nlet status = String(input.status || 'all').toLowerCase();\nif (!validStatuses.includes(status)) status = 'all';\n\n// Parse dates\nconst now = new Date();\nconst ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);\n\nlet date_from = input.date_from;\nlet date_to = input.date_to;\n\nif (!date_from || !/^\\d{4}-\\d{2}-\\d{2}$/.test(date_from)) {\n  date_from = ninetyDaysAgo.toISOString().split('T')[0];\n}\n\nif (!date_to || !/^\\d{4}-\\d{2}-\\d{2}$/.test(date_to)) {\n  date_to = now.toISOString().split('T')[0];\n}\n\nconst limit = Math.min(Math.max(Number(input.limit) || 20, 1), 100);\n\nreturn [{ \n  client_id, \n  type,\n  status,\n  date_from,\n  date_to,\n  limit\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-200, 300],
+      "id": "normalize-input",
+      "name": "Normalize Input"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.ok}}",
+              "value2": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [0, 300],
+      "id": "check-error",
+      "name": "IF - Input Error?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://mycms.cmsprime.com/rest/transactions?version=1.0.0",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer 805e6648071ff54087a78d1f5e0a5508a3ed4fd92f692c704b4e3120991fcf3df3d2eab8d57ffb782d6e4d4fba12648fb04cc76c807ff684c96e5d24"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"fromUserId\": $json.client_id } }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [200, 200],
+      "id": "api-get-transactions",
+      "name": "API - Get Transactions"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format transactions response with filtering\nconst transactions = $input.all().map(i => i.json).filter(Boolean);\nconst input = $('Normalize Input').item.json;\n\n// Handle response format\nlet txList = [];\nif (Array.isArray(transactions) && transactions.length > 0) {\n  txList = Array.isArray(transactions[0]) ? transactions[0] : transactions;\n}\n\n// Apply filters\nlet filtered = txList;\n\n// Filter by type\nif (input.type !== 'all') {\n  filtered = filtered.filter(tx => {\n    const txType = String(tx.type || '').toLowerCase();\n    return txType.includes(input.type) || input.type.includes(txType);\n  });\n}\n\n// Filter by status\nif (input.status !== 'all') {\n  filtered = filtered.filter(tx => {\n    const txStatus = String(tx.status || '').toLowerCase();\n    return txStatus === input.status;\n  });\n}\n\n// Filter by date range\nfiltered = filtered.filter(tx => {\n  const txDate = new Date(tx.processedAt || tx.createdAt || tx.date);\n  const fromDate = new Date(input.date_from);\n  const toDate = new Date(input.date_to);\n  toDate.setHours(23, 59, 59, 999); // Include full day\n  return txDate >= fromDate && txDate <= toDate;\n});\n\n// Sort by date (newest first)\nfiltered.sort((a, b) => \n  new Date(b.processedAt || b.createdAt) - new Date(a.processedAt || a.createdAt)\n);\n\n// Apply limit\nfiltered = filtered.slice(0, input.limit);\n\nif (filtered.length === 0) {\n  return [{\n    ok: true,\n    client_id: input.client_id,\n    filters: {\n      type: input.type,\n      status: input.status,\n      period: { from: input.date_from, to: input.date_to }\n    },\n    transactions_count: 0,\n    transactions: [],\n    totals: {\n      total_deposits: '0.00',\n      total_withdrawals: '0.00',\n      total_bonuses: '0.00',\n      net_funding: '0.00'\n    },\n    message: 'No transactions found matching the criteria.',\n    timestamp: new Date().toISOString()\n  }];\n}\n\n// Format transactions\nconst formattedTx = filtered.map(tx => {\n  const amount = Number(tx.processedAmount || tx.amount) || 0;\n  const txType = String(tx.type || '').toLowerCase();\n  \n  return {\n    id: tx.id || tx.transactionId,\n    type: tx.type,\n    amount: amount.toFixed(2),\n    currency: tx.processedCurrency || tx.currency || 'USD',\n    status: tx.status,\n    method: tx.paymentMethod || tx.method || 'N/A',\n    account: tx.accountId || tx.login || 'N/A',\n    reference: tx.reference || tx.externalId || null,\n    processed_at: tx.processedAt || tx.createdAt,\n    notes: tx.notes || tx.comment || null\n  };\n});\n\n// Calculate totals\nconst deposits = formattedTx\n  .filter(tx => tx.type?.toLowerCase().includes('deposit'))\n  .reduce((sum, tx) => sum + Number(tx.amount), 0);\n\nconst withdrawals = formattedTx\n  .filter(tx => tx.type?.toLowerCase().includes('withdraw'))\n  .reduce((sum, tx) => sum + Number(tx.amount), 0);\n\nconst bonuses = formattedTx\n  .filter(tx => tx.type?.toLowerCase().includes('bonus'))\n  .reduce((sum, tx) => sum + Number(tx.amount), 0);\n\nconst pendingCount = formattedTx.filter(tx => tx.status?.toLowerCase() === 'pending').length;\n\nreturn [{\n  ok: true,\n  client_id: input.client_id,\n  filters: {\n    type: input.type,\n    status: input.status,\n    period: { from: input.date_from, to: input.date_to }\n  },\n  transactions_count: formattedTx.length,\n  pending_count: pendingCount,\n  transactions: formattedTx,\n  totals: {\n    total_deposits: deposits.toFixed(2),\n    total_withdrawals: withdrawals.toFixed(2),\n    total_bonuses: bonuses.toFixed(2),\n    net_funding: (deposits - withdrawals + bonuses).toFixed(2)\n  },\n  timestamp: new Date().toISOString()\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [400, 200],
+      "id": "format-output",
+      "name": "Format Transactions"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "IF - Input Error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Input Error?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "API - Get Transactions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API - Get Transactions": {
+      "main": [
+        [
+          {
+            "node": "Format Transactions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1.0.0",
+  "meta": {
+    "instanceId": "broker-ai-tool-transactions"
+  },
+  "id": "TOOL_TRANSACTIONS",
+  "tags": ["tool", "funding"]
+}
+

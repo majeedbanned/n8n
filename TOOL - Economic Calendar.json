@@ -1,0 +1,137 @@
+{
+  "name": "TOOL - Economic Calendar",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "importance",
+              "type": "string"
+            },
+            {
+              "name": "currencies",
+              "type": "string"
+            },
+            {
+              "name": "days_ahead",
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [-400, 300],
+      "id": "tool-trigger",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize input\nconst input = $input.first().json || {};\n\nconst validImportance = ['low', 'medium', 'high', 'all'];\nlet importance = String(input.importance || 'all').toLowerCase();\nif (!validImportance.includes(importance)) importance = 'all';\n\nlet currencies = input.currencies || 'all';\nif (typeof currencies === 'string' && currencies !== 'all') {\n  currencies = currencies.split(',').map(s => s.trim().toUpperCase()).filter(Boolean);\n} else if (currencies === 'all') {\n  currencies = [];\n}\n\nconst days_ahead = Math.min(Math.max(Number(input.days_ahead) || 7, 1), 30);\n\n// Calculate date range\nconst now = new Date();\nconst endDate = new Date(now.getTime() + days_ahead * 24 * 60 * 60 * 1000);\n\nreturn [{ \n  importance, \n  currencies, \n  days_ahead,\n  date_from: now.toISOString().split('T')[0],\n  date_to: endDate.toISOString().split('T')[0]\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-200, 300],
+      "id": "normalize-input",
+      "name": "Normalize Input"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://mycms.cmsprime.com/rest/calendar?version=1.0.0",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer 805e6648071ff54087a78d1f5e0a5508a3ed4fd92f692c704b4e3120991fcf3df3d2eab8d57ffb782d6e4d4fba12648fb04cc76c807ff684c96e5d24"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "from",
+              "value": "={{ $json.date_from }}"
+            },
+            {
+              "name": "to",
+              "value": "={{ $json.date_to }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [0, 300],
+      "id": "api-get-calendar",
+      "name": "API - Get Calendar"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format economic calendar response\nconst events = $input.all().map(i => i.json).filter(Boolean);\nconst input = $('Normalize Input').item.json;\n\n// Handle response format\nlet eventList = [];\nif (Array.isArray(events) && events.length > 0) {\n  eventList = Array.isArray(events[0]) ? events[0] : events;\n}\n\n// If no events from API, provide demo calendar\nif (eventList.length === 0) {\n  const now = new Date();\n  const demoEvents = [\n    {\n      event_name: 'US Non-Farm Payrolls',\n      country: 'United States',\n      currency: 'USD',\n      importance: 'high',\n      datetime: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString(),\n      forecast: '180K',\n      previous: '216K',\n      actual: null\n    },\n    {\n      event_name: 'ECB Interest Rate Decision',\n      country: 'Eurozone',\n      currency: 'EUR',\n      importance: 'high',\n      datetime: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString(),\n      forecast: '4.50%',\n      previous: '4.50%',\n      actual: null\n    },\n    {\n      event_name: 'UK GDP (QoQ)',\n      country: 'United Kingdom',\n      currency: 'GBP',\n      importance: 'high',\n      datetime: new Date(now.getTime() + 1 * 24 * 60 * 60 * 1000).toISOString(),\n      forecast: '0.2%',\n      previous: '-0.1%',\n      actual: null\n    },\n    {\n      event_name: 'US CPI (YoY)',\n      country: 'United States',\n      currency: 'USD',\n      importance: 'high',\n      datetime: new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000).toISOString(),\n      forecast: '3.1%',\n      previous: '3.4%',\n      actual: null\n    },\n    {\n      event_name: 'Japan Retail Sales',\n      country: 'Japan',\n      currency: 'JPY',\n      importance: 'medium',\n      datetime: new Date(now.getTime() + 4 * 24 * 60 * 60 * 1000).toISOString(),\n      forecast: '2.5%',\n      previous: '2.1%',\n      actual: null\n    },\n    {\n      event_name: 'Australia Employment Change',\n      country: 'Australia',\n      currency: 'AUD',\n      importance: 'medium',\n      datetime: new Date(now.getTime() + 6 * 24 * 60 * 60 * 1000).toISOString(),\n      forecast: '25.0K',\n      previous: '14.6K',\n      actual: null\n    },\n    {\n      event_name: 'Canada Interest Rate Decision',\n      country: 'Canada',\n      currency: 'CAD',\n      importance: 'high',\n      datetime: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),\n      forecast: '5.00%',\n      previous: '5.00%',\n      actual: null\n    },\n    {\n      event_name: 'German ZEW Economic Sentiment',\n      country: 'Germany',\n      currency: 'EUR',\n      importance: 'medium',\n      datetime: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString(),\n      forecast: '15.0',\n      previous: '12.8',\n      actual: null\n    }\n  ];\n  \n  eventList = demoEvents;\n}\n\n// Apply filters\nlet filtered = eventList;\n\n// Filter by importance\nif (input.importance !== 'all') {\n  filtered = filtered.filter(e => \n    String(e.importance || e.impact || '').toLowerCase() === input.importance\n  );\n}\n\n// Filter by currencies\nif (input.currencies.length > 0) {\n  filtered = filtered.filter(e => \n    input.currencies.includes(String(e.currency || '').toUpperCase())\n  );\n}\n\n// Sort by datetime\nfiltered.sort((a, b) => new Date(a.datetime) - new Date(b.datetime));\n\n// Format events\nconst formattedEvents = filtered.map(event => {\n  const eventDate = new Date(event.datetime);\n  const now = new Date();\n  \n  // Calculate time until event\n  const hoursUntil = Math.floor((eventDate - now) / (1000 * 60 * 60));\n  let timeUntil = hoursUntil < 0 ? 'Passed' :\n                  hoursUntil < 1 ? 'Within 1 hour' :\n                  hoursUntil < 24 ? `In ${hoursUntil} hours` :\n                  `In ${Math.floor(hoursUntil / 24)} days`;\n  \n  // Impact emoji\n  const impactEmoji = {\n    'high': '🔴',\n    'medium': '🟡',\n    'low': '🟢'\n  };\n  \n  return {\n    event_name: event.event_name || event.name || event.title,\n    country: event.country,\n    currency: event.currency,\n    importance: event.importance || event.impact || 'medium',\n    importance_indicator: impactEmoji[event.importance || 'medium'] || '⚪',\n    datetime: eventDate.toISOString(),\n    date_formatted: eventDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),\n    time_formatted: eventDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' }),\n    time_until: timeUntil,\n    forecast: event.forecast || 'N/A',\n    previous: event.previous || 'N/A',\n    actual: event.actual || 'Pending'\n  };\n});\n\n// Group by date for better presentation\nconst groupedByDate = {};\nformattedEvents.forEach(event => {\n  const dateKey = event.date_formatted;\n  if (!groupedByDate[dateKey]) {\n    groupedByDate[dateKey] = [];\n  }\n  groupedByDate[dateKey].push(event);\n});\n\n// Count high impact events\nconst highImpactCount = formattedEvents.filter(e => e.importance === 'high').length;\n\nreturn [{\n  ok: true,\n  filters: {\n    importance: input.importance,\n    currencies: input.currencies.length > 0 ? input.currencies : 'All',\n    period: `${input.days_ahead} days ahead`\n  },\n  events_count: formattedEvents.length,\n  high_impact_count: highImpactCount,\n  events: formattedEvents,\n  events_by_date: groupedByDate,\n  timestamp: new Date().toISOString(),\n  tip: 'High impact events (🔴) often cause significant market volatility. Consider managing your positions accordingly.'\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [200, 300],
+      "id": "format-output",
+      "name": "Format Calendar"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "API - Get Calendar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API - Get Calendar": {
+      "main": [
+        [
+          {
+            "node": "Format Calendar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1.0.0",
+  "meta": {
+    "instanceId": "broker-ai-tool-economic-calendar"
+  },
+  "id": "TOOL_ECONOMIC_CALENDAR",
+  "tags": ["tool", "market"]
+}
+

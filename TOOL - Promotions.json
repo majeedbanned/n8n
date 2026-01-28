@@ -1,0 +1,153 @@
+{
+  "name": "TOOL - Promotions",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "client_id",
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [-400, 300],
+      "id": "tool-trigger",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize input\nconst input = $input.first().json || {};\n\nconst client_id = Number(input.client_id ?? input.clientId ?? null);\n\nif (!client_id || !Number.isFinite(client_id)) {\n  return [{\n    ok: false,\n    error: 'Missing or invalid client_id.',\n    tool: 'get_promotions'\n  }];\n}\n\nreturn [{ client_id }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-200, 300],
+      "id": "normalize-input",
+      "name": "Normalize Input"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.ok}}",
+              "value2": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [0, 300],
+      "id": "check-error",
+      "name": "IF - Input Error?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://mycms.cmsprime.com/rest/promotions?version=1.0.0",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer 805e6648071ff54087a78d1f5e0a5508a3ed4fd92f692c704b4e3120991fcf3df3d2eab8d57ffb782d6e4d4fba12648fb04cc76c807ff684c96e5d24"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"userId\": $json.client_id } }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [200, 200],
+      "id": "api-get-promotions",
+      "name": "API - Get Promotions"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format promotions response\nconst promos = $input.first().json || {};\nconst input = $('Normalize Input').item.json;\n\n// Demo promotions (would come from API in production)\nconst demoPromotions = [\n  {\n    id: 'promo_welcome_2024',\n    name: 'Welcome Bonus',\n    type: 'deposit_bonus',\n    description: 'Get 100% bonus on your first deposit up to $10,000',\n    bonus_percentage: 100,\n    max_bonus: 10000,\n    min_deposit: 100,\n    eligibility: 'new_clients',\n    is_eligible: true,\n    expiry_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),\n    terms_url: 'https://cmsprime.com/promotions/welcome-bonus',\n    action_required: 'Make a qualifying deposit',\n    status: 'available'\n  },\n  {\n    id: 'promo_refer_friend',\n    name: 'Refer a Friend',\n    type: 'referral',\n    description: 'Earn $100 for each friend who deposits and trades. Your friend gets $50 too!',\n    bonus_amount: 100,\n    friend_bonus: 50,\n    eligibility: 'all_verified_clients',\n    is_eligible: true,\n    expiry_date: null,\n    terms_url: 'https://cmsprime.com/promotions/refer-friend',\n    action_required: 'Share your referral link',\n    status: 'available',\n    referral_link: 'https://cmsprime.com/ref/YOUR_CODE'\n  },\n  {\n    id: 'promo_loyalty',\n    name: 'Loyalty Cashback',\n    type: 'cashback',\n    description: 'Earn up to $5 per lot traded. The more you trade, the more you earn.',\n    cashback_per_lot: 5,\n    eligibility: 'active_traders',\n    is_eligible: true,\n    expiry_date: null,\n    terms_url: 'https://cmsprime.com/promotions/loyalty',\n    action_required: 'Trade to earn cashback automatically',\n    status: 'active',\n    current_earnings: '$125.50'\n  },\n  {\n    id: 'promo_vip',\n    name: 'VIP Program',\n    type: 'vip',\n    description: 'Exclusive benefits for high-volume traders: Tighter spreads, personal account manager, priority support, and more.',\n    eligibility: 'volume_over_50_lots',\n    is_eligible: false,\n    requirements: 'Trade 50+ lots per month to qualify',\n    terms_url: 'https://cmsprime.com/promotions/vip',\n    action_required: 'Increase trading volume to qualify',\n    status: 'locked'\n  },\n  {\n    id: 'promo_no_swap',\n    name: 'Swap-Free Account',\n    type: 'account_feature',\n    description: 'Trade without overnight swap charges on Islamic accounts.',\n    eligibility: 'on_request',\n    is_eligible: true,\n    terms_url: 'https://cmsprime.com/promotions/swap-free',\n    action_required: 'Contact support to enable',\n    status: 'available'\n  }\n];\n\nconst promotions = promos.promotions || demoPromotions;\n\n// Format promotions\nconst formattedPromos = promotions.map(promo => {\n  // Days until expiry\n  let daysUntilExpiry = null;\n  let expiryText = 'No expiry';\n  if (promo.expiry_date) {\n    const expiry = new Date(promo.expiry_date);\n    daysUntilExpiry = Math.ceil((expiry - Date.now()) / (24 * 60 * 60 * 1000));\n    expiryText = daysUntilExpiry > 0 ? `${daysUntilExpiry} days left` : 'Expired';\n  }\n  \n  // Status emoji\n  const statusEmoji = {\n    'available': '✅',\n    'active': '🔥',\n    'locked': '🔒',\n    'expired': '⏰',\n    'claimed': '🎉'\n  };\n  \n  return {\n    promo_id: promo.id,\n    name: promo.name,\n    type: promo.type,\n    description: promo.description,\n    status: promo.status,\n    status_indicator: statusEmoji[promo.status] || '📋',\n    is_eligible: promo.is_eligible,\n    eligibility_note: promo.eligibility,\n    expiry: expiryText,\n    days_until_expiry: daysUntilExpiry,\n    action_required: promo.action_required,\n    terms_url: promo.terms_url,\n    bonus_details: {\n      bonus_percentage: promo.bonus_percentage || null,\n      max_bonus: promo.max_bonus ? `$${promo.max_bonus}` : null,\n      min_deposit: promo.min_deposit ? `$${promo.min_deposit}` : null,\n      cashback_per_lot: promo.cashback_per_lot ? `$${promo.cashback_per_lot}` : null,\n      current_earnings: promo.current_earnings || null,\n      referral_link: promo.referral_link || null\n    }\n  };\n});\n\n// Separate by eligibility\nconst availablePromos = formattedPromos.filter(p => p.is_eligible && p.status !== 'expired');\nconst lockedPromos = formattedPromos.filter(p => !p.is_eligible || p.status === 'locked');\n\nreturn [{\n  ok: true,\n  client_id: input.client_id,\n  promotions_count: formattedPromos.length,\n  available_count: availablePromos.length,\n  available_promotions: availablePromos,\n  locked_promotions: lockedPromos,\n  highlights: availablePromos.slice(0, 2).map(p => `${p.status_indicator} ${p.name}: ${p.description.slice(0, 50)}...`),\n  how_to_claim: 'Most promotions are automatically applied. For specific promotions, follow the action required or contact your account manager.',\n  important_note: 'All promotions are subject to terms and conditions. Trading involves risk.',\n  timestamp: new Date().toISOString()\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [400, 200],
+      "id": "format-output",
+      "name": "Format Promotions"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "IF - Input Error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Input Error?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "API - Get Promotions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API - Get Promotions": {
+      "main": [
+        [
+          {
+            "node": "Format Promotions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1.0.0",
+  "meta": {
+    "instanceId": "broker-ai-tool-promotions"
+  },
+  "id": "TOOL_PROMOTIONS",
+  "tags": ["tool", "marketing"]
+}
+

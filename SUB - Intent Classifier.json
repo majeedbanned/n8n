@@ -1,0 +1,57 @@
+{
+  "name": "SUB - Intent Classifier",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "text",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [-400, 300],
+      "id": "sub-trigger",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Intent classification using keyword patterns\nconst input = $input.first().json || {};\nconst text = String(input.text || '').toLowerCase();\n\n// Intent patterns with keywords and phrases\nconst intentPatterns = {\n  account_inquiry: {\n    keywords: ['balance', 'equity', 'margin', 'account', 'summary', 'overview', 'status', 'level', 'free margin'],\n    phrases: ['my account', 'account balance', 'how much', 'margin level', 'account status', 'check my'],\n    priority: 1\n  },\n  trading_question: {\n    keywords: ['trade', 'trading', 'position', 'order', 'buy', 'sell', 'lot', 'pip', 'spread', 'leverage', 'stop loss', 'take profit'],\n    phrases: ['open position', 'close trade', 'my trades', 'how to trade', 'trading strategy', 'open orders'],\n    priority: 2\n  },\n  deposit_withdrawal: {\n    keywords: ['deposit', 'withdraw', 'withdrawal', 'fund', 'transfer', 'payment', 'money', 'bank', 'card', 'wire'],\n    phrases: ['add funds', 'withdraw money', 'deposit funds', 'transfer money', 'my deposit', 'withdrawal request', 'payment method'],\n    priority: 1\n  },\n  market_analysis: {\n    keywords: ['price', 'market', 'eurusd', 'gold', 'bitcoin', 'oil', 'forecast', 'analysis', 'trend', 'news', 'event'],\n    phrases: ['market price', 'current price', 'gold price', 'market news', 'what\\'s happening', 'economic calendar', 'price of'],\n    priority: 3\n  },\n  technical_support: {\n    keywords: ['login', 'password', 'platform', 'mt4', 'mt5', 'error', 'crash', 'not working', 'bug', 'install', 'download', 'connect'],\n    phrases: ['can\\'t login', 'forgot password', 'platform not working', 'connection issue', 'error message', 'how to install'],\n    priority: 2\n  },\n  document_verification: {\n    keywords: ['document', 'kyc', 'verify', 'verification', 'passport', 'id', 'proof', 'upload', 'identity', 'address proof'],\n    phrases: ['verify my account', 'upload document', 'verification status', 'kyc status', 'document required', 'proof of address'],\n    priority: 2\n  },\n  complaint: {\n    keywords: ['complaint', 'complain', 'unhappy', 'dissatisfied', 'problem', 'issue', 'terrible', 'wrong', 'mistake', 'error'],\n    phrases: ['file complaint', 'want to complain', 'not satisfied', 'something wrong', 'made a mistake', 'your fault'],\n    priority: 1\n  },\n  promotions: {\n    keywords: ['bonus', 'promotion', 'offer', 'discount', 'referral', 'reward', 'cashback', 'contest', 'campaign'],\n    phrases: ['current promotions', 'bonus offer', 'any bonus', 'refer a friend', 'loyalty program', 'special offer'],\n    priority: 4\n  },\n  escalation_request: {\n    keywords: ['human', 'agent', 'person', 'manager', 'supervisor', 'representative', 'speak', 'talk', 'call'],\n    phrases: ['speak to human', 'real person', 'talk to someone', 'human agent', 'speak with manager', 'call me', 'contact me'],\n    priority: 0 // Highest priority\n  },\n  general_chat: {\n    keywords: ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'thanks', 'thank you', 'bye', 'goodbye'],\n    phrases: ['how are you', 'what can you do', 'who are you', 'nice to meet'],\n    priority: 5\n  }\n};\n\n// Score each intent\nconst intentScores = {};\n\nfor (const [intent, patterns] of Object.entries(intentPatterns)) {\n  let score = 0;\n  let matchedTerms = [];\n  \n  // Check keywords (1 point each)\n  for (const keyword of patterns.keywords || []) {\n    if (text.includes(keyword)) {\n      score += 1;\n      matchedTerms.push(keyword);\n    }\n  }\n  \n  // Check phrases (3 points each - stronger signal)\n  for (const phrase of patterns.phrases || []) {\n    if (text.includes(phrase)) {\n      score += 3;\n      matchedTerms.push(phrase);\n    }\n  }\n  \n  // Apply priority boost for time-sensitive intents\n  if (score > 0) {\n    score += (5 - patterns.priority) * 0.5;\n  }\n  \n  intentScores[intent] = {\n    score,\n    matchedTerms,\n    priority: patterns.priority\n  };\n}\n\n// Find best intent\nlet bestIntent = 'general_chat';\nlet bestScore = 0;\nlet matchedTerms = [];\n\nfor (const [intent, data] of Object.entries(intentScores)) {\n  if (data.score > bestScore) {\n    bestScore = data.score;\n    bestIntent = intent;\n    matchedTerms = data.matchedTerms;\n  }\n}\n\n// Calculate confidence\nconst totalMatches = matchedTerms.length;\nlet confidence = Math.min(0.95, 0.4 + (totalMatches * 0.15));\n\n// If low confidence and no strong match, default to general\nif (bestScore < 1) {\n  bestIntent = 'general_chat';\n  confidence = 0.5;\n}\n\n// Detect sub-intent for certain categories\nlet subIntent = null;\nif (bestIntent === 'deposit_withdrawal') {\n  if (text.includes('deposit')) subIntent = 'deposit';\n  else if (text.includes('withdraw')) subIntent = 'withdrawal';\n  else if (text.includes('transfer')) subIntent = 'transfer';\n}\nif (bestIntent === 'account_inquiry') {\n  if (text.includes('balance')) subIntent = 'balance_check';\n  else if (text.includes('margin')) subIntent = 'margin_check';\n  else if (text.includes('history')) subIntent = 'history_check';\n}\n\nreturn [{\n  ok: true,\n  intent: bestIntent,\n  sub_intent: subIntent,\n  confidence: Number(confidence.toFixed(2)),\n  score: Number(bestScore.toFixed(2)),\n  matched_terms: matchedTerms.slice(0, 5),\n  all_scores: Object.fromEntries(\n    Object.entries(intentScores)\n      .filter(([_, d]) => d.score > 0)\n      .sort((a, b) => b[1].score - a[1].score)\n      .slice(0, 3)\n      .map(([intent, data]) => [intent, data.score])\n  ),\n  analysis_method: 'keyword_matching'\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-200, 300],
+      "id": "intent-classification",
+      "name": "Intent Classification"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Intent Classification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1.0.0",
+  "meta": {
+    "instanceId": "broker-ai-sub-intent"
+  },
+  "id": "SUB_INTENT_CLASSIFIER",
+  "tags": ["sub-workflow", "nlp"]
+}
+

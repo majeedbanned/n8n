@@ -1,0 +1,61 @@
+{
+  "name": "SUB - Sentiment Analyzer",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "text",
+              "type": "string"
+            },
+            {
+              "name": "context",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [-400, 300],
+      "id": "sub-trigger",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Quick sentiment analysis using keyword matching\n// For production, this would call the AI model\nconst input = $input.first().json || {};\nconst text = String(input.text || '').toLowerCase();\n\n// Sentiment indicators\nconst sentimentPatterns = {\n  angry: {\n    keywords: ['angry', 'furious', 'outraged', 'ridiculous', 'unacceptable', 'terrible', 'worst', 'scam', 'fraud', 'steal', 'theft', 'sue', 'lawyer', 'legal action'],\n    phrases: ['this is ridiculous', 'how dare', 'fed up', 'sick and tired', 'complete joke', 'total disaster'],\n    weight: -0.9\n  },\n  frustrated: {\n    keywords: ['frustrated', 'annoyed', 'disappointed', 'upset', 'unhappy', 'problem', 'issue', 'not working', 'broken', 'failed', 'stuck', 'waiting'],\n    phrases: ['been waiting', 'still waiting', 'again and again', 'same problem', 'keeps happening', 'wasting my time'],\n    weight: -0.5\n  },\n  urgent: {\n    keywords: ['urgent', 'emergency', 'immediately', 'asap', 'right now', 'critical', 'important', 'help now', 'please help'],\n    phrases: ['need help now', 'urgent matter', 'time sensitive', 'margin call', 'losing money'],\n    weight: -0.3\n  },\n  neutral: {\n    keywords: ['how', 'what', 'where', 'when', 'can', 'could', 'would', 'please', 'help', 'need', 'want'],\n    weight: 0\n  },\n  positive: {\n    keywords: ['thank', 'thanks', 'great', 'excellent', 'amazing', 'wonderful', 'perfect', 'love', 'appreciate', 'helpful', 'fantastic', 'happy', 'pleased', 'satisfied'],\n    phrases: ['thank you', 'well done', 'great job', 'very helpful', 'much appreciated'],\n    weight: 0.7\n  }\n};\n\n// Calculate sentiment\nlet sentiment = 'neutral';\nlet score = 0;\nlet matchedIndicators = [];\nlet isUrgent = false;\n\n// Check for patterns\nfor (const [sentimentType, patterns] of Object.entries(sentimentPatterns)) {\n  let matches = 0;\n  \n  // Check keywords\n  for (const keyword of patterns.keywords || []) {\n    if (text.includes(keyword)) {\n      matches++;\n      matchedIndicators.push(keyword);\n    }\n  }\n  \n  // Check phrases\n  for (const phrase of patterns.phrases || []) {\n    if (text.includes(phrase)) {\n      matches += 2; // Phrases are stronger indicators\n      matchedIndicators.push(phrase);\n    }\n  }\n  \n  if (matches > 0) {\n    const contribution = patterns.weight * (matches / 3);\n    score += contribution;\n    \n    if (sentimentType === 'urgent') {\n      isUrgent = true;\n    }\n  }\n}\n\n// Normalize score to -1 to 1\nscore = Math.max(-1, Math.min(1, score));\n\n// Determine sentiment category\nif (score <= -0.6) {\n  sentiment = 'angry';\n} else if (score <= -0.3) {\n  sentiment = 'frustrated';\n} else if (score >= 0.4) {\n  sentiment = 'positive';\n} else {\n  sentiment = 'neutral';\n}\n\n// Check for explicit urgency regardless of sentiment\nif (isUrgent && sentiment === 'neutral') {\n  sentiment = 'urgent';\n}\n\n// Confidence based on number of indicators matched\nconst confidence = Math.min(0.95, 0.5 + (matchedIndicators.length * 0.1));\n\nreturn [{\n  ok: true,\n  sentiment,\n  score: Number(score.toFixed(2)),\n  is_urgent: isUrgent,\n  confidence: Number(confidence.toFixed(2)),\n  indicators: matchedIndicators.slice(0, 5),\n  analysis_method: 'keyword_matching',\n  original_text_length: text.length\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-200, 300],
+      "id": "keyword-analysis",
+      "name": "Keyword Sentiment Analysis"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Keyword Sentiment Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1.0.0",
+  "meta": {
+    "instanceId": "broker-ai-sub-sentiment"
+  },
+  "id": "SUB_SENTIMENT_ANALYZER",
+  "tags": ["sub-workflow", "nlp"]
+}
+

@@ -1,0 +1,61 @@
+{
+  "name": "SUB - Language Detector",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "text",
+              "type": "string"
+            },
+            {
+              "name": "user_preference",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [-400, 300],
+      "id": "sub-trigger",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Language detection using character pattern analysis\nconst input = $input.first().json || {};\nconst text = String(input.text || '');\nconst userPreference = input.user_preference || null;\n\n// Character range patterns for different scripts\nconst scriptPatterns = {\n  arabic: {\n    pattern: /[\\u0600-\\u06FF\\u0750-\\u077F\\u08A0-\\u08FF]/g,\n    languages: ['ar', 'fa', 'ur'],\n    name: 'Arabic Script'\n  },\n  chinese: {\n    pattern: /[\\u4E00-\\u9FFF\\u3400-\\u4DBF]/g,\n    languages: ['zh'],\n    name: 'Chinese'\n  },\n  japanese: {\n    pattern: /[\\u3040-\\u309F\\u30A0-\\u30FF\\u4E00-\\u9FAF]/g,\n    languages: ['ja'],\n    name: 'Japanese'\n  },\n  korean: {\n    pattern: /[\\uAC00-\\uD7AF\\u1100-\\u11FF]/g,\n    languages: ['ko'],\n    name: 'Korean'\n  },\n  cyrillic: {\n    pattern: /[\\u0400-\\u04FF]/g,\n    languages: ['ru', 'uk', 'bg'],\n    name: 'Cyrillic'\n  },\n  greek: {\n    pattern: /[\\u0370-\\u03FF]/g,\n    languages: ['el'],\n    name: 'Greek'\n  },\n  hebrew: {\n    pattern: /[\\u0590-\\u05FF]/g,\n    languages: ['he'],\n    name: 'Hebrew'\n  },\n  thai: {\n    pattern: /[\\u0E00-\\u0E7F]/g,\n    languages: ['th'],\n    name: 'Thai'\n  },\n  devanagari: {\n    pattern: /[\\u0900-\\u097F]/g,\n    languages: ['hi', 'ne', 'mr'],\n    name: 'Devanagari (Hindi)'\n  },\n  latin: {\n    pattern: /[a-zA-Z]/g,\n    languages: ['en', 'es', 'fr', 'de', 'pt', 'it', 'nl', 'pl', 'tr'],\n    name: 'Latin'\n  }\n};\n\n// Common words for Latin-based languages\nconst latinLanguagePatterns = {\n  en: {\n    words: ['the', 'is', 'are', 'have', 'has', 'what', 'how', 'when', 'where', 'why', 'can', 'could', 'would', 'please', 'thanks', 'thank', 'hello', 'hi', 'help', 'need', 'want', 'your', 'my', 'account', 'deposit', 'withdraw'],\n    weight: 1\n  },\n  es: {\n    words: ['el', 'la', 'los', 'las', 'que', 'como', 'cuando', 'donde', 'por', 'para', 'hola', 'gracias', 'cuenta', 'ayuda', 'quiero', 'necesito'],\n    weight: 0.9\n  },\n  fr: {\n    words: ['le', 'la', 'les', 'que', 'est', 'sont', 'comment', 'quand', 'bonjour', 'merci', 'compte', 'aide', 'besoin', 'veux', 'pour'],\n    weight: 0.9\n  },\n  de: {\n    words: ['der', 'die', 'das', 'ist', 'sind', 'wie', 'was', 'wann', 'hallo', 'danke', 'konto', 'hilfe', 'brauche', 'möchte', 'bitte'],\n    weight: 0.9\n  },\n  pt: {\n    words: ['o', 'a', 'os', 'as', 'que', 'como', 'quando', 'onde', 'olá', 'obrigado', 'conta', 'ajuda', 'preciso', 'quero'],\n    weight: 0.9\n  },\n  tr: {\n    words: ['bir', 'bu', 'ne', 'nasıl', 'merhaba', 'teşekkür', 'hesap', 'yardım', 'istiyorum', 'için', 'lütfen'],\n    weight: 0.9\n  }\n};\n\nlet detectedLanguage = 'en';\nlet confidence = 0.5;\nlet detectedScript = 'latin';\nlet scriptMatch = null;\n\n// First, check for non-Latin scripts\nfor (const [scriptName, scriptData] of Object.entries(scriptPatterns)) {\n  if (scriptName === 'latin') continue;\n  \n  const matches = text.match(scriptData.pattern);\n  if (matches && matches.length >= 2) {\n    detectedScript = scriptName;\n    detectedLanguage = scriptData.languages[0];\n    confidence = Math.min(0.95, 0.7 + (matches.length / text.length));\n    scriptMatch = scriptData.name;\n    break;\n  }\n}\n\n// If Latin script, detect specific language\nif (detectedScript === 'latin') {\n  const textLower = text.toLowerCase();\n  const words = textLower.split(/\\s+/);\n  \n  const languageScores = {};\n  \n  for (const [lang, patterns] of Object.entries(latinLanguagePatterns)) {\n    let score = 0;\n    let matchCount = 0;\n    \n    for (const word of patterns.words) {\n      // Check for word boundaries\n      const regex = new RegExp(`\\\\b${word}\\\\b`, 'i');\n      if (regex.test(textLower)) {\n        score += patterns.weight;\n        matchCount++;\n      }\n    }\n    \n    languageScores[lang] = { score, matchCount };\n  }\n  \n  // Find best match\n  let bestLang = 'en';\n  let bestScore = 0;\n  \n  for (const [lang, data] of Object.entries(languageScores)) {\n    if (data.score > bestScore) {\n      bestScore = data.score;\n      bestLang = lang;\n    }\n  }\n  \n  detectedLanguage = bestLang;\n  confidence = bestScore > 3 ? Math.min(0.9, 0.5 + (bestScore * 0.1)) : 0.6;\n}\n\n// Use user preference as fallback if confidence is low\nif (confidence < 0.6 && userPreference) {\n  detectedLanguage = userPreference;\n  confidence = 0.7;\n}\n\n// Language names\nconst languageNames = {\n  en: 'English',\n  ar: 'Arabic',\n  zh: 'Chinese',\n  ja: 'Japanese',\n  ko: 'Korean',\n  ru: 'Russian',\n  es: 'Spanish',\n  fr: 'French',\n  de: 'German',\n  pt: 'Portuguese',\n  tr: 'Turkish',\n  fa: 'Persian',\n  he: 'Hebrew',\n  hi: 'Hindi',\n  th: 'Thai',\n  el: 'Greek'\n};\n\nreturn [{\n  ok: true,\n  detected_language: detectedLanguage,\n  language_name: languageNames[detectedLanguage] || detectedLanguage.toUpperCase(),\n  confidence: Number(confidence.toFixed(2)),\n  detected_script: scriptMatch || 'Latin',\n  is_rtl: ['ar', 'he', 'fa', 'ur'].includes(detectedLanguage),\n  user_preference_used: confidence < 0.6 && userPreference ? true : false,\n  text_length: text.length,\n  analysis_method: 'pattern_matching'\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-200, 300],
+      "id": "language-detection",
+      "name": "Language Detection"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Language Detection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1.0.0",
+  "meta": {
+    "instanceId": "broker-ai-sub-language"
+  },
+  "id": "SUB_LANGUAGE_DETECTOR",
+  "tags": ["sub-workflow", "nlp"]
+}
+

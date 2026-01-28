@@ -1,0 +1,153 @@
+{
+  "name": "TOOL - Account Summary",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "client_id",
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [-400, 300],
+      "id": "tool-trigger",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize and validate input\nconst input = $input.first().json || {};\n\nconst client_id = Number(\n  input.client_id ??\n  input.clientId ??\n  input.user_id ??\n  null\n);\n\nif (!client_id || !Number.isFinite(client_id)) {\n  return [{\n    ok: false,\n    error: 'Missing or invalid client_id. Please authenticate the user first.',\n    tool: 'get_account_summary'\n  }];\n}\n\nreturn [{ client_id }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-200, 300],
+      "id": "normalize-input",
+      "name": "Normalize Input"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.ok}}",
+              "value2": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [0, 300],
+      "id": "check-error",
+      "name": "IF - Input Error?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://mycms.cmsprime.com/rest/accounts?version=1.0.0",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer 805e6648071ff54087a78d1f5e0a5508a3ed4fd92f692c704b4e3120991fcf3df3d2eab8d57ffb782d6e4d4fba12648fb04cc76c807ff684c96e5d24"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"userId\": $json.client_id } }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [200, 200],
+      "id": "api-get-accounts",
+      "name": "API - Get Accounts"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format account summary response\nconst accounts = $input.all().map(i => i.json).filter(Boolean);\nconst clientId = $('Normalize Input').item.json.client_id;\n\nif (!accounts || accounts.length === 0) {\n  return [{\n    ok: false,\n    error: 'No trading accounts found for this user.',\n    tool: 'get_account_summary'\n  }];\n}\n\n// Process all accounts\nconst accountSummaries = accounts.map(acc => {\n  const balance = Number(acc.balance) || 0;\n  const equity = Number(acc.equity) || balance;\n  const margin = Number(acc.margin) || 0;\n  const freeMargin = Number(acc.freeMargin) || (equity - margin);\n  const marginLevel = margin > 0 ? ((equity / margin) * 100) : null;\n  const unrealizedPL = equity - balance;\n  \n  return {\n    account_id: acc.id || acc.login || acc.accountId,\n    account_type: acc.type || acc.accountType || 'Standard',\n    platform: acc.platform || 'MT5',\n    currency: acc.currency || 'USD',\n    leverage: acc.leverage || '1:100',\n    balance: balance.toFixed(2),\n    equity: equity.toFixed(2),\n    margin_used: margin.toFixed(2),\n    free_margin: freeMargin.toFixed(2),\n    margin_level: marginLevel ? `${marginLevel.toFixed(2)}%` : 'N/A',\n    unrealized_pl: unrealizedPL.toFixed(2),\n    status: acc.status || 'Active',\n    server: acc.server || acc.serverName || null\n  };\n});\n\n// Calculate totals across all accounts\nconst totalBalance = accountSummaries.reduce((sum, acc) => sum + Number(acc.balance), 0);\nconst totalEquity = accountSummaries.reduce((sum, acc) => sum + Number(acc.equity), 0);\nconst totalUnrealizedPL = accountSummaries.reduce((sum, acc) => sum + Number(acc.unrealized_pl), 0);\n\nreturn [{\n  ok: true,\n  client_id: clientId,\n  accounts_count: accountSummaries.length,\n  accounts: accountSummaries,\n  totals: {\n    total_balance: totalBalance.toFixed(2),\n    total_equity: totalEquity.toFixed(2),\n    total_unrealized_pl: totalUnrealizedPL.toFixed(2)\n  },\n  timestamp: new Date().toISOString()\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [400, 200],
+      "id": "format-output",
+      "name": "Format Account Summary"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "IF - Input Error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Input Error?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "API - Get Accounts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API - Get Accounts": {
+      "main": [
+        [
+          {
+            "node": "Format Account Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1.0.0",
+  "meta": {
+    "instanceId": "broker-ai-tool-account-summary"
+  },
+  "id": "TOOL_ACCOUNT_SUMMARY",
+  "tags": ["tool", "account"]
+}
+

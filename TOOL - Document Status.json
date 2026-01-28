@@ -1,0 +1,153 @@
+{
+  "name": "TOOL - Document Status",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "client_id",
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [-400, 300],
+      "id": "tool-trigger",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize input\nconst input = $input.first().json || {};\n\nconst client_id = Number(input.client_id ?? input.clientId ?? null);\n\nif (!client_id || !Number.isFinite(client_id)) {\n  return [{\n    ok: false,\n    error: 'Missing or invalid client_id.',\n    tool: 'get_document_status'\n  }];\n}\n\nreturn [{ client_id }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-200, 300],
+      "id": "normalize-input",
+      "name": "Normalize Input"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.ok}}",
+              "value2": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [0, 300],
+      "id": "check-error",
+      "name": "IF - Input Error?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://mycms.cmsprime.com/rest/documents?version=1.0.0",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer 805e6648071ff54087a78d1f5e0a5508a3ed4fd92f692c704b4e3120991fcf3df3d2eab8d57ffb782d6e4d4fba12648fb04cc76c807ff684c96e5d24"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"userId\": $json.client_id } }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [200, 200],
+      "id": "api-get-documents",
+      "name": "API - Get Documents"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format document status response\nconst docs = $input.first().json || {};\nconst input = $('Normalize Input').item.json;\n\n// Demo document status\nconst demoStatus = {\n  verification_status: 'partially_verified',\n  verification_level: 2,\n  max_verification_level: 3,\n  documents: [\n    {\n      type: 'identity',\n      name: 'Passport / National ID',\n      status: 'approved',\n      uploaded_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),\n      expires_at: new Date(Date.now() + 2 * 365 * 24 * 60 * 60 * 1000).toISOString(),\n      notes: null\n    },\n    {\n      type: 'address',\n      name: 'Proof of Address',\n      status: 'approved',\n      uploaded_at: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString(),\n      expires_at: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),\n      notes: null\n    },\n    {\n      type: 'selfie',\n      name: 'Selfie with ID',\n      status: 'pending',\n      uploaded_at: null,\n      expires_at: null,\n      notes: 'Required for full verification'\n    }\n  ],\n  pending_requirements: [\n    'Selfie holding your ID document',\n    'Bank statement or utility bill (not older than 3 months) - if address proof is expiring'\n  ]\n};\n\nconst data = docs.verification || docs.documents || demoStatus;\n\n// Status indicators\nconst statusEmoji = {\n  'approved': '✅',\n  'verified': '✅',\n  'pending': '⏳',\n  'pending_review': '⏳',\n  'rejected': '❌',\n  'expired': '⚠️',\n  'not_uploaded': '📤'\n};\n\nconst verificationStatusText = {\n  'fully_verified': 'Fully Verified',\n  'partially_verified': 'Partially Verified',\n  'pending': 'Verification Pending',\n  'not_verified': 'Not Verified',\n  'rejected': 'Verification Rejected'\n};\n\n// Format documents\nconst formattedDocs = (data.documents || []).map(doc => {\n  const expiresAt = doc.expires_at ? new Date(doc.expires_at) : null;\n  const isExpiringSoon = expiresAt && (expiresAt - Date.now()) < (30 * 24 * 60 * 60 * 1000);\n  const isExpired = expiresAt && expiresAt < Date.now();\n  \n  let status = doc.status;\n  if (isExpired) status = 'expired';\n  \n  return {\n    document_type: doc.type,\n    document_name: doc.name,\n    status: status,\n    status_indicator: statusEmoji[status] || '❓',\n    uploaded_at: doc.uploaded_at ? new Date(doc.uploaded_at).toLocaleDateString() : 'Not uploaded',\n    expires_at: expiresAt ? expiresAt.toLocaleDateString() : 'N/A',\n    expiring_soon: isExpiringSoon,\n    is_expired: isExpired,\n    notes: doc.notes\n  };\n});\n\n// Calculate overall status\nconst approvedCount = formattedDocs.filter(d => d.status === 'approved').length;\nconst pendingCount = formattedDocs.filter(d => d.status === 'pending' || d.status === 'pending_review').length;\nconst rejectedCount = formattedDocs.filter(d => d.status === 'rejected').length;\nconst expiredCount = formattedDocs.filter(d => d.is_expired).length;\n\nlet overallStatus = data.verification_status;\nlet overallEmoji = '⏳';\n\nif (approvedCount === formattedDocs.length) {\n  overallStatus = 'fully_verified';\n  overallEmoji = '✅';\n} else if (rejectedCount > 0) {\n  overallStatus = 'action_required';\n  overallEmoji = '❌';\n} else if (expiredCount > 0) {\n  overallStatus = 'documents_expired';\n  overallEmoji = '⚠️';\n} else if (pendingCount > 0) {\n  overallStatus = 'pending_review';\n  overallEmoji = '⏳';\n}\n\nreturn [{\n  ok: true,\n  client_id: input.client_id,\n  verification_summary: {\n    overall_status: verificationStatusText[overallStatus] || overallStatus,\n    status_indicator: overallEmoji,\n    verification_level: `${data.verification_level || approvedCount}/${data.max_verification_level || formattedDocs.length}`,\n    documents_approved: approvedCount,\n    documents_pending: pendingCount,\n    documents_rejected: rejectedCount,\n    documents_expired: expiredCount\n  },\n  documents: formattedDocs,\n  pending_requirements: data.pending_requirements || [],\n  next_steps: pendingCount > 0 || rejectedCount > 0 ? [\n    'Upload any missing documents through the client portal',\n    'Ensure documents are clear and legible',\n    'Documents are typically reviewed within 24-48 hours'\n  ] : [\n    'Your verification is complete!',\n    'Remember to keep documents updated before they expire'\n  ],\n  upload_instructions: {\n    identity: 'Valid passport, national ID, or driver\\'s license (both sides if applicable)',\n    address: 'Utility bill, bank statement, or government letter dated within last 3 months',\n    selfie: 'Clear photo of yourself holding your ID document'\n  },\n  support_note: 'If you need help with verification, our support team is available 24/5.',\n  timestamp: new Date().toISOString()\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [400, 200],
+      "id": "format-output",
+      "name": "Format Document Status"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "IF - Input Error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Input Error?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "API - Get Documents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API - Get Documents": {
+      "main": [
+        [
+          {
+            "node": "Format Document Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1.0.0",
+  "meta": {
+    "instanceId": "broker-ai-tool-document-status"
+  },
+  "id": "TOOL_DOCUMENT_STATUS",
+  "tags": ["tool", "verification"]
+}
+

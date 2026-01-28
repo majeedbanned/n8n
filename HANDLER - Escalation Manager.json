@@ -1,0 +1,205 @@
+{
+  "name": "HANDLER - Escalation Manager",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "client_id",
+              "type": "number"
+            },
+            {
+              "name": "user_phone",
+              "type": "string"
+            },
+            {
+              "name": "user_name",
+              "type": "string"
+            },
+            {
+              "name": "channel",
+              "type": "string"
+            },
+            {
+              "name": "session_id",
+              "type": "string"
+            },
+            {
+              "name": "escalation_reason",
+              "type": "string"
+            },
+            {
+              "name": "conversation_summary",
+              "type": "string"
+            },
+            {
+              "name": "sentiment_score",
+              "type": "number"
+            },
+            {
+              "name": "is_vip",
+              "type": "boolean"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [-600, 300],
+      "id": "handler-trigger",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process escalation request and determine handling\nconst input = $input.first().json || {};\n\n// Determine priority based on factors\nlet priority = 'medium';\nlet escalationType = 'standard';\n\n// VIP always gets high priority\nif (input.is_vip) {\n  priority = 'high';\n  escalationType = 'vip';\n}\n\n// Sentiment-based priority\nif (input.sentiment_score < -0.6) {\n  priority = priority === 'high' ? 'urgent' : 'high';\n  escalationType = 'urgent_sentiment';\n}\n\n// Reason-based adjustments\nconst urgentReasons = ['user_requested', 'vip_complaint', 'recurring_issues'];\nif (urgentReasons.includes(input.escalation_reason)) {\n  if (priority !== 'urgent') priority = 'high';\n}\n\n// Determine assigned team\nlet assignedTeam = 'General Support';\nlet slaMinutes = 60; // Default 1 hour\n\nswitch (input.escalation_reason) {\n  case 'user_requested':\n    assignedTeam = 'Client Relations';\n    slaMinutes = 30;\n    break;\n  case 'negative_sentiment':\n    assignedTeam = 'Client Relations';\n    slaMinutes = 30;\n    break;\n  case 'vip_complaint':\n    assignedTeam = 'VIP Account Management';\n    slaMinutes = 15;\n    priority = 'urgent';\n    break;\n  case 'recurring_issues':\n    assignedTeam = 'Technical Escalations';\n    slaMinutes = 45;\n    break;\n  default:\n    assignedTeam = 'General Support';\n    slaMinutes = 60;\n}\n\n// Create escalation context package\nconst escalationContext = {\n  client_id: input.client_id,\n  user_phone: input.user_phone,\n  user_name: input.user_name || 'Unknown',\n  channel: input.channel,\n  session_id: input.session_id,\n  escalation_reason: input.escalation_reason,\n  escalation_reason_display: {\n    'user_requested': 'Customer requested human agent',\n    'negative_sentiment': 'Negative sentiment detected',\n    'vip_complaint': 'VIP client complaint',\n    'recurring_issues': 'Multiple recent escalations'\n  }[input.escalation_reason] || input.escalation_reason,\n  priority,\n  priority_emoji: { 'urgent': '🔴', 'high': '🟠', 'medium': '🟡', 'low': '🟢' }[priority],\n  escalation_type: escalationType,\n  assigned_team: assignedTeam,\n  sla_minutes: slaMinutes,\n  sla_due: new Date(Date.now() + slaMinutes * 60 * 1000).toISOString(),\n  sentiment_score: input.sentiment_score,\n  sentiment_indicator: input.sentiment_score < -0.5 ? '😠' : input.sentiment_score < 0 ? '😐' : '🙂',\n  is_vip: input.is_vip,\n  conversation_summary: input.conversation_summary || 'No summary available',\n  escalated_at: new Date().toISOString()\n};\n\nreturn [escalationContext];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-400, 300],
+      "id": "process-escalation",
+      "name": "Process Escalation"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO support_tickets (\n  client_id,\n  user_phone,\n  client_name,\n  category,\n  priority,\n  subject,\n  description,\n  source_channel,\n  source_session_id,\n  ai_summary,\n  assigned_department,\n  status,\n  sla_due_at,\n  created_at\n)\nVALUES (\n  {{ $json.client_id || 'NULL' }},\n  '{{ $json.user_phone }}',\n  '{{ $json.user_name }}',\n  'escalation',\n  '{{ $json.priority }}',\n  'AI Bot Escalation: {{ $json.escalation_reason_display }}',\n  '{{ $json.conversation_summary.replace(/'/g, \"''\").substring(0, 2000) }}',\n  '{{ $json.channel }}',\n  '{{ $json.session_id }}',\n  '{{ $json.conversation_summary.replace(/'/g, \"''\").substring(0, 1000) }}',\n  '{{ $json.assigned_team }}',\n  'open',\n  '{{ $json.sla_due }}',\n  NOW()\n)\nRETURNING ticket_id, id;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [-200, 300],
+      "id": "db-create-escalation",
+      "name": "DB - Create Escalation Ticket",
+      "credentials": {
+        "postgres": {
+          "id": "yNVFJmXSqNtKGgso",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE chat_sessions \nSET \n  escalated = true,\n  escalation_reason = '{{ $('Process Escalation').item.json.escalation_reason }}',\n  escalation_time = NOW()\nWHERE session_id = '{{ $('Process Escalation').item.json.session_id }}';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [0, 300],
+      "id": "db-update-session",
+      "name": "DB - Update Session",
+      "credentials": {
+        "postgres": {
+          "id": "yNVFJmXSqNtKGgso",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format escalation notification for support team\nconst context = $('Process Escalation').item.json;\nconst dbResult = $('DB - Create Escalation Ticket').item.json || {};\n\nconst ticketId = dbResult.ticket_id || dbResult.id || `ESC-${Date.now()}`;\n\n// Build notification message\nconst notification = {\n  type: 'escalation_alert',\n  priority: context.priority,\n  ticket_id: ticketId,\n  \n  alert_title: `${context.priority_emoji} New Escalation: ${context.escalation_reason_display}`,\n  \n  client_info: {\n    name: context.user_name,\n    phone: context.user_phone,\n    client_id: context.client_id,\n    is_vip: context.is_vip ? '⭐ VIP Client' : 'Standard'\n  },\n  \n  escalation_details: {\n    reason: context.escalation_reason_display,\n    channel: context.channel,\n    sentiment: `${context.sentiment_indicator} Score: ${context.sentiment_score}`,\n    assigned_to: context.assigned_team,\n    sla: `${context.sla_minutes} minutes`,\n    sla_due: new Date(context.sla_due).toLocaleString()\n  },\n  \n  conversation_summary: context.conversation_summary,\n  \n  action_required: [\n    `Review escalation ticket #${ticketId}`,\n    'Contact client within SLA timeframe',\n    'Update ticket status after resolution'\n  ],\n  \n  quick_actions: {\n    view_ticket: `https://support.cmsprime.com/tickets/${ticketId}`,\n    view_client: `https://crm.cmsprime.com/clients/${context.client_id}`,\n    call_client: `tel:${context.user_phone}`\n  }\n};\n\nreturn [{\n  ok: true,\n  escalation_created: true,\n  ticket_id: ticketId,\n  priority: context.priority,\n  assigned_team: context.assigned_team,\n  sla_due: context.sla_due,\n  notification_payload: notification,\n  customer_message: generateCustomerMessage(context, ticketId)\n}];\n\nfunction generateCustomerMessage(ctx, ticketId) {\n  const messages = {\n    user_requested: `I understand you'd like to speak with a human agent. I've created a priority support ticket (#${ticketId}) and our ${ctx.assigned_team} team will reach out to you within ${ctx.sla_minutes} minutes.\\n\\nIs there anything else I can help you with while you wait?`,\n    \n    negative_sentiment: `I can see you're having a frustrating experience, and I'm truly sorry about that. I've escalated this to our ${ctx.assigned_team} team who specialize in resolving these situations. They will contact you within ${ctx.sla_minutes} minutes.\\n\\nYour ticket reference is #${ticketId}.`,\n    \n    vip_complaint: `As a valued VIP client, your satisfaction is our top priority. I've immediately escalated this to our ${ctx.assigned_team} team. Your dedicated account manager will personally contact you within ${ctx.sla_minutes} minutes.\\n\\nReference: #${ticketId}`,\n    \n    recurring_issues: `I notice you've had to contact us multiple times about this issue. I sincerely apologize for the inconvenience. I've escalated this to our ${ctx.assigned_team} team for a comprehensive review. They will contact you within ${ctx.sla_minutes} minutes with a resolution.\\n\\nTicket: #${ticketId}`\n  };\n  \n  return messages[ctx.escalation_reason] || messages.user_requested;\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [200, 300],
+      "id": "format-response",
+      "name": "Format Response & Notification"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": \"{{ $json.notification_payload.alert_title }}\",\n  \"attachments\": [\n    {\n      \"color\": \"{{ $json.priority === 'urgent' ? '#ff0000' : $json.priority === 'high' ? '#ff9900' : '#ffcc00' }}\",\n      \"fields\": [\n        { \"title\": \"Client\", \"value\": \"{{ $json.notification_payload.client_info.name }} ({{ $json.notification_payload.client_info.is_vip }})\", \"short\": true },\n        { \"title\": \"Ticket\", \"value\": \"#{{ $json.ticket_id }}\", \"short\": true },\n        { \"title\": \"Reason\", \"value\": \"{{ $json.notification_payload.escalation_details.reason }}\", \"short\": true },\n        { \"title\": \"SLA\", \"value\": \"{{ $json.notification_payload.escalation_details.sla }}\", \"short\": true },\n        { \"title\": \"Summary\", \"value\": \"{{ $json.notification_payload.conversation_summary.substring(0, 200) }}...\" }\n      ],\n      \"footer\": \"AI Bot Escalation System\",\n      \"ts\": {{ Math.floor(Date.now() / 1000) }}\n    }\n  ]\n}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [400, 200],
+      "id": "notify-slack",
+      "name": "Notify Support Team (Slack)"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Process Escalation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Escalation": {
+      "main": [
+        [
+          {
+            "node": "DB - Create Escalation Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB - Create Escalation Ticket": {
+      "main": [
+        [
+          {
+            "node": "DB - Update Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB - Update Session": {
+      "main": [
+        [
+          {
+            "node": "Format Response & Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Response & Notification": {
+      "main": [
+        [
+          {
+            "node": "Notify Support Team (Slack)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1.0.0",
+  "meta": {
+    "instanceId": "broker-ai-handler-escalation"
+  },
+  "id": "HANDLER_ESCALATION_MANAGER",
+  "tags": ["handler", "escalation"]
+}
+

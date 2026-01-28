@@ -1,0 +1,153 @@
+{
+  "name": "TOOL - Support Ticket",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "client_id",
+              "type": "number"
+            },
+            {
+              "name": "category",
+              "type": "string"
+            },
+            {
+              "name": "priority",
+              "type": "string"
+            },
+            {
+              "name": "subject",
+              "type": "string"
+            },
+            {
+              "name": "description",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [-400, 300],
+      "id": "tool-trigger",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize and validate input\nconst input = $input.first().json || {};\n\nconst client_id = Number(input.client_id ?? input.clientId ?? null);\n\nif (!client_id || !Number.isFinite(client_id)) {\n  return [{\n    ok: false,\n    error: 'Missing or invalid client_id.',\n    tool: 'submit_support_ticket'\n  }];\n}\n\n// Validate category\nconst validCategories = ['technical', 'account', 'trading', 'funding', 'complaint', 'verification', 'other'];\nlet category = String(input.category || 'other').toLowerCase();\nif (!validCategories.includes(category)) category = 'other';\n\n// Validate priority\nconst validPriorities = ['low', 'medium', 'high', 'urgent'];\nlet priority = String(input.priority || 'medium').toLowerCase();\nif (!validPriorities.includes(priority)) priority = 'medium';\n\n// Validate subject and description\nconst subject = String(input.subject || 'Support Request').slice(0, 200);\nconst description = String(input.description || 'No description provided').slice(0, 5000);\n\nif (!input.subject || !input.description) {\n  return [{\n    ok: false,\n    error: 'Subject and description are required.',\n    tool: 'submit_support_ticket'\n  }];\n}\n\nreturn [{ \n  client_id, \n  category, \n  priority, \n  subject, \n  description,\n  submitted_at: new Date().toISOString()\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-200, 300],
+      "id": "normalize-input",
+      "name": "Normalize Input"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.ok}}",
+              "value2": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [0, 300],
+      "id": "check-error",
+      "name": "IF - Input Error?"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO support_tickets (\n  client_id,\n  category,\n  priority,\n  subject,\n  description,\n  source_channel,\n  status,\n  created_at\n)\nVALUES (\n  {{ $json.client_id }},\n  '{{ $json.category }}',\n  '{{ $json.priority }}',\n  '{{ $json.subject.replace(/'/g, \"''\") }}',\n  '{{ $json.description.replace(/'/g, \"''\") }}',\n  'ai_bot',\n  'open',\n  NOW()\n)\nRETURNING ticket_id, id;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [200, 200],
+      "id": "db-create-ticket",
+      "name": "DB - Create Ticket",
+      "credentials": {
+        "postgres": {
+          "id": "yNVFJmXSqNtKGgso",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format ticket creation response\nconst dbResult = $input.first().json || {};\nconst input = $('Normalize Input').item.json;\n\n// Generate ticket ID if not returned from DB\nconst ticketId = dbResult.ticket_id || dbResult.id || `TKT-${Date.now()}`;\n\n// Estimated response times by priority\nconst responseTimes = {\n  'urgent': '1-2 hours',\n  'high': '4-6 hours',\n  'medium': '12-24 hours',\n  'low': '24-48 hours'\n};\n\n// Assigned department by category\nconst departments = {\n  'technical': 'Technical Support',\n  'account': 'Account Services',\n  'trading': 'Trading Desk',\n  'funding': 'Finance Department',\n  'complaint': 'Client Relations',\n  'verification': 'Compliance Team',\n  'other': 'General Support'\n};\n\nreturn [{\n  ok: true,\n  ticket_created: true,\n  ticket_details: {\n    ticket_id: ticketId,\n    category: input.category,\n    priority: input.priority,\n    subject: input.subject,\n    status: 'open',\n    assigned_department: departments[input.category] || 'General Support',\n    estimated_response: responseTimes[input.priority] || '24 hours',\n    submitted_at: input.submitted_at\n  },\n  next_steps: [\n    `Your ticket #${ticketId} has been created`,\n    `Our ${departments[input.category]} team will review it shortly`,\n    `Expected response within ${responseTimes[input.priority]}`,\n    'You will receive updates via email and in your client portal'\n  ],\n  escalation_note: input.priority === 'urgent' ? \n    'Your ticket has been flagged as urgent and will be prioritized.' : null,\n  contact_info: {\n    email: 'support@cmsprime.com',\n    phone: '+971 4 xxx xxxx',\n    live_chat: 'Available in client portal'\n  },\n  timestamp: new Date().toISOString()\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [400, 200],
+      "id": "format-output",
+      "name": "Format Response"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "IF - Input Error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Input Error?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "DB - Create Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB - Create Ticket": {
+      "main": [
+        [
+          {
+            "node": "Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1.0.0",
+  "meta": {
+    "instanceId": "broker-ai-tool-support-ticket"
+  },
+  "id": "TOOL_SUPPORT_TICKET",
+  "tags": ["tool", "escalation"]
+}
+

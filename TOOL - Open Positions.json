@@ -1,0 +1,157 @@
+{
+  "name": "TOOL - Open Positions",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "client_id",
+              "type": "number"
+            },
+            {
+              "name": "platform",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [-400, 300],
+      "id": "tool-trigger",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize and validate input\nconst input = $input.first().json || {};\n\nconst client_id = Number(input.client_id ?? input.clientId ?? null);\nconst platform = String(input.platform || 'mt5').toLowerCase();\n\nif (!client_id || !Number.isFinite(client_id)) {\n  return [{\n    ok: false,\n    error: 'Missing or invalid client_id.',\n    tool: 'get_open_positions'\n  }];\n}\n\nreturn [{ \n  client_id, \n  platform: ['mt4', 'mt5'].includes(platform) ? platform : 'mt5' \n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-200, 300],
+      "id": "normalize-input",
+      "name": "Normalize Input"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.ok}}",
+              "value2": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [0, 300],
+      "id": "check-error",
+      "name": "IF - Input Error?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://mycms.cmsprime.com/rest/positions?version=1.0.0",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer 805e6648071ff54087a78d1f5e0a5508a3ed4fd92f692c704b4e3120991fcf3df3d2eab8d57ffb782d6e4d4fba12648fb04cc76c807ff684c96e5d24"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"userId\": $json.client_id, \"platform\": $json.platform, \"status\": \"open\" } }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [200, 200],
+      "id": "api-get-positions",
+      "name": "API - Get Positions"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format open positions response\nconst positions = $input.all().map(i => i.json).filter(Boolean);\nconst input = $('Normalize Input').item.json;\n\n// Handle empty or array response\nlet positionList = [];\nif (Array.isArray(positions) && positions.length > 0) {\n  positionList = Array.isArray(positions[0]) ? positions[0] : positions;\n}\n\nif (positionList.length === 0) {\n  return [{\n    ok: true,\n    client_id: input.client_id,\n    platform: input.platform,\n    has_positions: false,\n    positions_count: 0,\n    positions: [],\n    summary: {\n      total_profit_loss: '0.00',\n      total_swap: '0.00',\n      total_volume: '0.00'\n    },\n    message: 'No open positions found.',\n    timestamp: new Date().toISOString()\n  }];\n}\n\n// Process positions\nconst formattedPositions = positionList.map(pos => {\n  const profit = Number(pos.profit) || 0;\n  const swap = Number(pos.swap) || 0;\n  const volume = Number(pos.volume) || Number(pos.lots) || 0;\n  const openPrice = Number(pos.openPrice) || Number(pos.priceOpen) || 0;\n  const currentPrice = Number(pos.currentPrice) || Number(pos.priceCurrent) || 0;\n  const sl = Number(pos.stopLoss) || Number(pos.sl) || null;\n  const tp = Number(pos.takeProfit) || Number(pos.tp) || null;\n  \n  return {\n    ticket: pos.ticket || pos.id || pos.positionId,\n    symbol: pos.symbol,\n    type: pos.type || pos.side || (pos.cmd === 0 ? 'BUY' : 'SELL'),\n    volume: volume.toFixed(2),\n    open_price: openPrice.toFixed(5),\n    current_price: currentPrice.toFixed(5),\n    profit: profit.toFixed(2),\n    swap: swap.toFixed(2),\n    stop_loss: sl ? sl.toFixed(5) : 'Not set',\n    take_profit: tp ? tp.toFixed(5) : 'Not set',\n    open_time: pos.openTime || pos.timeOpen || pos.created_at,\n    comment: pos.comment || null\n  };\n});\n\n// Sort by profit (worst first for attention)\nformattedPositions.sort((a, b) => Number(a.profit) - Number(b.profit));\n\n// Calculate summary\nconst totalProfit = formattedPositions.reduce((sum, p) => sum + Number(p.profit), 0);\nconst totalSwap = formattedPositions.reduce((sum, p) => sum + Number(p.swap), 0);\nconst totalVolume = formattedPositions.reduce((sum, p) => sum + Number(p.volume), 0);\nconst winningCount = formattedPositions.filter(p => Number(p.profit) > 0).length;\nconst losingCount = formattedPositions.filter(p => Number(p.profit) < 0).length;\n\nreturn [{\n  ok: true,\n  client_id: input.client_id,\n  platform: input.platform,\n  has_positions: true,\n  positions_count: formattedPositions.length,\n  positions: formattedPositions,\n  summary: {\n    total_profit_loss: totalProfit.toFixed(2),\n    total_swap: totalSwap.toFixed(2),\n    total_volume: totalVolume.toFixed(2),\n    winning_positions: winningCount,\n    losing_positions: losingCount\n  },\n  timestamp: new Date().toISOString()\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [400, 200],
+      "id": "format-output",
+      "name": "Format Positions"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "IF - Input Error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Input Error?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "API - Get Positions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API - Get Positions": {
+      "main": [
+        [
+          {
+            "node": "Format Positions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1.0.0",
+  "meta": {
+    "instanceId": "broker-ai-tool-positions"
+  },
+  "id": "TOOL_POSITIONS",
+  "tags": ["tool", "trading"]
+}
+

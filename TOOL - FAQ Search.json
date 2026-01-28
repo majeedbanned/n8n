@@ -1,0 +1,145 @@
+{
+  "name": "TOOL - FAQ Search",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "query",
+              "type": "string"
+            },
+            {
+              "name": "category",
+              "type": "string"
+            },
+            {
+              "name": "language",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [-400, 300],
+      "id": "tool-trigger",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize input\nconst input = $input.first().json || {};\n\nconst query = String(input.query || '').trim();\n\nif (!query || query.length < 2) {\n  return [{\n    ok: false,\n    error: 'Search query is required (minimum 2 characters).',\n    tool: 'search_faq'\n  }];\n}\n\nconst validCategories = ['account', 'trading', 'platform', 'deposit', 'withdrawal', 'verification', 'general', 'all'];\nlet category = String(input.category || 'all').toLowerCase();\nif (!validCategories.includes(category)) category = 'all';\n\nconst language = String(input.language || 'en').toLowerCase();\n\nreturn [{ query, category, language }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-200, 300],
+      "id": "normalize-input",
+      "name": "Normalize Input"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.ok}}",
+              "value2": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [0, 300],
+      "id": "check-error",
+      "name": "IF - Input Error?"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  id,\n  question,\n  answer,\n  category,\n  article_url,\n  ts_rank(search_vector, plainto_tsquery('english', '{{ $json.query }}')) as relevance\nFROM faq_knowledge_base\nWHERE \n  is_active = true\n  AND (search_vector @@ plainto_tsquery('english', '{{ $json.query }}') OR question ILIKE '%{{ $json.query }}%')\n  {{ $json.category !== 'all' ? `AND category = '${$json.category}'` : '' }}\nORDER BY relevance DESC\nLIMIT 5;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [200, 200],
+      "id": "db-search-faq",
+      "name": "DB - Search FAQ",
+      "credentials": {
+        "postgres": {
+          "id": "yNVFJmXSqNtKGgso",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format FAQ search results\nconst results = $input.all().map(i => i.json).filter(Boolean);\nconst input = $('Normalize Input').item.json;\n\n// Demo FAQ entries if no DB results\nconst demoFAQs = [\n  {\n    category: 'account',\n    question: 'How do I open a trading account?',\n    answer: 'Opening an account is easy! Visit our website and click \"Open Account\". Fill in your details, verify your email, and complete the KYC verification. Once approved, you can fund your account and start trading.',\n    relevance: 0.9\n  },\n  {\n    category: 'account',\n    question: 'What are the account types available?',\n    answer: 'We offer several account types: Standard (min $100), Premium ($5,000+), and VIP ($25,000+). Each tier comes with different spreads, leverage options, and benefits. Demo accounts are also available for practice.',\n    relevance: 0.85\n  },\n  {\n    category: 'deposit',\n    question: 'How long do deposits take?',\n    answer: 'Deposit times vary by method: Credit/Debit cards are instant, Bank transfers take 1-3 business days, E-wallets (Skrill, Neteller) are instant, Cryptocurrency deposits are confirmed within 30 minutes after network confirmation.',\n    relevance: 0.88\n  },\n  {\n    category: 'withdrawal',\n    question: 'How do I withdraw funds?',\n    answer: 'Log into your client portal, go to \"Withdrawal\", select your payment method, enter the amount, and submit. Withdrawals are processed within 24 hours on business days. Funds return to the same method used for deposit.',\n    relevance: 0.87\n  },\n  {\n    category: 'trading',\n    question: 'What is leverage and how does it work?',\n    answer: 'Leverage allows you to control larger positions with less capital. For example, 1:100 leverage means $1,000 can control $100,000. While this amplifies profits, it also amplifies losses. Use leverage responsibly and always set stop-losses.',\n    relevance: 0.82\n  },\n  {\n    category: 'trading',\n    question: 'What are spreads and how are they calculated?',\n    answer: 'Spread is the difference between the buy (ask) and sell (bid) price. It\\'s our fee for facilitating trades. Spreads vary by instrument and market conditions. Major forex pairs typically have the tightest spreads.',\n    relevance: 0.8\n  },\n  {\n    category: 'platform',\n    question: 'How do I download and install MT4/MT5?',\n    answer: 'Download MT4/MT5 from our website\\'s Platform section. Run the installer, enter your account credentials (sent via email after registration), select your server, and log in. Mobile apps are available on iOS and Android.',\n    relevance: 0.85\n  },\n  {\n    category: 'platform',\n    question: 'Why can\\'t I log into my trading platform?',\n    answer: 'Common login issues: 1) Check your login credentials are correct, 2) Ensure you\\'re using the right server, 3) Check your internet connection, 4) Platform might be under maintenance - check our status page. Contact support if issues persist.',\n    relevance: 0.83\n  },\n  {\n    category: 'verification',\n    question: 'What documents do I need for verification?',\n    answer: 'For full verification, you need: 1) Government-issued ID (passport, national ID, or driver\\'s license), 2) Proof of address (utility bill or bank statement dated within 3 months), 3) For some regions, a selfie holding your ID.',\n    relevance: 0.86\n  },\n  {\n    category: 'general',\n    question: 'How do I contact customer support?',\n    answer: 'You can reach us through: Live Chat (24/5 on our website), Email: support@cmsprime.com, Phone: +971 4 xxx xxxx, or through this AI assistant. For urgent trading matters, our trading desk is available during market hours.',\n    relevance: 0.75\n  }\n];\n\n// Use DB results or fallback to demo\nlet faqResults = results.length > 0 ? results : demoFAQs;\n\n// Filter by query relevance for demo data\nif (results.length === 0) {\n  const queryLower = input.query.toLowerCase();\n  const queryWords = queryLower.split(/\\s+/);\n  \n  faqResults = demoFAQs\n    .map(faq => {\n      const questionLower = faq.question.toLowerCase();\n      const answerLower = faq.answer.toLowerCase();\n      \n      // Calculate simple relevance score\n      let score = 0;\n      queryWords.forEach(word => {\n        if (questionLower.includes(word)) score += 0.4;\n        if (answerLower.includes(word)) score += 0.2;\n      });\n      \n      if (questionLower.includes(queryLower)) score += 0.5;\n      \n      return { ...faq, calculatedRelevance: score };\n    })\n    .filter(faq => faq.calculatedRelevance > 0.1)\n    .sort((a, b) => b.calculatedRelevance - a.calculatedRelevance)\n    .slice(0, 5);\n  \n  // Filter by category if specified\n  if (input.category !== 'all') {\n    faqResults = faqResults.filter(f => f.category === input.category);\n  }\n}\n\n// Format results\nconst formattedResults = faqResults.map((faq, index) => ({\n  rank: index + 1,\n  question: faq.question,\n  answer: faq.answer,\n  category: faq.category,\n  confidence: faq.relevance ? `${Math.round(faq.relevance * 100)}%` : \n              faq.calculatedRelevance ? `${Math.round(faq.calculatedRelevance * 100)}%` : 'N/A',\n  article_url: faq.article_url || null\n}));\n\nconst hasResults = formattedResults.length > 0;\n\nreturn [{\n  ok: true,\n  query: input.query,\n  category_filter: input.category,\n  results_found: formattedResults.length,\n  results: formattedResults,\n  best_answer: hasResults ? {\n    question: formattedResults[0].question,\n    answer: formattedResults[0].answer,\n    confidence: formattedResults[0].confidence\n  } : null,\n  no_results_suggestion: !hasResults ? [\n    'Try using different keywords',\n    'Check spelling of search terms',\n    'Use broader search terms',\n    'Contact support for personalized assistance'\n  ] : null,\n  related_categories: !hasResults ? ['account', 'trading', 'platform', 'deposit', 'withdrawal'] : null,\n  help_resources: {\n    knowledge_base: 'https://cmsprime.com/help',\n    video_tutorials: 'https://cmsprime.com/tutorials',\n    contact_support: 'support@cmsprime.com'\n  },\n  timestamp: new Date().toISOString()\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [400, 200],
+      "id": "format-output",
+      "name": "Format Search Results"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "IF - Input Error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Input Error?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "DB - Search FAQ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB - Search FAQ": {
+      "main": [
+        [
+          {
+            "node": "Format Search Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1.0.0",
+  "meta": {
+    "instanceId": "broker-ai-tool-faq-search"
+  },
+  "id": "TOOL_FAQ_SEARCH",
+  "tags": ["tool", "knowledge"]
+}
+

@@ -1,0 +1,416 @@
+{
+  "name": "CRON - Proactive Alerts",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-800, 300],
+      "id": "schedule-trigger",
+      "name": "Every 15 Minutes"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Initialize alert check run\nconst now = new Date();\nconst runId = `alert_run_${now.getTime()}`;\n\nreturn [{\n  run_id: runId,\n  check_time: now.toISOString(),\n  checks_to_perform: [\n    'margin_warnings',\n    'document_expiry',\n    'large_pnl_alerts',\n    'promotion_notifications',\n    'inactivity_check'\n  ]\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-600, 300],
+      "id": "init-run",
+      "name": "Initialize Alert Run"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Get users with potential margin issues (margin level < 200%)\nSELECT DISTINCT\n  uc.user_phone,\n  uc.client_id,\n  uc.preferred_language,\n  uc.is_vip,\n  uc.notification_enabled,\n  uc.last_channel,\n  up.notification_preferences\nFROM user_configs uc\nLEFT JOIN user_preferences up ON uc.user_phone = up.user_phone\nWHERE \n  uc.notification_enabled = true\n  AND uc.last_seen_at > NOW() - INTERVAL '7 days'\n  AND NOT EXISTS (\n    SELECT 1 FROM proactive_alerts pa\n    WHERE pa.user_phone = uc.user_phone\n    AND pa.alert_type = 'margin_warning'\n    AND pa.created_at > NOW() - INTERVAL '4 hours'\n  )\nLIMIT 100;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [-400, 200],
+      "id": "get-active-users",
+      "name": "Get Active Users for Alerts",
+      "credentials": {
+        "postgres": {
+          "id": "yNVFJmXSqNtKGgso",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Get users with documents expiring in next 14 days\nSELECT DISTINCT\n  uc.user_phone,\n  uc.client_id,\n  uc.preferred_language,\n  'document_expiry' as alert_type\nFROM user_configs uc\nWHERE \n  uc.notification_enabled = true\n  AND NOT EXISTS (\n    SELECT 1 FROM proactive_alerts pa\n    WHERE pa.user_phone = uc.user_phone\n    AND pa.alert_type = 'document_expiry'\n    AND pa.created_at > NOW() - INTERVAL '7 days'\n  )\nLIMIT 50;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [-400, 400],
+      "id": "get-expiring-docs",
+      "name": "Get Users with Expiring Docs",
+      "credentials": {
+        "postgres": {
+          "id": "yNVFJmXSqNtKGgso",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process margin warnings - check each user's margin level\nconst users = $('Get Active Users for Alerts').all().map(i => i.json).filter(Boolean);\n\n// In production, you would call the trading API for each user\n// For demo, we'll simulate some margin warnings\n\nconst marginAlerts = [];\n\n// Demo: Generate some sample margin warnings\nif (users.length > 0) {\n  // Simulate margin check for first few users\n  const usersToCheck = users.slice(0, 5);\n  \n  usersToCheck.forEach(user => {\n    // Random simulation - in production this would be real API data\n    const simulatedMarginLevel = Math.random() * 500 + 50; // 50-550%\n    \n    if (simulatedMarginLevel < 150) {\n      marginAlerts.push({\n        user_phone: user.user_phone,\n        client_id: user.client_id,\n        alert_type: 'margin_warning',\n        priority: simulatedMarginLevel < 100 ? 'critical' : 'high',\n        alert_data: {\n          margin_level: `${simulatedMarginLevel.toFixed(2)}%`,\n          warning_threshold: '150%',\n          margin_call_level: '100%',\n          stop_out_level: '50%',\n          message: simulatedMarginLevel < 100 ?\n            '⚠️ CRITICAL: Your margin level is below 100%. Please add funds or close positions immediately to avoid stop-out.' :\n            '⚠️ Warning: Your margin level is below 150%. Consider reducing positions or adding funds.'\n        },\n        delivery_channel: user.last_channel || 'email',\n        language: user.preferred_language || 'en',\n        is_vip: user.is_vip\n      });\n    }\n  });\n}\n\nreturn marginAlerts.length > 0 ? marginAlerts.map(a => ({ json: a })) : [{ json: { no_alerts: true, type: 'margin_warning' } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-200, 200],
+      "id": "process-margin-checks",
+      "name": "Process Margin Warnings"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process document expiry alerts\nconst users = $('Get Users with Expiring Docs').all().map(i => i.json).filter(Boolean);\n\nconst docAlerts = [];\n\n// Demo: Generate document expiry alerts\nusers.slice(0, 10).forEach(user => {\n  // In production, check actual document expiry dates\n  const daysUntilExpiry = Math.floor(Math.random() * 14) + 1;\n  \n  if (daysUntilExpiry <= 14) {\n    docAlerts.push({\n      user_phone: user.user_phone,\n      client_id: user.client_id,\n      alert_type: 'document_expiry',\n      priority: daysUntilExpiry <= 3 ? 'high' : 'medium',\n      alert_data: {\n        document_type: 'Proof of Address',\n        days_until_expiry: daysUntilExpiry,\n        expiry_date: new Date(Date.now() + daysUntilExpiry * 24 * 60 * 60 * 1000).toISOString().split('T')[0],\n        message: daysUntilExpiry <= 3 ?\n          `📄 Urgent: Your Proof of Address expires in ${daysUntilExpiry} day(s). Please upload a new document to avoid account restrictions.` :\n          `📄 Reminder: Your Proof of Address will expire in ${daysUntilExpiry} days. Please upload an updated document at your convenience.`\n      },\n      delivery_channel: 'email',\n      language: user.preferred_language || 'en'\n    });\n  }\n});\n\nreturn docAlerts.length > 0 ? docAlerts.map(a => ({ json: a })) : [{ json: { no_alerts: true, type: 'document_expiry' } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-200, 400],
+      "id": "process-doc-expiry",
+      "name": "Process Document Expiry"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [0, 300],
+      "id": "merge-alerts",
+      "name": "Merge All Alerts"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Filter out no_alerts items and prepare for delivery\nconst allAlerts = $input.all().map(i => i.json).filter(a => !a.no_alerts);\n\nif (allAlerts.length === 0) {\n  return [{ json: { no_alerts_to_send: true, timestamp: new Date().toISOString() } }];\n}\n\n// Group alerts by user for potential batching\nconst alertsByUser = {};\nallAlerts.forEach(alert => {\n  const key = alert.user_phone;\n  if (!alertsByUser[key]) {\n    alertsByUser[key] = [];\n  }\n  alertsByUser[key].push(alert);\n});\n\n// Flatten and return individual alerts for processing\nconst alertsToSend = [];\n\nfor (const [userPhone, userAlerts] of Object.entries(alertsByUser)) {\n  userAlerts.forEach(alert => {\n    alertsToSend.push({\n      ...alert,\n      alert_id: `alert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,\n      scheduled_for: new Date().toISOString(),\n      delivery_status: 'pending'\n    });\n  });\n}\n\nreturn alertsToSend.map(a => ({ json: a }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [200, 300],
+      "id": "prepare-delivery",
+      "name": "Prepare for Delivery"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.no_alerts_to_send}}",
+              "value2": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [400, 300],
+      "id": "check-alerts-exist",
+      "name": "IF - Have Alerts?"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO proactive_alerts (\n  user_phone,\n  client_id,\n  alert_type,\n  alert_data,\n  priority,\n  delivery_channel,\n  scheduled_for,\n  delivery_status,\n  created_at\n)\nVALUES (\n  '{{ $json.user_phone }}',\n  {{ $json.client_id || 'NULL' }},\n  '{{ $json.alert_type }}',\n  '{{ JSON.stringify($json.alert_data).replace(/'/g, \"''\") }}',\n  '{{ $json.priority || 'medium' }}',\n  '{{ $json.delivery_channel }}',\n  '{{ $json.scheduled_for }}',\n  'pending',\n  NOW()\n)\nRETURNING alert_id;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [600, 200],
+      "id": "db-save-alert",
+      "name": "DB - Save Alert",
+      "credentials": {
+        "postgres": {
+          "id": "yNVFJmXSqNtKGgso",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$('Prepare for Delivery').item.json.delivery_channel}}",
+              "value2": "email"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [800, 200],
+      "id": "check-channel",
+      "name": "IF - Email Channel?"
+    },
+    {
+      "parameters": {
+        "fromEmail": "alerts@cmsprime.com",
+        "toEmail": "={{ $('Prepare for Delivery').item.json.user_phone }}@placeholder.com",
+        "subject": "={{ $('Prepare for Delivery').item.json.alert_type === 'margin_warning' ? '⚠️ Important: Margin Alert' : '📄 Document Expiry Reminder' }}",
+        "emailType": "text",
+        "message": "=Dear Valued Client,\n\n{{ $('Prepare for Delivery').item.json.alert_data.message }}\n\n---\nDetails:\n{{ JSON.stringify($('Prepare for Delivery').item.json.alert_data, null, 2) }}\n\n---\nIf you have any questions, please contact our support team.\n\nBest regards,\nCMS Prime Team\n\nThis is an automated notification. Please do not reply to this email."
+      },
+      "type": "n8n-nodes-base.send-email",
+      "typeVersion": 2.1,
+      "position": [1000, 100],
+      "id": "send-email-alert",
+      "name": "Send Email Alert",
+      "credentials": {
+        "smtp": {
+          "id": "SMTP_CREDENTIAL_ID",
+          "name": "SMTP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.whatsapp.com/send-message",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer WHATSAPP_TOKEN"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"{{ $('Prepare for Delivery').item.json.user_phone }}\",\n  \"type\": \"text\",\n  \"text\": {\n    \"body\": \"{{ $('Prepare for Delivery').item.json.alert_data.message.replace(/\"/g, '\\\\\"') }}\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [1000, 300],
+      "id": "send-whatsapp-alert",
+      "name": "Send WhatsApp Alert"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE proactive_alerts \nSET \n  delivery_status = 'sent',\n  delivered_at = NOW()\nWHERE alert_id = '{{ $('DB - Save Alert').item.json.alert_id }}';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [1200, 200],
+      "id": "db-update-status",
+      "name": "DB - Mark as Sent",
+      "credentials": {
+        "postgres": {
+          "id": "yNVFJmXSqNtKGgso",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Log run completion\nconst runInfo = $('Initialize Alert Run').item.json;\nconst alerts = $input.all().length;\n\nreturn [{\n  run_id: runInfo.run_id,\n  completed_at: new Date().toISOString(),\n  alerts_processed: alerts,\n  status: 'completed'\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [600, 400],
+      "id": "log-no-alerts",
+      "name": "Log No Alerts"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Every 15 Minutes": {
+      "main": [
+        [
+          {
+            "node": "Initialize Alert Run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Initialize Alert Run": {
+      "main": [
+        [
+          {
+            "node": "Get Active Users for Alerts",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Users with Expiring Docs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Active Users for Alerts": {
+      "main": [
+        [
+          {
+            "node": "Process Margin Warnings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Users with Expiring Docs": {
+      "main": [
+        [
+          {
+            "node": "Process Document Expiry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Margin Warnings": {
+      "main": [
+        [
+          {
+            "node": "Merge All Alerts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Document Expiry": {
+      "main": [
+        [
+          {
+            "node": "Merge All Alerts",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge All Alerts": {
+      "main": [
+        [
+          {
+            "node": "Prepare for Delivery",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare for Delivery": {
+      "main": [
+        [
+          {
+            "node": "IF - Have Alerts?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Have Alerts?": {
+      "main": [
+        [
+          {
+            "node": "Log No Alerts",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "DB - Save Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB - Save Alert": {
+      "main": [
+        [
+          {
+            "node": "IF - Email Channel?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Email Channel?": {
+      "main": [
+        [
+          {
+            "node": "Send Email Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send WhatsApp Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email Alert": {
+      "main": [
+        [
+          {
+            "node": "DB - Mark as Sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send WhatsApp Alert": {
+      "main": [
+        [
+          {
+            "node": "DB - Mark as Sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1.0.0",
+  "meta": {
+    "instanceId": "broker-ai-cron-proactive"
+  },
+  "id": "CRON_PROACTIVE_ALERTS",
+  "tags": ["cron", "proactive"]
+}
+

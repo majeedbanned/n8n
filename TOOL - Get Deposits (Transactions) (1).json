@@ -1,0 +1,193 @@
+{
+  "name": "TOOL - Get Deposits (Transactions)",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json || {};\n\nconst client_id = Number(\n  input.client_id ??\n  input.fromUserId ??\n  input.user_id ??\n  input.clientId ??80733\n  \n);\n\nconst limit = Number(input.limit ?? 80);\nconst type = String(input.type ?? 'deposit');\n\nreturn [{\n  client_id,\n  limit: Number.isFinite(limit) && limit > 0 ? limit : 80,\n // type: type || 'deposit'\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1456,
+        480
+      ],
+      "id": "1aa49d10-6bbd-4e3f-a133-92d89298b09e",
+      "name": "Normalize Tool Input"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{$json.client_id}}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -1232,
+        480
+      ],
+      "id": "dcf9029f-da29-46b0-9bf9-f4d98d965157",
+      "name": "IF - client_id present?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://mycms.cmsprime.com/rest/transactions?version=1.0.0",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer 805e6648071ff54087a78d1f5e0a5508a3ed4fd92f692c704b4e3120991fcf3df3d2eab8d57ffb782d6e4d4fba12648fb04cc76c807ff684c96e5d24"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"fromUserId\": $json.client_id } }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -992,
+        416
+      ],
+      "id": "4b9d4b74-e059-4e46-8e28-f5331e3a5d7c",
+      "name": "API - Get Transactions"
+    },
+    {
+      "parameters": {
+        "jsCode": "// In \"Run Once for All Items\", each incoming item is one transaction object.\n// So build the array from all items:\nconst tx = $input.all().map(i => i.json).filter(Boolean);\n\n// Optional tool inputs (safe defaults)\nlet wanted = 'deposit';\nlet safeLimit = 20;\n\ntry {\n  const norm = $('Normalize Tool Input').item.json || {};\n // const typeRaw = String(norm.type ?? 'deposit').toLowerCase().trim();\n // wanted = typeRaw === 'deposits' ? 'deposit' : typeRaw;\n\n  const limit = Number(norm.limit ?? 20);\n  safeLimit = Number.isFinite(limit) && limit > 0 ? limit : 20;\n} catch (e) {\n  // If Normalize Tool Input isn't available during manual testing, keep defaults\n}\n\n// Filter + sort newest first + limit\nconst filtered = tx\n  .filter(t => String(t.type ?? ''))\n  .sort((a, b) =>\n    String(b.processedAt ?? b.createdAt ?? '').localeCompare(\n      String(a.processedAt ?? a.createdAt ?? '')\n    )\n  )\n  .slice(0, safeLimit);\n\n// Return only required fields\nconst transactions = filtered.map(t => ({\n  type: t.type ?? null,\n  processedAmount: t.processedAmount ?? null,\n  processedCurrency: t.processedCurrency ?? null,\n  status: t.status ?? null,\n  processedAt: t.processedAt ?? null,\n}));\n\nreturn [{\n  ok: true,\n  count: transactions.length,\n  transactions\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -704,
+        416
+      ],
+      "id": "25999109-e0f8-4798-b1f9-58f66e7dc68a",
+      "name": "Format Tool Output"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  ok: false,\n  tool: 'get_transactions',\n  error: 'Missing client_id. Authenticate the user first, then pass client_id to this tool.'\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -928,
+        656
+      ],
+      "id": "c16b8c5d-8f8c-4b57-b64b-1b0bb03f4407",
+      "name": "Tool Error - Missing client_id"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "client_id",
+              "type": "number"
+            },
+            {
+              "name": "type"
+            },
+            {
+              "name": "limit"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1776,
+        480
+      ],
+      "id": "787c8b58-a5dd-4788-9151-f1e84bab61db",
+      "name": "When Executed by Another Workflow"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Normalize Tool Input": {
+      "main": [
+        [
+          {
+            "node": "IF - client_id present?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - client_id present?": {
+      "main": [
+        [
+          {
+            "node": "API - Get Transactions",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Tool Error - Missing client_id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API - Get Transactions": {
+      "main": [
+        [
+          {
+            "node": "Format Tool Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Normalize Tool Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "00a0a2e6-858c-4ea9-a514-312ddb318751",
+  "meta": {
+    "instanceId": "495f6278a9dd899c69efc38f92904361f03ad646b8c63a3d991806ec829debf6"
+  },
+  "id": "4fk7x61HRJf4oPTec8eLL",
+  "tags": []
+}

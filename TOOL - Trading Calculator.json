@@ -1,0 +1,81 @@
+{
+  "name": "TOOL - Trading Calculator",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "symbol",
+              "type": "string"
+            },
+            {
+              "name": "lot_size",
+              "type": "number"
+            },
+            {
+              "name": "operation",
+              "type": "string"
+            },
+            {
+              "name": "entry_price",
+              "type": "number"
+            },
+            {
+              "name": "exit_price",
+              "type": "number"
+            },
+            {
+              "name": "leverage",
+              "type": "number"
+            },
+            {
+              "name": "account_currency",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [-400, 300],
+      "id": "tool-trigger",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Trading Calculator - Comprehensive calculations\nconst input = $input.first().json || {};\n\nconst symbol = String(input.symbol || 'EURUSD').toUpperCase();\nconst lotSize = Number(input.lot_size) || 1;\nconst operation = String(input.operation || 'pip_value').toLowerCase();\nconst entryPrice = Number(input.entry_price) || 0;\nconst exitPrice = Number(input.exit_price) || 0;\nconst leverage = Number(input.leverage) || 100;\nconst accountCurrency = String(input.account_currency || 'USD').toUpperCase();\n\n// Symbol specifications (standard lot = 100,000 units for forex)\nconst symbolSpecs = {\n  // Forex Majors\n  'EURUSD': { contractSize: 100000, pipSize: 0.0001, marginCurrency: 'EUR', quoteCurrency: 'USD', type: 'forex' },\n  'GBPUSD': { contractSize: 100000, pipSize: 0.0001, marginCurrency: 'GBP', quoteCurrency: 'USD', type: 'forex' },\n  'USDJPY': { contractSize: 100000, pipSize: 0.01, marginCurrency: 'USD', quoteCurrency: 'JPY', type: 'forex' },\n  'USDCHF': { contractSize: 100000, pipSize: 0.0001, marginCurrency: 'USD', quoteCurrency: 'CHF', type: 'forex' },\n  'AUDUSD': { contractSize: 100000, pipSize: 0.0001, marginCurrency: 'AUD', quoteCurrency: 'USD', type: 'forex' },\n  'USDCAD': { contractSize: 100000, pipSize: 0.0001, marginCurrency: 'USD', quoteCurrency: 'CAD', type: 'forex' },\n  'NZDUSD': { contractSize: 100000, pipSize: 0.0001, marginCurrency: 'NZD', quoteCurrency: 'USD', type: 'forex' },\n  \n  // Forex Crosses\n  'EURGBP': { contractSize: 100000, pipSize: 0.0001, marginCurrency: 'EUR', quoteCurrency: 'GBP', type: 'forex' },\n  'EURJPY': { contractSize: 100000, pipSize: 0.01, marginCurrency: 'EUR', quoteCurrency: 'JPY', type: 'forex' },\n  'GBPJPY': { contractSize: 100000, pipSize: 0.01, marginCurrency: 'GBP', quoteCurrency: 'JPY', type: 'forex' },\n  \n  // Metals\n  'XAUUSD': { contractSize: 100, pipSize: 0.01, marginCurrency: 'XAU', quoteCurrency: 'USD', type: 'metal' },\n  'XAGUSD': { contractSize: 5000, pipSize: 0.001, marginCurrency: 'XAG', quoteCurrency: 'USD', type: 'metal' },\n  \n  // Crypto\n  'BTCUSD': { contractSize: 1, pipSize: 0.01, marginCurrency: 'BTC', quoteCurrency: 'USD', type: 'crypto' },\n  'ETHUSD': { contractSize: 1, pipSize: 0.01, marginCurrency: 'ETH', quoteCurrency: 'USD', type: 'crypto' },\n  \n  // Indices\n  'US500': { contractSize: 1, pipSize: 0.01, marginCurrency: 'USD', quoteCurrency: 'USD', type: 'index' },\n  'US30': { contractSize: 1, pipSize: 0.01, marginCurrency: 'USD', quoteCurrency: 'USD', type: 'index' },\n  'USTEC': { contractSize: 1, pipSize: 0.01, marginCurrency: 'USD', quoteCurrency: 'USD', type: 'index' },\n  \n  // Oil\n  'USOIL': { contractSize: 1000, pipSize: 0.01, marginCurrency: 'USD', quoteCurrency: 'USD', type: 'commodity' }\n};\n\n// Get specs or use defaults\nconst specs = symbolSpecs[symbol] || { \n  contractSize: 100000, \n  pipSize: 0.0001, \n  marginCurrency: 'USD', \n  quoteCurrency: 'USD',\n  type: 'forex'\n};\n\n// Demo exchange rates (would come from API in production)\nconst exchangeRates = {\n  'EUR': 1.0850,\n  'GBP': 1.2650,\n  'JPY': 0.0067,\n  'CHF': 1.13,\n  'AUD': 0.65,\n  'CAD': 0.74,\n  'NZD': 0.61,\n  'XAU': 2035,\n  'XAG': 23,\n  'BTC': 43000,\n  'ETH': 2280\n};\n\n// Current price estimate for calculations\nlet currentPrice = entryPrice || exchangeRates[specs.marginCurrency] || 1;\nif (symbol.includes('JPY')) currentPrice = 149.50;\nif (symbol === 'XAUUSD') currentPrice = 2035;\nif (symbol === 'BTCUSD') currentPrice = 43000;\n\n// Calculate pip value\nconst calculatePipValue = () => {\n  const positionSize = lotSize * specs.contractSize;\n  let pipValue = positionSize * specs.pipSize;\n  \n  // Convert to account currency if needed\n  if (specs.quoteCurrency !== accountCurrency) {\n    if (specs.quoteCurrency === 'JPY') {\n      pipValue = pipValue / 149.50; // Convert JPY to USD\n    }\n    // Add more conversions as needed\n  }\n  \n  return pipValue;\n};\n\n// Calculate margin required\nconst calculateMargin = () => {\n  const positionSize = lotSize * specs.contractSize;\n  let notionalValue = positionSize;\n  \n  // For forex, notional is in base currency\n  if (specs.type === 'forex') {\n    notionalValue = positionSize * (exchangeRates[specs.marginCurrency] || 1);\n  } else if (specs.type === 'metal' || specs.type === 'crypto') {\n    notionalValue = positionSize * currentPrice;\n  }\n  \n  const margin = notionalValue / leverage;\n  return margin;\n};\n\n// Calculate profit/loss\nconst calculateProfit = () => {\n  if (!entryPrice || !exitPrice) {\n    return { error: 'Entry and exit prices required for profit calculation' };\n  }\n  \n  const priceDiff = exitPrice - entryPrice;\n  const pips = priceDiff / specs.pipSize;\n  const pipValue = calculatePipValue();\n  const profit = pips * pipValue;\n  \n  return {\n    price_difference: priceDiff.toFixed(5),\n    pips: pips.toFixed(1),\n    pip_value: pipValue.toFixed(2),\n    profit_loss: profit.toFixed(2),\n    profit_loss_formatted: profit >= 0 ? `+$${profit.toFixed(2)}` : `-$${Math.abs(profit).toFixed(2)}`\n  };\n};\n\n// Build result based on operation\nlet result = {\n  ok: true,\n  symbol,\n  lot_size: lotSize,\n  operation,\n  account_currency: accountCurrency,\n  leverage: `1:${leverage}`,\n  symbol_info: {\n    type: specs.type,\n    contract_size: specs.contractSize.toLocaleString(),\n    pip_size: specs.pipSize,\n    margin_currency: specs.marginCurrency\n  }\n};\n\nswitch (operation) {\n  case 'pip_value':\n    const pipVal = calculatePipValue();\n    result.calculation = {\n      pip_value: `$${pipVal.toFixed(2)}`,\n      pip_value_per_lot: `$${(pipVal / lotSize).toFixed(2)}`,\n      explanation: `For ${lotSize} lot(s) of ${symbol}, each pip movement = $${pipVal.toFixed(2)}`\n    };\n    break;\n    \n  case 'margin':\n    const margin = calculateMargin();\n    result.calculation = {\n      margin_required: `$${margin.toFixed(2)}`,\n      margin_per_lot: `$${(margin / lotSize).toFixed(2)}`,\n      leverage_used: `1:${leverage}`,\n      explanation: `To open ${lotSize} lot(s) of ${symbol} with 1:${leverage} leverage, you need $${margin.toFixed(2)} margin`\n    };\n    break;\n    \n  case 'profit_calc':\n  case 'profit':\n    const profitCalc = calculateProfit();\n    if (profitCalc.error) {\n      result.ok = false;\n      result.error = profitCalc.error;\n    } else {\n      result.calculation = {\n        entry_price: entryPrice.toFixed(5),\n        exit_price: exitPrice.toFixed(5),\n        ...profitCalc,\n        direction: exitPrice > entryPrice ? 'LONG (Buy)' : 'SHORT (Sell)',\n        explanation: `If you ${exitPrice > entryPrice ? 'buy' : 'sell'} ${lotSize} lot(s) of ${symbol} at ${entryPrice} and close at ${exitPrice}, your P/L would be ${profitCalc.profit_loss_formatted}`\n      };\n    }\n    break;\n    \n  default:\n    // Return all calculations\n    const allPipVal = calculatePipValue();\n    const allMargin = calculateMargin();\n    result.calculations = {\n      pip_value: `$${allPipVal.toFixed(2)}`,\n      margin_required: `$${allMargin.toFixed(2)}`,\n      position_size: `${(lotSize * specs.contractSize).toLocaleString()} units`\n    };\n    if (entryPrice && exitPrice) {\n      result.calculations.profit_scenario = calculateProfit();\n    }\n}\n\nresult.timestamp = new Date().toISOString();\nresult.disclaimer = 'Calculations are estimates based on standard specifications. Actual values may vary based on broker conditions.';\n\nreturn [result];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [0, 300],
+      "id": "calculator",
+      "name": "Trading Calculator"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Trading Calculator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1.0.0",
+  "meta": {
+    "instanceId": "broker-ai-tool-calculator"
+  },
+  "id": "TOOL_CALCULATOR",
+  "tags": ["tool", "trading"]
+}
+

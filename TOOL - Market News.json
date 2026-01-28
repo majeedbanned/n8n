@@ -1,0 +1,137 @@
+{
+  "name": "TOOL - Market News",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "category",
+              "type": "string"
+            },
+            {
+              "name": "symbols",
+              "type": "string"
+            },
+            {
+              "name": "limit",
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [-400, 300],
+      "id": "tool-trigger",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize input\nconst input = $input.first().json || {};\n\nconst validCategories = ['forex', 'crypto', 'commodities', 'stocks', 'indices', 'general'];\nlet category = String(input.category || 'general').toLowerCase();\nif (!validCategories.includes(category)) category = 'general';\n\nlet symbols = input.symbols || '';\nif (typeof symbols === 'string') {\n  symbols = symbols.split(',').map(s => s.trim().toUpperCase()).filter(Boolean);\n}\n\nconst limit = Math.min(Math.max(Number(input.limit) || 5, 1), 20);\n\nreturn [{ category, symbols, limit }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-200, 300],
+      "id": "normalize-input",
+      "name": "Normalize Input"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://mycms.cmsprime.com/rest/news?version=1.0.0",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer 805e6648071ff54087a78d1f5e0a5508a3ed4fd92f692c704b4e3120991fcf3df3d2eab8d57ffb782d6e4d4fba12648fb04cc76c807ff684c96e5d24"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "category",
+              "value": "={{ $json.category }}"
+            },
+            {
+              "name": "limit",
+              "value": "={{ $json.limit }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [0, 300],
+      "id": "api-get-news",
+      "name": "API - Get News"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format news response\nconst news = $input.all().map(i => i.json).filter(Boolean);\nconst input = $('Normalize Input').item.json;\n\n// Handle response format\nlet newsList = [];\nif (Array.isArray(news) && news.length > 0) {\n  newsList = Array.isArray(news[0]) ? news[0] : news;\n}\n\n// If no news from API, provide demo news\nif (newsList.length === 0) {\n  const demoNews = [\n    {\n      title: 'Fed Maintains Interest Rates, Signals Patience on Cuts',\n      summary: 'The Federal Reserve kept interest rates unchanged and signaled it is in no rush to cut rates, emphasizing the need for more confidence that inflation is moving sustainably toward 2%.',\n      source: 'Reuters',\n      category: 'forex',\n      impact: 'high',\n      sentiment: 'neutral',\n      symbols: ['EURUSD', 'USDJPY', 'DXY'],\n      published_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()\n    },\n    {\n      title: 'Gold Prices Rise on Safe-Haven Demand',\n      summary: 'Gold prices climbed as investors sought safe-haven assets amid geopolitical tensions and uncertainty over the global economic outlook.',\n      source: 'Bloomberg',\n      category: 'commodities',\n      impact: 'medium',\n      sentiment: 'positive',\n      symbols: ['XAUUSD', 'XAGUSD'],\n      published_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString()\n    },\n    {\n      title: 'Bitcoin Surges Past $43,000 on ETF Optimism',\n      summary: 'Bitcoin rallied above $43,000 as investors remained optimistic about spot Bitcoin ETF inflows and institutional adoption.',\n      source: 'CoinDesk',\n      category: 'crypto',\n      impact: 'high',\n      sentiment: 'positive',\n      symbols: ['BTCUSD', 'ETHUSD'],\n      published_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString()\n    },\n    {\n      title: 'Oil Prices Decline on Demand Concerns',\n      summary: 'Crude oil prices fell as concerns about global demand growth and rising US production weighed on the market.',\n      source: 'Reuters',\n      category: 'commodities',\n      impact: 'medium',\n      sentiment: 'negative',\n      symbols: ['USOIL', 'UKOIL'],\n      published_at: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString()\n    },\n    {\n      title: 'European Markets Mixed Ahead of ECB Decision',\n      summary: 'European stock markets traded mixed as investors awaited the European Central Bank monetary policy decision and guidance on future rate moves.',\n      source: 'Financial Times',\n      category: 'stocks',\n      impact: 'medium',\n      sentiment: 'neutral',\n      symbols: ['DE40', 'EU50', 'EURUSD'],\n      published_at: new Date(Date.now() - 10 * 60 * 60 * 1000).toISOString()\n    }\n  ];\n  \n  // Filter by category if specified\n  newsList = input.category === 'general' \n    ? demoNews \n    : demoNews.filter(n => n.category === input.category);\n}\n\n// Format news items\nconst formattedNews = newsList.slice(0, input.limit).map(item => {\n  // Calculate time ago\n  const publishedDate = new Date(item.published_at || item.publishedAt || item.date);\n  const hoursAgo = Math.floor((Date.now() - publishedDate.getTime()) / (1000 * 60 * 60));\n  let timeAgo = hoursAgo < 1 ? 'Just now' : \n               hoursAgo === 1 ? '1 hour ago' : \n               hoursAgo < 24 ? `${hoursAgo} hours ago` : \n               `${Math.floor(hoursAgo / 24)} days ago`;\n  \n  return {\n    title: item.title,\n    summary: item.summary || item.description || item.content?.substring(0, 200) + '...',\n    source: item.source || 'Market News',\n    category: item.category || input.category,\n    impact_level: item.impact || 'medium',\n    sentiment: item.sentiment || 'neutral',\n    related_symbols: item.symbols || item.relatedSymbols || [],\n    published_at: publishedDate.toISOString(),\n    time_ago: timeAgo,\n    url: item.url || item.link || null\n  };\n});\n\nreturn [{\n  ok: true,\n  category: input.category,\n  news_count: formattedNews.length,\n  news: formattedNews,\n  timestamp: new Date().toISOString(),\n  disclaimer: 'News is for informational purposes only and does not constitute financial advice.'\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [200, 300],
+      "id": "format-output",
+      "name": "Format News"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "API - Get News",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API - Get News": {
+      "main": [
+        [
+          {
+            "node": "Format News",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1.0.0",
+  "meta": {
+    "instanceId": "broker-ai-tool-market-news"
+  },
+  "id": "TOOL_MARKET_NEWS",
+  "tags": ["tool", "market"]
+}
+

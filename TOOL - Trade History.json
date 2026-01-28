@@ -1,0 +1,165 @@
+{
+  "name": "TOOL - Trade History",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "client_id",
+              "type": "number"
+            },
+            {
+              "name": "date_from",
+              "type": "string"
+            },
+            {
+              "name": "date_to",
+              "type": "string"
+            },
+            {
+              "name": "limit",
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [-400, 300],
+      "id": "tool-trigger",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize and validate input\nconst input = $input.first().json || {};\n\nconst client_id = Number(input.client_id ?? input.clientId ?? null);\n\nif (!client_id || !Number.isFinite(client_id)) {\n  return [{\n    ok: false,\n    error: 'Missing or invalid client_id.',\n    tool: 'get_trade_history'\n  }];\n}\n\n// Parse dates with defaults\nconst now = new Date();\nconst thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);\n\nlet date_from = input.date_from;\nlet date_to = input.date_to;\n\n// Validate/default date_from\nif (!date_from || !/^\\d{4}-\\d{2}-\\d{2}$/.test(date_from)) {\n  date_from = thirtyDaysAgo.toISOString().split('T')[0];\n}\n\n// Validate/default date_to\nif (!date_to || !/^\\d{4}-\\d{2}-\\d{2}$/.test(date_to)) {\n  date_to = now.toISOString().split('T')[0];\n}\n\nconst limit = Math.min(Math.max(Number(input.limit) || 20, 1), 100);\n\nreturn [{ \n  client_id, \n  date_from,\n  date_to,\n  limit\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-200, 300],
+      "id": "normalize-input",
+      "name": "Normalize Input"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.ok}}",
+              "value2": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [0, 300],
+      "id": "check-error",
+      "name": "IF - Input Error?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://mycms.cmsprime.com/rest/trades/history?version=1.0.0",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer 805e6648071ff54087a78d1f5e0a5508a3ed4fd92f692c704b4e3120991fcf3df3d2eab8d57ffb782d6e4d4fba12648fb04cc76c807ff684c96e5d24"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"userId\": $json.client_id, \"dateFrom\": $json.date_from, \"dateTo\": $json.date_to, \"limit\": $json.limit } }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [200, 200],
+      "id": "api-get-history",
+      "name": "API - Get Trade History"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format trade history response\nconst trades = $input.all().map(i => i.json).filter(Boolean);\nconst input = $('Normalize Input').item.json;\n\n// Handle response format\nlet tradeList = [];\nif (Array.isArray(trades) && trades.length > 0) {\n  tradeList = Array.isArray(trades[0]) ? trades[0] : trades;\n}\n\nif (tradeList.length === 0) {\n  return [{\n    ok: true,\n    client_id: input.client_id,\n    period: { from: input.date_from, to: input.date_to },\n    trades_count: 0,\n    trades: [],\n    performance: {\n      total_trades: 0,\n      winning_trades: 0,\n      losing_trades: 0,\n      win_rate: '0%',\n      net_profit: '0.00',\n      gross_profit: '0.00',\n      gross_loss: '0.00',\n      average_profit: '0.00',\n      average_loss: '0.00',\n      largest_win: '0.00',\n      largest_loss: '0.00',\n      profit_factor: 'N/A'\n    },\n    message: 'No closed trades found in the specified period.',\n    timestamp: new Date().toISOString()\n  }];\n}\n\n// Process trades\nconst formattedTrades = tradeList.slice(0, input.limit).map(trade => {\n  const profit = Number(trade.profit) || 0;\n  const swap = Number(trade.swap) || 0;\n  const commission = Number(trade.commission) || 0;\n  const netProfit = profit + swap + commission;\n  const volume = Number(trade.volume) || Number(trade.lots) || 0;\n  \n  return {\n    ticket: trade.ticket || trade.id || trade.dealId,\n    symbol: trade.symbol,\n    type: trade.type || trade.side,\n    volume: volume.toFixed(2),\n    open_price: Number(trade.openPrice || trade.priceOpen || 0).toFixed(5),\n    close_price: Number(trade.closePrice || trade.priceClose || 0).toFixed(5),\n    profit: profit.toFixed(2),\n    swap: swap.toFixed(2),\n    commission: commission.toFixed(2),\n    net_profit: netProfit.toFixed(2),\n    open_time: trade.openTime || trade.timeOpen,\n    close_time: trade.closeTime || trade.timeClose,\n    duration: trade.duration || null\n  };\n});\n\n// Sort by close time (most recent first)\nformattedTrades.sort((a, b) => new Date(b.close_time) - new Date(a.close_time));\n\n// Calculate performance metrics\nconst profits = formattedTrades.map(t => Number(t.net_profit));\nconst winners = profits.filter(p => p > 0);\nconst losers = profits.filter(p => p < 0);\n\nconst totalTrades = formattedTrades.length;\nconst winningTrades = winners.length;\nconst losingTrades = losers.length;\nconst netProfit = profits.reduce((a, b) => a + b, 0);\nconst grossProfit = winners.reduce((a, b) => a + b, 0);\nconst grossLoss = Math.abs(losers.reduce((a, b) => a + b, 0));\nconst winRate = totalTrades > 0 ? ((winningTrades / totalTrades) * 100).toFixed(1) : 0;\nconst avgProfit = winningTrades > 0 ? (grossProfit / winningTrades) : 0;\nconst avgLoss = losingTrades > 0 ? (grossLoss / losingTrades) : 0;\nconst largestWin = winners.length > 0 ? Math.max(...winners) : 0;\nconst largestLoss = losers.length > 0 ? Math.min(...losers) : 0;\nconst profitFactor = grossLoss > 0 ? (grossProfit / grossLoss) : grossProfit > 0 ? 'Infinite' : 'N/A';\n\nreturn [{\n  ok: true,\n  client_id: input.client_id,\n  period: { from: input.date_from, to: input.date_to },\n  trades_count: formattedTrades.length,\n  trades: formattedTrades,\n  performance: {\n    total_trades: totalTrades,\n    winning_trades: winningTrades,\n    losing_trades: losingTrades,\n    breakeven_trades: totalTrades - winningTrades - losingTrades,\n    win_rate: `${winRate}%`,\n    net_profit: netProfit.toFixed(2),\n    gross_profit: grossProfit.toFixed(2),\n    gross_loss: grossLoss.toFixed(2),\n    average_profit: avgProfit.toFixed(2),\n    average_loss: avgLoss.toFixed(2),\n    largest_win: largestWin.toFixed(2),\n    largest_loss: largestLoss.toFixed(2),\n    profit_factor: typeof profitFactor === 'number' ? profitFactor.toFixed(2) : profitFactor\n  },\n  timestamp: new Date().toISOString()\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [400, 200],
+      "id": "format-output",
+      "name": "Format Trade History"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "IF - Input Error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Input Error?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "API - Get Trade History",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API - Get Trade History": {
+      "main": [
+        [
+          {
+            "node": "Format Trade History",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1.0.0",
+  "meta": {
+    "instanceId": "broker-ai-tool-trade-history"
+  },
+  "id": "TOOL_TRADE_HISTORY",
+  "tags": ["tool", "trading"]
+}
+

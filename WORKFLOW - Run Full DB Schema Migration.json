@@ -1,0 +1,212 @@
+{
+  "name": "WORKFLOW - Run Full DB Schema Migration",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "run-full-migration",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-800, 400],
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "webhookId": "run-full-db-migration"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Split the complete SQL migration into executable statements\n// Each statement is separated and ready for execution\n\nconst sqlStatements = [\n  // 1. Enable UUID extension\n  `CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";`,\n  \n  // 2. User Configs Table\n  `CREATE TABLE IF NOT EXISTS user_configs (\n    id SERIAL PRIMARY KEY,\n    user_phone VARCHAR(30) UNIQUE NOT NULL,\n    client_id INTEGER,\n    system_prompt TEXT,\n    preferred_language VARCHAR(10) DEFAULT 'en',\n    communication_style VARCHAR(30) DEFAULT 'friendly_support',\n    is_vip BOOLEAN DEFAULT FALSE,\n    is_ib BOOLEAN DEFAULT FALSE,\n    verification_status VARCHAR(20) DEFAULT 'pending',\n    last_seen_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n    last_channel VARCHAR(20),\n    total_interactions INTEGER DEFAULT 0,\n    notification_enabled BOOLEAN DEFAULT TRUE,\n    proactive_alerts_enabled BOOLEAN DEFAULT TRUE,\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()\n  );`,\n  \n  // 3. User Configs Indexes\n  `CREATE INDEX IF NOT EXISTS idx_user_configs_client_id ON user_configs(client_id);`,\n  `CREATE INDEX IF NOT EXISTS idx_user_configs_last_seen ON user_configs(last_seen_at);`,\n  \n  // 4. User Preferences Table (without FK first, will add FK after)\n  `CREATE TABLE IF NOT EXISTS user_preferences (\n    id SERIAL PRIMARY KEY,\n    user_phone VARCHAR(30) UNIQUE NOT NULL,\n    persona_override VARCHAR(30),\n    response_verbosity VARCHAR(20) DEFAULT 'normal',\n    preferred_greeting VARCHAR(100),\n    topics_of_interest TEXT[] DEFAULT ARRAY[]::TEXT[],\n    favorite_instruments TEXT[] DEFAULT ARRAY[]::TEXT[],\n    notification_preferences JSONB DEFAULT '{\"price_alerts\": true, \"margin_warnings\": true, \"deposit_confirmations\": true, \"promotion_updates\": true, \"news_alerts\": false}'::JSONB,\n    last_trading_activity TIMESTAMP WITH TIME ZONE,\n    typical_trading_hours JSONB,\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()\n  );`,\n  \n  // 5. Add Foreign Key Constraint for user_preferences (after both tables exist)\n  `DO $$\nBEGIN\n  IF NOT EXISTS (\n    SELECT 1 FROM pg_constraint WHERE conname = 'user_preferences_user_phone_fkey'\n  ) THEN\n    ALTER TABLE user_preferences \n    ADD CONSTRAINT user_preferences_user_phone_fkey \n    FOREIGN KEY (user_phone) REFERENCES user_configs(user_phone) ON DELETE CASCADE;\n  END IF;\nEND $$;`,\n  \n  // 6. Chat Sessions Table\n  `CREATE TABLE IF NOT EXISTS chat_sessions (\n    id SERIAL PRIMARY KEY,\n    session_id VARCHAR(100) UNIQUE NOT NULL,\n    user_phone VARCHAR(30) NOT NULL,\n    client_id INTEGER,\n    channel VARCHAR(20) NOT NULL,\n    session_start TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n    session_end TIMESTAMP WITH TIME ZONE,\n    messages_count INTEGER DEFAULT 0,\n    sentiment_avg DECIMAL(3,2) DEFAULT 0,\n    intents_detected TEXT[] DEFAULT ARRAY[]::TEXT[],\n    tools_used TEXT[] DEFAULT ARRAY[]::TEXT[],\n    escalated BOOLEAN DEFAULT FALSE,\n    escalation_reason VARCHAR(50),\n    escalation_time TIMESTAMP WITH TIME ZONE,\n    resolved BOOLEAN DEFAULT FALSE,\n    resolution_notes TEXT,\n    user_rating INTEGER CHECK (user_rating >= 1 AND user_rating <= 5),\n    user_feedback TEXT,\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()\n  );`,\n  \n  // 7. Chat Sessions Indexes\n  `CREATE INDEX IF NOT EXISTS idx_chat_sessions_user_phone ON chat_sessions(user_phone);`,\n  `CREATE INDEX IF NOT EXISTS idx_chat_sessions_start ON chat_sessions(session_start);`,\n  `CREATE INDEX IF NOT EXISTS idx_chat_sessions_escalated ON chat_sessions(escalated) WHERE escalated = TRUE;`,\n  \n  // 8. Chat Audit Logs Table\n  `CREATE TABLE IF NOT EXISTS chat_audit_logs (\n    id SERIAL PRIMARY KEY,\n    user_phone VARCHAR(30),\n    client_id INTEGER,\n    channel VARCHAR(20),\n    session_id VARCHAR(100),\n    inbound_text TEXT,\n    outbound_text TEXT,\n    detected_language VARCHAR(10),\n    sentiment VARCHAR(20),\n    sentiment_score DECIMAL(3,2),\n    intent_classified VARCHAR(50),\n    sub_intent VARCHAR(50),\n    persona_used VARCHAR(30),\n    tools_called JSONB,\n    response_time_ms INTEGER,\n    compliance_flags JSONB DEFAULT '[]'::JSONB,\n    escalated BOOLEAN DEFAULT FALSE,\n    escalation_reason VARCHAR(50),\n    error_occurred BOOLEAN DEFAULT FALSE,\n    error_message TEXT,\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()\n  );`,\n  \n  // 9. Chat Audit Logs Indexes\n  `CREATE INDEX IF NOT EXISTS idx_audit_user_phone ON chat_audit_logs(user_phone);`,\n  `CREATE INDEX IF NOT EXISTS idx_audit_created ON chat_audit_logs(created_at);`,\n  `CREATE INDEX IF NOT EXISTS idx_audit_session ON chat_audit_logs(session_id);`,\n  `CREATE INDEX IF NOT EXISTS idx_audit_intent ON chat_audit_logs(intent_classified);`,\n  `CREATE INDEX IF NOT EXISTS idx_audit_escalated ON chat_audit_logs(escalated) WHERE escalated = TRUE;`,\n  \n  // 10. Conversation Insights Table\n  `CREATE TABLE IF NOT EXISTS conversation_insights (\n    id SERIAL PRIMARY KEY,\n    user_phone VARCHAR(30) NOT NULL,\n    client_id INTEGER,\n    insight_type VARCHAR(50) NOT NULL,\n    insight_data JSONB NOT NULL,\n    confidence DECIMAL(3,2),\n    source_session_id VARCHAR(100),\n    extracted_from TEXT,\n    is_actionable BOOLEAN DEFAULT FALSE,\n    actioned BOOLEAN DEFAULT FALSE,\n    actioned_by VARCHAR(100),\n    actioned_at TIMESTAMP WITH TIME ZONE,\n    extracted_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()\n  );`,\n  \n  // 11. Conversation Insights Indexes\n  `CREATE INDEX IF NOT EXISTS idx_insights_user ON conversation_insights(user_phone);`,\n  `CREATE INDEX IF NOT EXISTS idx_insights_type ON conversation_insights(insight_type);`,\n  `CREATE INDEX IF NOT EXISTS idx_insights_actionable ON conversation_insights(is_actionable) WHERE is_actionable = TRUE;`,\n  \n  // 12. Support Tickets Table\n  `CREATE TABLE IF NOT EXISTS support_tickets (\n    id SERIAL PRIMARY KEY,\n    ticket_id UUID DEFAULT uuid_generate_v4() UNIQUE,\n    user_phone VARCHAR(30),\n    client_id INTEGER,\n    client_name VARCHAR(200),\n    client_email VARCHAR(200),\n    category VARCHAR(50) NOT NULL,\n    priority VARCHAR(20) DEFAULT 'medium',\n    subject VARCHAR(500) NOT NULL,\n    description TEXT,\n    source_channel VARCHAR(20),\n    source_session_id VARCHAR(100),\n    ai_summary TEXT,\n    assigned_department VARCHAR(50),\n    assigned_agent VARCHAR(100),\n    assigned_at TIMESTAMP WITH TIME ZONE,\n    status VARCHAR(20) DEFAULT 'open',\n    resolution TEXT,\n    sla_due_at TIMESTAMP WITH TIME ZONE,\n    sla_breached BOOLEAN DEFAULT FALSE,\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n    resolved_at TIMESTAMP WITH TIME ZONE,\n    closed_at TIMESTAMP WITH TIME ZONE\n  );`,\n  \n  // 13. Support Tickets Indexes\n  `CREATE INDEX IF NOT EXISTS idx_tickets_client ON support_tickets(client_id);`,\n  `CREATE INDEX IF NOT EXISTS idx_tickets_status ON support_tickets(status);`,\n  `CREATE INDEX IF NOT EXISTS idx_tickets_priority ON support_tickets(priority);`,\n  `CREATE INDEX IF NOT EXISTS idx_tickets_sla ON support_tickets(sla_due_at) WHERE status NOT IN ('resolved', 'closed');`,\n  \n  // 14. Scheduled Callbacks Table\n  `CREATE TABLE IF NOT EXISTS scheduled_callbacks (\n    id SERIAL PRIMARY KEY,\n    booking_id UUID DEFAULT uuid_generate_v4() UNIQUE,\n    user_phone VARCHAR(30),\n    client_id INTEGER,\n    client_name VARCHAR(200),\n    preferred_datetime TIMESTAMP WITH TIME ZONE,\n    confirmed_datetime TIMESTAMP WITH TIME ZONE,\n    timezone VARCHAR(50),\n    duration_minutes INTEGER DEFAULT 30,\n    topic VARCHAR(200),\n    notes TEXT,\n    assigned_agent VARCHAR(100),\n    agent_email VARCHAR(200),\n    meeting_link VARCHAR(500),\n    status VARCHAR(20) DEFAULT 'pending',\n    cancellation_reason TEXT,\n    outcome TEXT,\n    follow_up_required BOOLEAN DEFAULT FALSE,\n    follow_up_notes TEXT,\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()\n  );`,\n  \n  // 15. Scheduled Callbacks Indexes\n  `CREATE INDEX IF NOT EXISTS idx_callbacks_client ON scheduled_callbacks(client_id);`,\n  `CREATE INDEX IF NOT EXISTS idx_callbacks_datetime ON scheduled_callbacks(confirmed_datetime);`,\n  `CREATE INDEX IF NOT EXISTS idx_callbacks_status ON scheduled_callbacks(status);`,\n  \n  // 16. Proactive Alerts Table\n  `CREATE TABLE IF NOT EXISTS proactive_alerts (\n    id SERIAL PRIMARY KEY,\n    alert_id UUID DEFAULT uuid_generate_v4() UNIQUE,\n    user_phone VARCHAR(30) NOT NULL,\n    client_id INTEGER,\n    alert_type VARCHAR(50) NOT NULL,\n    alert_data JSONB NOT NULL,\n    priority VARCHAR(20) DEFAULT 'normal',\n    delivery_channel VARCHAR(20),\n    scheduled_for TIMESTAMP WITH TIME ZONE,\n    delivered_at TIMESTAMP WITH TIME ZONE,\n    delivery_status VARCHAR(20) DEFAULT 'pending',\n    user_acknowledged BOOLEAN DEFAULT FALSE,\n    user_action_taken VARCHAR(100),\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()\n  );`,\n  \n  // 17. Proactive Alerts Indexes\n  `CREATE INDEX IF NOT EXISTS idx_alerts_user ON proactive_alerts(user_phone);`,\n  `CREATE INDEX IF NOT EXISTS idx_alerts_scheduled ON proactive_alerts(scheduled_for) WHERE delivery_status = 'pending';`,\n  `CREATE INDEX IF NOT EXISTS idx_alerts_type ON proactive_alerts(alert_type);`,\n  \n  // 18. FAQ Knowledge Base Table\n  `CREATE TABLE IF NOT EXISTS faq_knowledge_base (\n    id SERIAL PRIMARY KEY,\n    question TEXT NOT NULL,\n    answer TEXT NOT NULL,\n    category VARCHAR(50),\n    subcategory VARCHAR(50),\n    keywords TEXT[],\n    search_vector TSVECTOR,\n    language VARCHAR(10) DEFAULT 'en',\n    article_url VARCHAR(500),\n    times_served INTEGER DEFAULT 0,\n    helpful_count INTEGER DEFAULT 0,\n    not_helpful_count INTEGER DEFAULT 0,\n    is_active BOOLEAN DEFAULT TRUE,\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()\n  );`,\n  \n  // 19. FAQ Indexes\n  `CREATE INDEX IF NOT EXISTS idx_faq_search ON faq_knowledge_base USING GIN(search_vector);`,\n  `CREATE INDEX IF NOT EXISTS idx_faq_category ON faq_knowledge_base(category);`,\n  \n  // 20. FAQ Search Vector Function\n  `CREATE OR REPLACE FUNCTION update_faq_search_vector()\nRETURNS TRIGGER AS $$\nBEGIN\n    NEW.search_vector := \n        setweight(to_tsvector('english', COALESCE(NEW.question, '')), 'A') ||\n        setweight(to_tsvector('english', COALESCE(NEW.answer, '')), 'B') ||\n        setweight(to_tsvector('english', COALESCE(array_to_string(NEW.keywords, ' '), '')), 'A');\n    RETURN NEW;\nEND;\n$$ LANGUAGE plpgsql;`,\n  \n  // 21. FAQ Trigger\n  `DROP TRIGGER IF EXISTS faq_search_vector_update ON faq_knowledge_base;`,\n  `CREATE TRIGGER faq_search_vector_update\n    BEFORE INSERT OR UPDATE ON faq_knowledge_base\n    FOR EACH ROW\n    EXECUTE FUNCTION update_faq_search_vector();`,\n  \n  // 22. Persona Templates Table\n  `CREATE TABLE IF NOT EXISTS persona_templates (\n    id SERIAL PRIMARY KEY,\n    persona_name VARCHAR(50) UNIQUE NOT NULL,\n    display_name VARCHAR(100),\n    description TEXT,\n    system_prompt_template TEXT NOT NULL,\n    greeting_template TEXT,\n    farewell_template TEXT,\n    temperature DECIMAL(2,1) DEFAULT 0.3,\n    response_style VARCHAR(20) DEFAULT 'conversational',\n    empathy_level VARCHAR(20) DEFAULT 'normal',\n    trigger_conditions JSONB,\n    is_active BOOLEAN DEFAULT TRUE,\n    is_default BOOLEAN DEFAULT FALSE,\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()\n  );`,\n  \n  // 23. Analytics Daily Table\n  `CREATE TABLE IF NOT EXISTS analytics_daily (\n    id SERIAL PRIMARY KEY,\n    date DATE NOT NULL,\n    channel VARCHAR(20),\n    total_conversations INTEGER DEFAULT 0,\n    total_messages INTEGER DEFAULT 0,\n    unique_users INTEGER DEFAULT 0,\n    new_users INTEGER DEFAULT 0,\n    avg_response_time_ms INTEGER,\n    avg_messages_per_session DECIMAL(5,2),\n    avg_session_duration_seconds INTEGER,\n    avg_sentiment_score DECIMAL(3,2),\n    positive_sentiment_count INTEGER DEFAULT 0,\n    negative_sentiment_count INTEGER DEFAULT 0,\n    intent_distribution JSONB,\n    escalation_count INTEGER DEFAULT 0,\n    escalation_rate DECIMAL(5,4),\n    tool_usage_counts JSONB,\n    issues_resolved INTEGER DEFAULT 0,\n    resolution_rate DECIMAL(5,4),\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n    UNIQUE(date, channel)\n  );`,\n  \n  // 24. Analytics Index\n  `CREATE INDEX IF NOT EXISTS idx_analytics_date ON analytics_daily(date);`,\n  \n  // 25. Compliance Rules Table\n  `CREATE TABLE IF NOT EXISTS compliance_rules (\n    id SERIAL PRIMARY KEY,\n    rule_name VARCHAR(100) UNIQUE NOT NULL,\n    description TEXT,\n    rule_type VARCHAR(30) NOT NULL,\n    pattern TEXT,\n    replacement TEXT,\n    disclaimer_text TEXT,\n    trigger_keywords TEXT[],\n    applies_to_intents TEXT[] DEFAULT ARRAY[]::TEXT[],\n    applies_to_countries TEXT[] DEFAULT ARRAY[]::TEXT[],\n    is_active BOOLEAN DEFAULT TRUE,\n    severity VARCHAR(20) DEFAULT 'warning',\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()\n  );`,\n  \n  // 26. Insert Default Personas\n  `INSERT INTO persona_templates (persona_name, display_name, description, system_prompt_template, is_active, is_default) VALUES\n('friendly_support', 'Friendly Support', 'Default warm and helpful persona', \n 'You are Alex, a friendly and warm support specialist at CMS Prime. Be conversational, use simple language, show genuine care. Use occasional light humor when appropriate.',\n TRUE, TRUE),\n('empathetic_support', 'Empathetic Support', 'For frustrated or upset users',\n 'You are Alex, a patient and understanding support specialist at CMS Prime. The customer seems frustrated - acknowledge their feelings first, apologize for any inconvenience, and focus on solutions. Be extra patient and reassuring.',\n TRUE, FALSE),\n('professional_analyst', 'Professional Analyst', 'For market and trading questions',\n 'You are Alex, a knowledgeable market analyst at CMS Prime. Provide clear, data-driven insights. Be professional but approachable. Use proper trading terminology but explain complex concepts simply.',\n TRUE, FALSE),\n('urgent_responder', 'Urgent Responder', 'For time-sensitive requests',\n 'You are Alex, a responsive support specialist at CMS Prime. The customer needs quick help - be concise and action-oriented. Get to the solution fast while remaining professional.',\n TRUE, FALSE)\nON CONFLICT (persona_name) DO NOTHING;`,\n  \n  // 27. Insert Default Compliance Rules\n  `INSERT INTO compliance_rules (rule_name, rule_type, pattern, replacement, is_active) VALUES\n('no_guaranteed_profit', 'prohibited_phrase', 'guaranteed.*profit', 'potential returns (not guaranteed)', TRUE),\n('no_risk_free', 'prohibited_phrase', 'risk.?free', 'with managed risk', TRUE),\n('no_easy_money', 'prohibited_phrase', 'easy money', 'trading opportunities', TRUE),\n('trading_disclaimer', 'required_disclaimer', NULL, 'Trading involves risk. Past performance is not indicative of future results.', TRUE)\nON CONFLICT (rule_name) DO NOTHING;`,\n  \n  // 28. Create VIP Users View\n  `CREATE OR REPLACE VIEW vip_users AS\nSELECT \n    uc.user_phone,\n    uc.client_id,\n    uc.preferred_language,\n    uc.total_interactions,\n    uc.last_seen_at,\n    cs.recent_sessions,\n    cs.avg_sentiment\nFROM user_configs uc\nLEFT JOIN LATERAL (\n    SELECT \n        COUNT(*) as recent_sessions,\n        AVG(sentiment_avg) as avg_sentiment\n    FROM chat_sessions \n    WHERE user_phone = uc.user_phone \n    AND session_start > NOW() - INTERVAL '30 days'\n) cs ON TRUE\nWHERE uc.is_vip = TRUE;`,\n  \n  // 29. Create Pending Escalations View\n  `CREATE OR REPLACE VIEW pending_escalations AS\nSELECT \n    st.*,\n    uc.preferred_language,\n    uc.is_vip\nFROM support_tickets st\nLEFT JOIN user_configs uc ON st.user_phone = uc.user_phone\nWHERE st.status IN ('open', 'in_progress')\nORDER BY \n    CASE st.priority \n        WHEN 'urgent' THEN 1 \n        WHEN 'high' THEN 2 \n        WHEN 'medium' THEN 3 \n        ELSE 4 \n    END,\n    st.created_at;`,\n  \n  // 30. Create User Conversation Summary View\n  `CREATE OR REPLACE VIEW user_conversation_summary AS\nSELECT \n    uc.user_phone,\n    uc.client_id,\n    uc.preferred_language,\n    uc.is_vip,\n    uc.total_interactions,\n    uc.last_seen_at,\n    (SELECT COUNT(*) FROM chat_sessions WHERE user_phone = uc.user_phone) as total_sessions,\n    (SELECT AVG(sentiment_avg) FROM chat_sessions WHERE user_phone = uc.user_phone) as overall_sentiment,\n    (SELECT COUNT(*) FROM support_tickets WHERE user_phone = uc.user_phone AND status = 'open') as open_tickets,\n    (SELECT MAX(created_at) FROM chat_audit_logs WHERE user_phone = uc.user_phone) as last_interaction\nFROM user_configs uc;`,\n  \n  // 31. Create Cleanup Function\n  `CREATE OR REPLACE FUNCTION cleanup_old_audit_logs()\nRETURNS INTEGER AS $$\nDECLARE\n    deleted_count INTEGER;\nBEGIN\n    DELETE FROM chat_audit_logs \n    WHERE created_at < NOW() - INTERVAL '90 days';\n    GET DIAGNOSTICS deleted_count = ROW_COUNT;\n    RETURN deleted_count;\nEND;\n$$ LANGUAGE plpgsql;`,\n  \n  // 32. Create Analytics Aggregation Function\n  `CREATE OR REPLACE FUNCTION aggregate_daily_analytics(target_date DATE)\nRETURNS VOID AS $$\nBEGIN\n    INSERT INTO analytics_daily (\n        date, channel, total_conversations, total_messages, unique_users,\n        avg_response_time_ms, avg_sentiment_score, escalation_count\n    )\n    SELECT \n        target_date,\n        channel,\n        COUNT(DISTINCT session_id),\n        COUNT(*),\n        COUNT(DISTINCT user_phone),\n        AVG(response_time_ms)::INTEGER,\n        AVG(sentiment_score),\n        COUNT(*) FILTER (WHERE escalated = TRUE)\n    FROM chat_audit_logs\n    WHERE DATE(created_at) = target_date\n    GROUP BY channel\n    ON CONFLICT (date, channel) DO UPDATE SET\n        total_conversations = EXCLUDED.total_conversations,\n        total_messages = EXCLUDED.total_messages,\n        unique_users = EXCLUDED.unique_users,\n        avg_response_time_ms = EXCLUDED.avg_response_time_ms,\n        avg_sentiment_score = EXCLUDED.avg_sentiment_score,\n        escalation_count = EXCLUDED.escalation_count;\nEND;\n$$ LANGUAGE plpgsql;`,\n  \n  // 33-43. Add Table Comments (split into individual statements)\n  `COMMENT ON TABLE user_configs IS 'User configuration and preferences for AI bot interactions';`,\n  `COMMENT ON TABLE chat_sessions IS 'Individual chat sessions with metrics and status';`,\n  `COMMENT ON TABLE chat_audit_logs IS 'Comprehensive audit log of all AI interactions';`,\n  `COMMENT ON TABLE conversation_insights IS 'AI-extracted insights from conversations for personalization';`,\n  `COMMENT ON TABLE support_tickets IS 'Support tickets created via AI escalation';`,\n  `COMMENT ON TABLE scheduled_callbacks IS 'Scheduled callbacks with relationship managers';`,\n  `COMMENT ON TABLE proactive_alerts IS 'Proactive notifications sent to users';`,\n  `COMMENT ON TABLE faq_knowledge_base IS 'FAQ and knowledge base for AI to reference';`,\n  `COMMENT ON TABLE persona_templates IS 'AI persona configurations for different contexts';`,\n  `COMMENT ON TABLE analytics_daily IS 'Daily aggregated analytics for reporting';`,\n  `COMMENT ON TABLE compliance_rules IS 'Compliance rules for AI response filtering';`\n];\n\n// Return statements with metadata\nreturn sqlStatements.map((sql, index) => ({\n  json: {\n    statement_number: index + 1,\n    total_statements: sqlStatements.length,\n    sql: sql,\n    description: getStatementDescription(index + 1)\n  }\n}));\n\nfunction getStatementDescription(num) {\n  const descriptions = {\n    1: 'Enable UUID extension',\n    2: 'Create user_configs table',\n    3: 'Create user_configs indexes',\n    4: 'Create user_preferences table',\n    5: 'Add foreign key constraint',\n    6: 'Create chat_sessions table',\n    7: 'Create chat_sessions indexes',\n    8: 'Create chat_audit_logs table',\n    9: 'Create chat_audit_logs indexes',\n    10: 'Create conversation_insights table',\n    11: 'Create conversation_insights indexes',\n    12: 'Create support_tickets table',\n    13: 'Create support_tickets indexes',\n    14: 'Create scheduled_callbacks table',\n    15: 'Create scheduled_callbacks indexes',\n    16: 'Create proactive_alerts table',\n    17: 'Create proactive_alerts indexes',\n    18: 'Create faq_knowledge_base table',\n    19: 'Create faq indexes',\n    20: 'Create FAQ search vector function',\n    21: 'Create FAQ trigger',\n    22: 'Create persona_templates table',\n    23: 'Create analytics_daily table',\n    24: 'Create analytics index',\n    25: 'Create compliance_rules table',\n    26: 'Insert default personas',\n    27: 'Insert default compliance rules',\n    28: 'Create vip_users view',\n    29: 'Create pending_escalations view',\n    30: 'Create user_conversation_summary view',\n    31: 'Create cleanup function',\n    32: 'Create analytics aggregation function',\n    33: 'Comment: user_configs',\n    34: 'Comment: chat_sessions',\n    35: 'Comment: chat_audit_logs',\n    36: 'Comment: conversation_insights',\n    37: 'Comment: support_tickets',\n    38: 'Comment: scheduled_callbacks',\n    39: 'Comment: proactive_alerts',\n    40: 'Comment: faq_knowledge_base',\n    41: 'Comment: persona_templates',\n    42: 'Comment: analytics_daily',\n    43: 'Comment: compliance_rules'\n  };\n  return descriptions[num] || `Statement ${num}`;\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-600, 400],
+      "id": "prepare-sql-statements",
+      "name": "Prepare SQL Statements"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "statement_number",
+              "value": "={{ $json.statement_number }}",
+              "type": "number"
+            },
+            {
+              "name": "total_statements",
+              "value": "={{ $json.total_statements }}",
+              "type": "number"
+            },
+            {
+              "name": "description",
+              "value": "={{ $json.description }}",
+              "type": "string"
+            },
+            {
+              "name": "sql",
+              "value": "={{ $json.sql }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [-500, 400],
+      "id": "preserve-statement-info",
+      "name": "Preserve Statement Info"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ $json.sql }}",
+        "options": {
+          "continueOnFail": true
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [-400, 400],
+      "id": "execute-sql",
+      "name": "Execute SQL",
+      "credentials": {
+        "postgres": {
+          "id": "yNVFJmXSqNtKGgso",
+          "name": "Postgres account"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Log execution result with better error handling\n// Get the current item\nconst currentItem = $input.first();\nconst input = currentItem.json || {};\n\n// Get item index from paired item data (safe access)\nlet itemIndex = 0;\ntry {\n  if (currentItem.pairedItem && currentItem.pairedItem.item && currentItem.pairedItem.item.length > 0) {\n    itemIndex = currentItem.pairedItem.item[0].index || 0;\n  }\n} catch (e) {\n  // Ignore errors accessing paired item\n}\n\n// Get statement info from Prepare SQL Statements node using index\nlet statementInfo = {};\ntry {\n  const allStatements = $('Prepare SQL Statements').all();\n  if (allStatements && allStatements[itemIndex]) {\n    statementInfo = allStatements[itemIndex].json || {};\n  }\n} catch (e) {\n  // If that fails, use defaults\n  statementInfo = {\n    statement_number: itemIndex + 1,\n    total_statements: 0,\n    description: `Statement ${itemIndex + 1}`,\n    sql: ''\n  };\n}\n\nlet result = 'Success';\nlet error = null;\nlet errorDetails = null;\n\n// Check for errors - handle both error object and error in json\nif (currentItem.error) {\n  result = 'Error';\n  error = currentItem.error.message || String(currentItem.error);\n  errorDetails = currentItem.error;\n} else if (input.error) {\n  result = 'Error';\n  error = input.error.message || String(input.error);\n  errorDetails = input.error;\n} else if (input.message && (input.message.toLowerCase().includes('error') || input.message.includes('does not exist'))) {\n  result = 'Error';\n  error = input.message;\n} else if (input.code || input.sqlState) {\n  // PostgreSQL error codes\n  result = 'Error';\n  error = input.message || `PostgreSQL Error: ${input.code || input.sqlState}`;\n  errorDetails = input;\n}\n\n// Build result object\nconst resultObj = {\n  statement_number: statementInfo.statement_number || (itemIndex + 1),\n  total_statements: statementInfo.total_statements || 0,\n  description: statementInfo.description || `Statement ${itemIndex + 1}`,\n  status: result,\n  executed_at: new Date().toISOString()\n};\n\n// Add error info if present\nif (error) {\n  resultObj.error = error;\n  if (errorDetails) {\n    resultObj.error_details = typeof errorDetails === 'object' ? JSON.stringify(errorDetails) : String(errorDetails);\n  }\n}\n\n// Add SQL preview if available\nif (statementInfo.sql) {\n  resultObj.sql_preview = statementInfo.sql.substring(0, 100) + (statementInfo.sql.length > 100 ? '...' : '');\n}\n\n// Add progress if we have statement numbers\nif (resultObj.statement_number > 0 && resultObj.total_statements > 0) {\n  resultObj.progress = `${resultObj.statement_number}/${resultObj.total_statements} (${Math.round(resultObj.statement_number / resultObj.total_statements * 100)}%)`;\n}\n\nreturn [resultObj];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-200, 400],
+      "id": "log-result",
+      "name": "Log Result"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Aggregate all results\nconst allResults = $input.all().map(i => i.json);\n\nconst total = allResults.length;\nconst successful = allResults.filter(r => r.status === 'Success').length;\nconst failed = allResults.filter(r => r.status === 'Error').length;\n\nconst errors = allResults\n  .filter(r => r.status === 'Error')\n  .map(r => `Statement ${r.statement_number}: ${r.description} - ${r.error}`);\n\nreturn [{\n  migration_complete: true,\n  summary: {\n    total_statements: total,\n    successful: successful,\n    failed: failed,\n    success_rate: `${Math.round(successful / total * 100)}%`\n  },\n  errors: errors.length > 0 ? errors : null,\n  execution_time: new Date().toISOString(),\n  all_results: allResults\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [0, 400],
+      "id": "aggregate-results",
+      "name": "Aggregate Results"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "migration_status",
+              "value": "={{ $json.summary.successful === $json.summary.total_statements ? '✅ Migration completed successfully!' : '⚠️ Migration completed with errors' }}",
+              "type": "string"
+            },
+            {
+              "name": "summary",
+              "value": "={{ JSON.stringify($json.summary, null, 2) }}",
+              "type": "string"
+            },
+            {
+              "name": "errors",
+              "value": "={{ $json.errors ? JSON.stringify($json.errors, null, 2) : 'No errors' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [200, 400],
+      "id": "final-status",
+      "name": "Final Status"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Prepare SQL Statements",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare SQL Statements": {
+      "main": [
+        [
+          {
+            "node": "Preserve Statement Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preserve Statement Info": {
+      "main": [
+        [
+          {
+            "node": "Execute SQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute SQL": {
+      "main": [
+        [
+          {
+            "node": "Log Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Result": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Results": {
+      "main": [
+        [
+          {
+            "node": "Final Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1.0.0",
+  "meta": {
+    "instanceId": "full-db-migration-workflow"
+  },
+  "id": "WORKFLOW_FULL_DB_MIGRATION",
+  "tags": ["database", "migration", "setup", "schema"]
+}
+

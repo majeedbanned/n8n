@@ -1,0 +1,148 @@
+{
+  "name": "WORKFLOW - DB Migration Diagnostic",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "test-migration",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-400, 300],
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [-200, 300],
+      "id": "test-extension",
+      "name": "Test 1: UUID Extension",
+      "credentials": {
+        "postgres": {
+          "id": "yNVFJmXSqNtKGgso",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE TABLE IF NOT EXISTS user_configs (\n    id SERIAL PRIMARY KEY,\n    user_phone VARCHAR(30) UNIQUE NOT NULL,\n    client_id INTEGER,\n    system_prompt TEXT,\n    preferred_language VARCHAR(10) DEFAULT 'en',\n    communication_style VARCHAR(30) DEFAULT 'friendly_support',\n    is_vip BOOLEAN DEFAULT FALSE,\n    is_ib BOOLEAN DEFAULT FALSE,\n    verification_status VARCHAR(20) DEFAULT 'pending',\n    last_seen_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n    last_channel VARCHAR(20),\n    total_interactions INTEGER DEFAULT 0,\n    notification_enabled BOOLEAN DEFAULT TRUE,\n    proactive_alerts_enabled BOOLEAN DEFAULT TRUE,\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [0, 300],
+      "id": "test-user-configs",
+      "name": "Test 2: user_configs table",
+      "credentials": {
+        "postgres": {
+          "id": "yNVFJmXSqNtKGgso",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'user_configs' AND column_name = 'client_id';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [200, 300],
+      "id": "verify-client-id",
+      "name": "Verify client_id exists",
+      "credentials": {
+        "postgres": {
+          "id": "yNVFJmXSqNtKGgso",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "result",
+              "value": "={{ $json }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [400, 300],
+      "id": "return-result",
+      "name": "Return Result"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Test 1: UUID Extension",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test 1: UUID Extension": {
+      "main": [
+        [
+          {
+            "node": "Test 2: user_configs table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test 2: user_configs table": {
+      "main": [
+        [
+          {
+            "node": "Verify client_id exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify client_id exists": {
+      "main": [
+        [
+          {
+            "node": "Return Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1.0.0",
+  "meta": {
+    "instanceId": "db-migration-diagnostic"
+  },
+  "id": "WORKFLOW_DB_DIAGNOSTIC",
+  "tags": ["database", "diagnostic"]
+}
+

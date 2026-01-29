@@ -1,0 +1,138 @@
+{
+  "name": "WORKFLOW - Run DB Schema Migration",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "run-migration",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-400, 300],
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "webhookId": "run-db-migration"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Read and split SQL file into executable statements\n// In n8n, we'll execute statements one by one\n\nconst sqlStatements = [\n  // Enable UUID extension\n  `CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";`,\n  \n  // User Configs Table\n  `CREATE TABLE IF NOT EXISTS user_configs (\n    id SERIAL PRIMARY KEY,\n    user_phone VARCHAR(30) UNIQUE NOT NULL,\n    client_id INTEGER,\n    system_prompt TEXT,\n    preferred_language VARCHAR(10) DEFAULT 'en',\n    communication_style VARCHAR(30) DEFAULT 'friendly_support',\n    is_vip BOOLEAN DEFAULT FALSE,\n    is_ib BOOLEAN DEFAULT FALSE,\n    verification_status VARCHAR(20) DEFAULT 'pending',\n    last_seen_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n    last_channel VARCHAR(20),\n    total_interactions INTEGER DEFAULT 0,\n    notification_enabled BOOLEAN DEFAULT TRUE,\n    proactive_alerts_enabled BOOLEAN DEFAULT TRUE,\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()\n  );`,\n  \n  // User Preferences Table\n  `CREATE TABLE IF NOT EXISTS user_preferences (\n    id SERIAL PRIMARY KEY,\n    user_phone VARCHAR(30) UNIQUE NOT NULL,\n    persona_override VARCHAR(30),\n    response_verbosity VARCHAR(20) DEFAULT 'normal',\n    preferred_greeting VARCHAR(100),\n    topics_of_interest TEXT[] DEFAULT ARRAY[]::TEXT[],\n    favorite_instruments TEXT[] DEFAULT ARRAY[]::TEXT[],\n    notification_preferences JSONB DEFAULT '{\"price_alerts\": true, \"margin_warnings\": true, \"deposit_confirmations\": true, \"promotion_updates\": true, \"news_alerts\": false}'::JSONB,\n    last_trading_activity TIMESTAMP WITH TIME ZONE,\n    typical_trading_hours JSONB,\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()\n  );`,\n  \n  // Chat Sessions Table\n  `CREATE TABLE IF NOT EXISTS chat_sessions (\n    id SERIAL PRIMARY KEY,\n    session_id VARCHAR(100) UNIQUE NOT NULL,\n    user_phone VARCHAR(30) NOT NULL,\n    client_id INTEGER,\n    channel VARCHAR(20) NOT NULL,\n    session_start TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n    session_end TIMESTAMP WITH TIME ZONE,\n    messages_count INTEGER DEFAULT 0,\n    sentiment_avg DECIMAL(3,2) DEFAULT 0,\n    intents_detected TEXT[] DEFAULT ARRAY[]::TEXT[],\n    tools_used TEXT[] DEFAULT ARRAY[]::TEXT[],\n    escalated BOOLEAN DEFAULT FALSE,\n    escalation_reason VARCHAR(50),\n    escalation_time TIMESTAMP WITH TIME ZONE,\n    resolved BOOLEAN DEFAULT FALSE,\n    resolution_notes TEXT,\n    user_rating INTEGER CHECK (user_rating >= 1 AND user_rating <= 5),\n    user_feedback TEXT,\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()\n  );`,\n  \n  // Chat Audit Logs Table\n  `CREATE TABLE IF NOT EXISTS chat_audit_logs (\n    id SERIAL PRIMARY KEY,\n    user_phone VARCHAR(30),\n    client_id INTEGER,\n    channel VARCHAR(20),\n    session_id VARCHAR(100),\n    inbound_text TEXT,\n    outbound_text TEXT,\n    detected_language VARCHAR(10),\n    sentiment VARCHAR(20),\n    sentiment_score DECIMAL(3,2),\n    intent_classified VARCHAR(50),\n    sub_intent VARCHAR(50),\n    persona_used VARCHAR(30),\n    tools_called JSONB,\n    response_time_ms INTEGER,\n    compliance_flags JSONB DEFAULT '[]'::JSONB,\n    escalated BOOLEAN DEFAULT FALSE,\n    escalation_reason VARCHAR(50),\n    error_occurred BOOLEAN DEFAULT FALSE,\n    error_message TEXT,\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()\n  );`,\n  \n  // Create indexes\n  `CREATE INDEX IF NOT EXISTS idx_user_configs_client_id ON user_configs(client_id);`,\n  `CREATE INDEX IF NOT EXISTS idx_user_configs_last_seen ON user_configs(last_seen_at);`,\n  `CREATE INDEX IF NOT EXISTS idx_chat_sessions_user_phone ON chat_sessions(user_phone);`,\n  `CREATE INDEX IF NOT EXISTS idx_chat_sessions_start ON chat_sessions(session_start);`,\n  `CREATE INDEX IF NOT EXISTS idx_chat_sessions_escalated ON chat_sessions(escalated) WHERE escalated = TRUE;`,\n  `CREATE INDEX IF NOT EXISTS idx_audit_user_phone ON chat_audit_logs(user_phone);`,\n  `CREATE INDEX IF NOT EXISTS idx_audit_created ON chat_audit_logs(created_at);`,\n  `CREATE INDEX IF NOT EXISTS idx_audit_session ON chat_audit_logs(session_id);`,\n  `CREATE INDEX IF NOT EXISTS idx_audit_intent ON chat_audit_logs(intent_classified);`,\n  `CREATE INDEX IF NOT EXISTS idx_audit_escalated ON chat_audit_logs(escalated) WHERE escalated = TRUE;`\n];\n\nreturn sqlStatements.map((sql, index) => ({\n  json: {\n    statement_number: index + 1,\n    sql: sql,\n    total_statements: sqlStatements.length\n  }\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-200, 300],
+      "id": "prepare-sql",
+      "name": "Prepare SQL Statements"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ $json.sql }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [0, 300],
+      "id": "execute-sql",
+      "name": "Execute SQL Statement",
+      "credentials": {
+        "postgres": {
+          "id": "yNVFJmXSqNtKGgso",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Log execution results\nconst input = $input.first().json;\nconst statementInfo = $('Prepare SQL Statements').item.json;\n\nreturn [{\n  statement_number: statementInfo.statement_number,\n  total_statements: statementInfo.total_statements,\n  executed: true,\n  result: input || 'Success',\n  timestamp: new Date().toISOString()\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [200, 300],
+      "id": "log-result",
+      "name": "Log Result"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "migration_status",
+              "value": "={{ $('Prepare SQL Statements').item.json.total_statements }} statements executed successfully",
+              "type": "string"
+            },
+            {
+              "name": "timestamp",
+              "value": "={{ new Date().toISOString() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [400, 300],
+      "id": "final-status",
+      "name": "Migration Complete"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Prepare SQL Statements",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare SQL Statements": {
+      "main": [
+        [
+          {
+            "node": "Execute SQL Statement",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute SQL Statement": {
+      "main": [
+        [
+          {
+            "node": "Log Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Result": {
+      "main": [
+        [
+          {
+            "node": "Migration Complete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1.0.0",
+  "meta": {
+    "instanceId": "db-migration-workflow"
+  },
+  "id": "WORKFLOW_DB_MIGRATION",
+  "tags": ["database", "migration", "setup"]
+}
+

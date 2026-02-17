@@ -267,7 +267,8 @@
         "specifyBody": "json",
         "jsonBody": "={{ $json.user_email ? {\"email\": $json.user_email} : {\"phone\": $json.user_phone} }}",
         "options": {
-          "timeout": 30000
+          "timeout": 30000,
+          "splitIntoItems": false
         }
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -277,11 +278,13 @@
         10912
       ],
       "id": "c98a623a-bfb0-42b9-8a05-ce55a47f22b1",
-      "name": "Auth - Lookup User"
+      "name": "Auth - Lookup User",
+      "continueOnFail": true,
+      "alwaysOutputData": true
     },
     {
       "parameters": {
-        "jsCode": "// Extract and validate user from API response\nconst res = $input.first().json;\nlet prevData = {};\ntry {\n  prevData = $('Extract User Identifiers').item.json || {};\n} catch (e) {\n  // Node not available, use empty object\n  prevData = {};\n}\nlet u = null;\n\nif (Array.isArray(res)) u = res.length > 0 ? res[0] : null;\nelse if (res && typeof res === 'object' && Object.keys(res).length > 0 && res.id) u = res;\n\nif (!u) {\n  return [{ \n    auth_ok: false, \n    user: null,\n    is_admin: false,\n    ...prevData\n  }];\n}\n\nconst isVip = u.tradingVolume > 1000000 || u.totalDeposits > 50000 || u.isIb === true;\nconst tags = Array.isArray(u.tags) ? u.tags : [];\nconst isAdmin = tags.some((tag) => {\n  const normalized = String(tag || '').trim().toLowerCase();\n  return normalized === 'isadmin' || normalized === 'is admin';\n});\n\nreturn [{\n  auth_ok: true,\n  is_admin: isAdmin,\n  user: {\n    id: u.id ?? null,\n    managerId: u.managerId ?? null,\n    country: u.country ?? null,\n    firstName: u.firstName ?? null,\n    lastName: u.lastName ?? null,\n    fullName: `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'Valued Client',\n    email: u.email ?? null,\n    phone: u.phone ?? null,\n    language: u.language ?? 'en',\n    registrationDate: u.registrationDate ?? null,\n    lastLoginDate: u.lastLoginDate ?? null,\n    status: u.status ?? null,\n    isIb: u.isIb ?? false,\n    isVip: isVip,\n    isAdmin: isAdmin,\n    tags: tags,\n    verified: u.verified ?? null,\n    tradingStatus: u.tradingStatus ?? null,\n    lastDepositDate: u.lastDepositDate ?? null,\n    nationality: u.nationality ?? null\n  },\n  ...prevData\n}];\n"
+        "jsCode": "// Extract and validate user from API response\nconst res = $input.first().json;\nlet prevData = {};\ntry {\n  prevData = $('Extract User Identifiers').item.json || {};\n} catch (e) {\n  // Node not available, use empty object\n  prevData = {};\n}\nlet u = null;\n\nif (Array.isArray(res)) u = res.length > 0 ? res[0] : null;\nelse if (res && typeof res === 'object' && Array.isArray(res.body)) u = res.body.length > 0 ? res.body[0] : null;\nelse if (res && typeof res === 'object' && Object.keys(res).length > 0 && res.id) u = res;\n\nif (!u) {\n  return [{ \n    auth_ok: false, \n    user: null,\n    is_admin: false,\n    ...prevData\n  }];\n}\n\nconst isVip = u.tradingVolume > 1000000 || u.totalDeposits > 50000 || u.isIb === true;\nconst tags = Array.isArray(u.tags) ? u.tags : [];\nconst isAdmin = tags.some((tag) => {\n  const normalized = String(tag || '').trim().toLowerCase();\n  return normalized === 'isadmin' || normalized === 'is admin';\n});\n\nreturn [{\n  auth_ok: true,\n  is_admin: isAdmin,\n  user: {\n    id: u.id ?? null,\n    managerId: u.managerId ?? null,\n    country: u.country ?? null,\n    firstName: u.firstName ?? null,\n    lastName: u.lastName ?? null,\n    fullName: `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'Valued Client',\n    email: u.email ?? null,\n    phone: u.phone ?? null,\n    language: u.language ?? 'en',\n    registrationDate: u.registrationDate ?? null,\n    lastLoginDate: u.lastLoginDate ?? null,\n    status: u.status ?? null,\n    isIb: u.isIb ?? false,\n    isVip: isVip,\n    isAdmin: isAdmin,\n    tags: tags,\n    verified: u.verified ?? null,\n    tradingStatus: u.tradingStatus ?? null,\n    lastDepositDate: u.lastDepositDate ?? null,\n    nationality: u.nationality ?? null\n  },\n  ...prevData\n}];\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1756,6 +1759,197 @@
       ],
       "id": "de2a72e8-f909-4df4-bd26-fallbackset",
       "name": "Set - Safe Fallback Response"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "reg-intent-cond",
+              "leftValue": "={{ String(($json.registration_in_progress === true) || /\\b(register|registration|sign\\s?up|signup|open\\s+account|create\\s+account)\\b/i.test($json.user_text || '') || /[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/i.test($json.user_text || '') || /^[A-Za-z\\s'-]{2,50}$/.test(String($json.user_text || '').trim())) }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -27136,
+        10976
+      ],
+      "id": "d1ff5fd7-98f2-4b20-a654-regintent",
+      "name": "IF - Registration Intent or Ongoing?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json || {};\nconst registrationPrompt = `You are Alex from CMS Prime Registration Support.\n\nREGISTRATION MODE RULES:\n1. Your only task is account registration collection.\n2. Collect required fields: email, firstName, lastName, nationality.\n3. Use chat memory on every turn and reuse previously provided values.\n4. If user replies briefly (for example: yes/no), infer context from memory and continue registration only.\n5. Ask for one missing field at a time.\n6. Do not answer unrelated questions while registration is in progress.\n7. Before submission, show full summary and require explicit yes confirmation.\n8. Call TOOL - User Registration every turn; it validates and decides submit safely.\n9. If registration_ok is true, confirm success briefly.\n10. Do not restart the conversation or repeat welcome messages after the first turn.\n`;\n\nconst sessionId = input.sessionId || input.session_id || '';\nconst userText = input.user_text || input.message_text || '';\n\nreturn [{\n  ...input,\n  sessionId: sessionId,\n  session_id: sessionId,\n  user_text: userText,\n  message_text: userText,\n  registration_in_progress: true,\n  registration_context: input.registration_context || {},\n  system_prompt: registrationPrompt\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -26944,
+        10976
+      ],
+      "id": "1530f8de-bf3d-4203-a33a-regctx",
+      "name": "Registration Context Builder"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json.user_text || $json.message_text || \"\"}}",
+        "options": {
+          "systemMessage": "={{$json.system_prompt || \"\"}}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -26736,
+        10976
+      ],
+      "id": "9468bc7d-64c8-4db6-b72a-regagent",
+      "name": "Registration AI Agent"
+    },
+    {
+      "parameters": {
+        "description": "Register a new client by collecting required fields (email, firstName, lastName, nationality) and submitting registration API request.",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "TOOL_USER_REGISTRATION"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "session_id": "={{ $json.sessionId || $json.session_id || \"\" }}",
+            "user_text": "={{ $json.user_text || $json.message_text || \"\" }}",
+            "channel": "={{ $json.channel || \"web\" }}",
+            "draft_registration": "={{ $json.registration_context?.draft_registration || $json.draft_registration || {} }}",
+            "email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('email', 'User email address', 'string') }}",
+            "firstName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('firstName', 'User first name', 'string') }}",
+            "lastName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('lastName', 'User last name', 'string') }}",
+            "nationality": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('nationality', 'User nationality', 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "session_id",
+              "displayName": "session_id",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "id": "user_text",
+              "displayName": "user_text",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "id": "draft_registration",
+              "displayName": "draft_registration",
+              "required": false,
+              "type": "object"
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "id": "firstName",
+              "displayName": "firstName",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "id": "lastName",
+              "displayName": "lastName",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "id": "nationality",
+              "displayName": "nationality",
+              "required": false,
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        -26528,
+        11184
+      ],
+      "id": "9ec0c2b8-4b5c-4cf2-8fe3-regtool",
+      "name": "Tool - User Registration"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "auth-lookup-failed-cond",
+              "leftValue": "={{ String((!!$json.error) || (!!$json.code && Number($json.code) >= 400) || (!!$json.statusCode && Number($json.statusCode) >= 400) || (Array.isArray($json.body) && $json.body.length === 0) || (Object.keys($json || {}).length === 0)) }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -27536,
+        10912
+      ],
+      "id": "8ea018f7-6b5f-4ad8-b0ad-authlookupfail",
+      "name": "IF - Auth Lookup Failed?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const current = $input.first().json || {};\nlet base = {};\ntry {\n  base = $('Extract User Identifiers').item.json || {};\n} catch (e) {\n  base = {};\n}\n\nconst sessionId = base.sessionId || base.session_id || current.sessionId || current.session_id || '';\nconst messageText = base.user_text || base.message_text || current.user_text || current.message_text || '';\n\nreturn [{\n  ...base,\n  ...current,\n  user_text: messageText,\n  message_text: base.message_text || messageText,\n  session_id: sessionId,\n  sessionId: sessionId,\n  registration_in_progress: true,\n  registration_context: base.registration_context || current.registration_context || {}\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -27040,
+        10976
+      ],
+      "id": "5c9f09d4-71ac-4a1e-a535-regrestorectx",
+      "name": "Registration - Restore Input Context"
     }
   ],
   "pinData": {},
@@ -1910,7 +2104,7 @@
       "main": [
         [
           {
-            "node": "Auth - Extract User Fields",
+            "node": "IF - Auth Lookup Failed?",
             "type": "main",
             "index": 0
           }
@@ -2115,6 +2309,13 @@
             "type": "ai_languageModel",
             "index": 0
           }
+        ],
+        [
+          {
+            "node": "Registration AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
         ]
       ]
     },
@@ -2123,6 +2324,13 @@
         [
           {
             "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Registration AI Agent",
             "type": "ai_memory",
             "index": 0
           }
@@ -2477,6 +2685,86 @@
         [
           {
             "node": "Compliance Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Registration Intent or Ongoing?": {
+      "main": [
+        [
+          {
+            "node": "Registration Context Builder",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Auth Failed Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registration Context Builder": {
+      "main": [
+        [
+          {
+            "node": "Registration AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registration AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Compliance Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool - User Registration": {
+      "ai_tool": [
+        [
+          {
+            "node": "Registration AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Auth Lookup Failed?": {
+      "main": [
+        [
+          {
+            "node": "Registration - Restore Input Context",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Auth - Extract User Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registration - Restore Input Context": {
+      "main": [
+        [
+          {
+            "node": "Registration Context Builder",
             "type": "main",
             "index": 0
           }

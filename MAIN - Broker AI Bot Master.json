@@ -13,10 +13,10 @@
         "type": "@n8n/n8n-nodes-langchain.chatTrigger",
         "typeVersion": 1.4,
         "position": [
-          -3520,
-          368
+          -28736,
+          10816
         ],
-        "id": "7be3d5c8-7b16-49e9-a956-e781a21d8699",
+        "id": "5afd8d87-2e88-446b-9ce4-7a2ac1baf85b",
         "name": "Web Chat Trigger",
         "webhookId": "broker-ai-web-chat"
       },
@@ -29,10 +29,10 @@
         "type": "n8n-nodes-base.webhook",
         "typeVersion": 2,
         "position": [
-          -3520,
-          560
+          -28736,
+          11008
         ],
-        "id": "a4a7d172-d202-4f61-b58d-35e1f8444d94",
+        "id": "c3bc52db-6876-4a5e-8dd5-45fa7308bfa9",
         "name": "WhatsApp Webhook",
         "webhookId": "broker-ai-whatsapp"
       },
@@ -46,10 +46,10 @@
         "type": "n8n-nodes-base.telegramTrigger",
         "typeVersion": 1.1,
         "position": [
-          -3520,
-          768
+          -28736,
+          11216
         ],
-        "id": "d1dba51f-e522-4987-b61a-a1d5614400b6",
+        "id": "a34f74cd-78ca-4b0b-a65d-94c483b400a5",
         "name": "Telegram Trigger",
         "webhookId": "4600682b-8d05-479b-95b4-f508a2a9954d",
         "credentials": {
@@ -61,6 +61,104 @@
       },
       {
         "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 1
+            },
+            "conditions": [
+              {
+                "id": "b0381adf-f70c-4d19-89e6-c6b66a40f8c6",
+                "leftValue": "={{ $json.message && $json.message.voice && $json.message.voice.file_id ? 'voice' : 'not_voice' }}",
+                "rightValue": "voice",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              },
+              {
+                "id": "cae3b91a-2a1e-4831-8fd7-7895b359bf80",
+                "leftValue": "={{ $json.message && $json.message.text ? 'has_text' : 'no_text' }}",
+                "rightValue": "no_text",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          -28544,
+          11216
+        ],
+        "id": "68de3362-1ca7-4ab7-a240-1bd96530663f",
+        "name": "IF - Telegram Voice?"
+      },
+      {
+        "parameters": {
+          "resource": "file",
+          "fileId": "={{ $json.message.voice.file_id }}",
+          "additionalFields": {}
+        },
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          -28336,
+          11360
+        ],
+        "id": "4535b806-0127-409a-b030-74ac0cc1e354",
+        "name": "Telegram - Get Voice File",
+        "webhookId": "322ca2d9-460f-4f41-93c9-9538f6ade8ff",
+        "credentials": {
+          "telegramApi": {
+            "id": "txTzVvWQaqPSnMci",
+            "name": "Telegram account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "resource": "audio",
+          "operation": "transcribe",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.openAi",
+        "typeVersion": 1.8,
+        "position": [
+          -28128,
+          11360
+        ],
+        "id": "2011fd67-f548-43ff-af46-eafdd3a62733",
+        "name": "Telegram - Transcribe Voice",
+        "credentials": {
+          "openAiApi": {
+            "id": "jqIg0jyWAkPQG4Ce",
+            "name": "OpenAi account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "let original = {};\ntry {\n  original = $('IF - Telegram Voice?').item.json || {};\n} catch (e) {\n  original = $input.first().json || {};\n}\n\nconst transcriptCandidate =\n  $input.first().json.text ??\n  $input.first().json.transcription ??\n  $input.first().json.transcript ??\n  $input.first().json.response?.text ??\n  $input.first().json.data?.text ??\n  '';\n\nconst transcript = String(transcriptCandidate || '').trim();\n\nconst output = {\n  ...original,\n  message: {\n    ...(original.message || {}),\n    text: transcript || original.message?.caption || ''\n  },\n  voice_transcription: {\n    success: transcript.length > 0,\n    text: transcript,\n    source: 'openai'\n  }\n};\n\nreturn [output];\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -27920,
+          11360
+        ],
+        "id": "b97eaf6d-81f9-4e08-b904-3400fd14bfa2",
+        "name": "Telegram - Apply Transcript"
+      },
+      {
+        "parameters": {
           "httpMethod": "POST",
           "path": "email-webhook",
           "options": {}
@@ -68,10 +166,10 @@
         "type": "n8n-nodes-base.webhook",
         "typeVersion": 2,
         "position": [
-          -3520,
-          960
+          -28736,
+          11408
         ],
-        "id": "968026fd-0a8a-4b64-b382-eabdc736f573",
+        "id": "7738961d-d39a-458b-99ac-0b338682d68f",
         "name": "Email Webhook",
         "webhookId": "broker-ai-email"
       },
@@ -82,10 +180,10 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          -3120,
-          560
+          -28336,
+          11008
         ],
-        "id": "836f9df9-c86f-4a16-851a-97971fdf07d6",
+        "id": "f877fcc4-ff30-4a29-8364-a312c9986d7b",
         "name": "Channel Normalizer"
       },
       {
@@ -95,10 +193,10 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          -2912,
-          560
+          -28128,
+          11008
         ],
-        "id": "50b12343-0bef-4aec-b636-8b092e173150",
+        "id": "b89bbff2-455a-4232-b203-cdafc07fa3ea",
         "name": "Extract User Identifiers"
       },
       {
@@ -116,10 +214,10 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2,
         "position": [
-          -2720,
-          560
+          -27936,
+          11008
         ],
-        "id": "52682b9e-fb70-4193-a282-ed4c932868fe",
+        "id": "3aa7605c-916a-4f0a-b751-ba56235f6aa2",
         "name": "IF - Have User Identifier?"
       },
       {
@@ -138,10 +236,10 @@
         "type": "n8n-nodes-base.set",
         "typeVersion": 3.4,
         "position": [
-          -2512,
-          768
+          -27728,
+          11216
         ],
-        "id": "514b1ee5-9c71-4603-aefa-d2ff7ac48be6",
+        "id": "b54a2126-8bc0-4e5c-8e1c-999d76690d7e",
         "name": "Missing Identifier Response"
       },
       {
@@ -175,23 +273,23 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.3,
         "position": [
-          -2512,
-          464
+          -27728,
+          10912
         ],
-        "id": "8afbc952-9b48-403f-8a0e-7de2095cdacb",
+        "id": "c98a623a-bfb0-42b9-8a05-ce55a47f22b1",
         "name": "Auth - Lookup User"
       },
       {
         "parameters": {
-          "jsCode": "// Extract and validate user from API response\nconst res = $input.first().json;\nlet prevData = {};\ntry {\n  prevData = $('Extract User Identifiers').item.json || {};\n} catch (e) {\n  // Node not available, use empty object\n  prevData = {};\n}\nlet u = null;\n\nif (Array.isArray(res)) u = res.length > 0 ? res[0] : null;\nelse if (res && typeof res === 'object' && Object.keys(res).length > 0 && res.id) u = res;\n\nif (!u) {\n  return [{ \n    auth_ok: false, \n    user: null,\n    ...prevData\n  }];\n}\n\nconst isVip = u.tradingVolume > 1000000 || u.totalDeposits > 50000 || u.isIb === true;\n\nreturn [{\n  auth_ok: true,\n  user: {\n    id: u.id ?? null,\n    managerId: u.managerId ?? null,\n    country: u.country ?? null,\n    firstName: u.firstName ?? null,\n    lastName: u.lastName ?? null,\n    fullName: `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'Valued Client',\n    email: u.email ?? null,\n    phone: u.phone ?? null,\n    language: u.language ?? 'en',\n    registrationDate: u.registrationDate ?? null,\n    lastLoginDate: u.lastLoginDate ?? null,\n    status: u.status ?? null,\n    isIb: u.isIb ?? false,\n    isVip: isVip,\n    verified: u.verified ?? null,\n    tradingStatus: u.tradingStatus ?? null,\n    lastDepositDate: u.lastDepositDate ?? null,\n    nationality: u.nationality ?? null\n  },\n  ...prevData\n}];\n"
+          "jsCode": "// Extract and validate user from API response\nconst res = $input.first().json;\nlet prevData = {};\ntry {\n  prevData = $('Extract User Identifiers').item.json || {};\n} catch (e) {\n  // Node not available, use empty object\n  prevData = {};\n}\nlet u = null;\n\nif (Array.isArray(res)) u = res.length > 0 ? res[0] : null;\nelse if (res && typeof res === 'object' && Object.keys(res).length > 0 && res.id) u = res;\n\nif (!u) {\n  return [{ \n    auth_ok: false, \n    user: null,\n    is_admin: false,\n    ...prevData\n  }];\n}\n\nconst isVip = u.tradingVolume > 1000000 || u.totalDeposits > 50000 || u.isIb === true;\nconst tags = Array.isArray(u.tags) ? u.tags : [];\nconst isAdmin = tags.some((tag) => {\n  const normalized = String(tag || '').trim().toLowerCase();\n  return normalized === 'isadmin' || normalized === 'is admin';\n});\n\nreturn [{\n  auth_ok: true,\n  is_admin: isAdmin,\n  user: {\n    id: u.id ?? null,\n    managerId: u.managerId ?? null,\n    country: u.country ?? null,\n    firstName: u.firstName ?? null,\n    lastName: u.lastName ?? null,\n    fullName: `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'Valued Client',\n    email: u.email ?? null,\n    phone: u.phone ?? null,\n    language: u.language ?? 'en',\n    registrationDate: u.registrationDate ?? null,\n    lastLoginDate: u.lastLoginDate ?? null,\n    status: u.status ?? null,\n    isIb: u.isIb ?? false,\n    isVip: isVip,\n    isAdmin: isAdmin,\n    tags: tags,\n    verified: u.verified ?? null,\n    tradingStatus: u.tradingStatus ?? null,\n    lastDepositDate: u.lastDepositDate ?? null,\n    nationality: u.nationality ?? null\n  },\n  ...prevData\n}];\n"
         },
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          -2320,
-          464
+          -27536,
+          10912
         ],
-        "id": "52fe260b-1847-4e40-bd39-d6c8e14ac6fc",
+        "id": "7c5fc8a7-5fe4-47ac-a24f-a7ddaa7218bd",
         "name": "Auth - Extract User Fields"
       },
       {
@@ -209,10 +307,10 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2,
         "position": [
-          -2112,
-          464
+          -27328,
+          10912
         ],
-        "id": "939b531f-d7d9-4c13-8dd3-bfb5af3c9714",
+        "id": "d910ef9f-b9c1-45fd-8cc4-5cb246f6b93d",
         "name": "IF - Auth OK?"
       },
       {
@@ -231,10 +329,10 @@
         "type": "n8n-nodes-base.set",
         "typeVersion": 3.4,
         "position": [
-          -1920,
-          672
+          -27136,
+          11120
         ],
-        "id": "6c4e1a8e-9f54-4e9a-8641-952fb38f37ea",
+        "id": "b9fbd8fa-4abf-4df6-a03d-cd37cb2896e6",
         "name": "Auth Failed Response"
       },
       {
@@ -244,10 +342,10 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          -1920,
-          368
+          -27136,
+          10816
         ],
-        "id": "fe600b6a-d5a6-40ab-8fdc-95cc1a1cca44",
+        "id": "4151c882-19df-46ba-95ad-63f6ea7428d9",
         "name": "Language Detector"
       },
       {
@@ -258,10 +356,10 @@
         "type": "@n8n/n8n-nodes-langchain.chainLlm",
         "typeVersion": 1.4,
         "position": [
-          -1712,
-          368
+          -26928,
+          10816
         ],
-        "id": "887c076e-0be6-4d8e-b092-97b3b4e32985",
+        "id": "68aa5b5c-49ff-4ef2-9558-b5c1ac25847d",
         "name": "Sentiment Analyzer"
       },
       {
@@ -279,10 +377,10 @@
         "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
         "typeVersion": 1.3,
         "position": [
-          -1712,
-          560
+          -26928,
+          11008
         ],
-        "id": "2b627478-fea9-4789-9dc3-ecacf1940304",
+        "id": "f15b4f7d-8772-4ed7-b196-f12d506a6cb8",
         "name": "Sentiment LLM",
         "credentials": {
           "openAiApi": {
@@ -298,10 +396,10 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          -1424,
-          192
+          -26640,
+          10640
         ],
-        "id": "2b3b31fd-2f56-4a0d-beed-d5778e038f8d",
+        "id": "aed9f0b9-4230-4285-b2a2-2f3ba28cfe26",
         "name": "Parse Sentiment"
       },
       {
@@ -312,10 +410,10 @@
         "type": "@n8n/n8n-nodes-langchain.chainLlm",
         "typeVersion": 1.4,
         "position": [
-          -1312,
-          368
+          -26528,
+          10816
         ],
-        "id": "5bacfece-e90c-4a79-84e2-41d191208b9c",
+        "id": "45c9ff98-b046-4cec-afc7-ac754844e37a",
         "name": "Intent Classifier"
       },
       {
@@ -333,10 +431,10 @@
         "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
         "typeVersion": 1.3,
         "position": [
-          -1312,
-          560
+          -26528,
+          11008
         ],
-        "id": "737ea0e0-374f-40ee-b863-2ed451162312",
+        "id": "5a8e3fb1-f5a6-4c85-831f-bb5aa76776f3",
         "name": "Intent LLM",
         "credentials": {
           "openAiApi": {
@@ -352,10 +450,10 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          -1040,
-          368
+          -26256,
+          10816
         ],
-        "id": "5a76d74c-8807-43b1-a923-b8b76bb6d4d1",
+        "id": "1deae0b3-5790-40d8-9ca3-74669500e891",
         "name": "Parse Intent"
       },
       {
@@ -367,10 +465,10 @@
         "type": "n8n-nodes-base.postgres",
         "typeVersion": 2.6,
         "position": [
-          -912,
-          368
+          -26128,
+          10816
         ],
-        "id": "ed39c366-292f-443e-be2b-f89228a71901",
+        "id": "9e6b701d-fd18-4289-8ab8-891bf8e665db",
         "name": "DB - Upsert User Config",
         "credentials": {
           "postgres": {
@@ -388,10 +486,10 @@
         "type": "n8n-nodes-base.postgres",
         "typeVersion": 2.6,
         "position": [
-          -720,
-          368
+          -25936,
+          10816
         ],
-        "id": "9d865d3e-5176-4df2-9d6b-154d44b92c3e",
+        "id": "03493650-ea18-46f9-befd-1f70c765ef90",
         "name": "DB - Load User Context",
         "credentials": {
           "postgres": {
@@ -407,10 +505,10 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          -496,
-          368
+          -25712,
+          10816
         ],
-        "id": "dedb9d29-a17f-418c-838d-cc1e016d7c81",
+        "id": "aecc758e-01f7-46dd-ae05-f1ddda620bc9",
         "name": "Smart Router & Prompt Builder"
       },
       {
@@ -440,10 +538,10 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2,
         "position": [
-          -288,
-          384
+          -25504,
+          10832
         ],
-        "id": "9eca3b6b-bfb6-466a-963e-17ee3af6ef51",
+        "id": "2739d9a4-e5cf-481d-87ee-a68002811294",
         "name": "IF - Should Escalate?"
       },
       {
@@ -457,10 +555,10 @@
         "type": "@n8n/n8n-nodes-langchain.agent",
         "typeVersion": 3.1,
         "position": [
-          -112,
-          464
+          -25328,
+          10912
         ],
-        "id": "55403ead-df9b-4a30-92b4-02eef15a0ba5",
+        "id": "3817e331-cd3a-4d18-bf51-70d4e1337d03",
         "name": "AI Agent"
       },
       {
@@ -468,10 +566,10 @@
         "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
         "typeVersion": 1.3,
         "position": [
-          -112,
-          768
+          -25328,
+          11216
         ],
-        "id": "b2a606c6-46ec-45b6-8d74-4ee285c2a520",
+        "id": "e3b8b762-2cbd-4ba2-aab8-e66efd58d990",
         "name": "Postgres Chat Memory",
         "credentials": {
           "postgres": {
@@ -495,10 +593,10 @@
         "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
         "typeVersion": 1.3,
         "position": [
-          -320,
-          768
+          -25536,
+          11216
         ],
-        "id": "5580120b-281a-4259-a5f9-5cf07d6c7dd9",
+        "id": "28aad4ea-c775-42a8-96d5-31573ae26fc7",
         "name": "OpenAI GPT-4.1 Mini",
         "credentials": {
           "openAiApi": {
@@ -512,34 +610,42 @@
           "description": "Get complete account summary including balance, equity, margin, free margin, margin level, and account details. Use when user asks about their account balance, equity, margin status, or account overview.",
           "workflowId": {
             "__rl": true,
-            "mode": "id",
-            "value": "={{ $workflow.id }}_TOOL_ACCOUNT_SUMMARY"
+            "value": "yJVOrcn0FBCWDBPVOvZx7",
+            "mode": "list",
+            "cachedResultUrl": "/workflow/yJVOrcn0FBCWDBPVOvZx7",
+            "cachedResultName": "TOOL - Account Summary"
           },
           "workflowInputs": {
             "mappingMode": "defineBelow",
             "value": {
-              "client_id": "={{ $('Smart Router & Prompt Builder').item.json.user.id }}"
+              "user_id": 80733
             },
             "matchingColumns": [
-              "client_id"
+              "user_id"
             ],
             "schema": [
               {
-                "id": "client_id",
-                "displayName": "client_id",
-                "required": true,
-                "type": "number"
+                "id": "user_id",
+                "displayName": "user_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "number",
+                "removed": false
               }
-            ]
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
           }
         },
         "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
         "typeVersion": 2.2,
         "position": [
-          80,
-          560
+          -25136,
+          11008
         ],
-        "id": "8a1011be-b159-4f55-b480-ae066969fa49",
+        "id": "555b9d0d-ea30-41d4-85ed-274195a89e0e",
         "name": "Tool - Account Summary"
       },
       {
@@ -578,10 +684,10 @@
         "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
         "typeVersion": 2.2,
         "position": [
-          80,
-          672
+          -25136,
+          11120
         ],
-        "id": "8322e5a0-9611-46ae-b40a-ea1fcd7f3ec4",
+        "id": "c16eb2f1-97bd-409b-9c19-c1413eab8b9c",
         "name": "Tool - Open Positions"
       },
       {
@@ -634,10 +740,10 @@
         "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
         "typeVersion": 2.2,
         "position": [
-          80,
-          768
+          -25136,
+          11216
         ],
-        "id": "7d037db0-7fab-4491-856d-baa45def9cc0",
+        "id": "af64daf3-b8a7-4547-8b30-5a2345f36048",
         "name": "Tool - Trade History"
       },
       {
@@ -690,10 +796,10 @@
         "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
         "typeVersion": 2.2,
         "position": [
-          80,
-          864
+          -25136,
+          11312
         ],
-        "id": "7061d556-08e7-4daf-bb22-82e458725aae",
+        "id": "8cb92ae5-2046-4f64-8eb4-405c4f23a6b7",
         "name": "Tool - Transactions"
       },
       {
@@ -723,10 +829,10 @@
         "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
         "typeVersion": 2.2,
         "position": [
-          288,
-          560
+          -24928,
+          11008
         ],
-        "id": "f4cf83e7-ad23-4a3e-87e2-3d221e54cc33",
+        "id": "354bdb79-7130-42e1-bd4d-aa805b1bbe4e",
         "name": "Tool - Market Prices"
       },
       {
@@ -735,25 +841,39 @@
           "workflowId": {
             "__rl": true,
             "mode": "id",
-            "value": "={{ $workflow.id }}_TOOL_MARKET_NEWS"
+            "value": "TOOL_TRADINGFACTORY_NEWS"
           },
           "workflowInputs": {
             "mappingMode": "defineBelow",
             "value": {
-              "category": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('category', 'forex, crypto, commodities, stocks, or general', 'string') }}",
-              "limit": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('limit', 'Number of news items, default 5', 'number') }}"
+              "currency": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('currency', 'Currency code like USD, EUR, GBP, JPY. Leave empty for all.', 'string') }}",
+              "impact": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('impact', 'high, medium, low, or all', 'string') }}",
+              "limit": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('limit', 'Number of events to return, default 8', 'number') }}",
+              "hours_ahead": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('hours_ahead', 'How many hours ahead to scan, default 168', 'number') }}"
             },
             "matchingColumns": [],
             "schema": [
               {
-                "id": "category",
-                "displayName": "category",
+                "id": "currency",
+                "displayName": "currency",
+                "required": false,
+                "type": "string"
+              },
+              {
+                "id": "impact",
+                "displayName": "impact",
                 "required": false,
                 "type": "string"
               },
               {
                 "id": "limit",
                 "displayName": "limit",
+                "required": false,
+                "type": "number"
+              },
+              {
+                "id": "hours_ahead",
+                "displayName": "hours_ahead",
                 "required": false,
                 "type": "number"
               }
@@ -763,10 +883,10 @@
         "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
         "typeVersion": 2.2,
         "position": [
-          288,
-          672
+          -24928,
+          11120
         ],
-        "id": "6836d26b-66c9-4cd5-ab97-a31c7a9ed9b7",
+        "id": "296ff398-6eeb-4bfa-af6b-098369cf7dea",
         "name": "Tool - Market News"
       },
       {
@@ -810,10 +930,10 @@
         "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
         "typeVersion": 2.2,
         "position": [
-          288,
-          768
+          -24928,
+          11216
         ],
-        "id": "d313589c-0a7b-4d86-8e48-0a2802e6208e",
+        "id": "4170189d-50da-4f4a-a583-710976cc8713",
         "name": "Tool - Economic Calendar"
       },
       {
@@ -878,10 +998,10 @@
         "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
         "typeVersion": 2.2,
         "position": [
-          288,
-          864
+          -24928,
+          11312
         ],
-        "id": "91947181-64ec-4f4d-adea-2ba8ddfa1dc3",
+        "id": "59593272-a99c-4476-8704-ea747df36004",
         "name": "Tool - Trading Calculator"
       },
       {
@@ -911,10 +1031,10 @@
         "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
         "typeVersion": 2.2,
         "position": [
-          480,
-          560
+          -24736,
+          11008
         ],
-        "id": "275376a6-f505-416a-b477-7027692378e1",
+        "id": "4c9fd1ea-43ba-44a5-88c3-8440a6e7f515",
         "name": "Tool - Platform Status"
       },
       {
@@ -946,10 +1066,10 @@
         "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
         "typeVersion": 2.2,
         "position": [
-          480,
-          672
+          -24736,
+          11120
         ],
-        "id": "c859665a-7516-4af4-939f-e2f05498ae16",
+        "id": "eb1102ea-82c3-42b7-8514-224be4cc5a99",
         "name": "Tool - Document Status"
       },
       {
@@ -1009,10 +1129,10 @@
         "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
         "typeVersion": 2.2,
         "position": [
-          496,
-          816
+          -24720,
+          11264
         ],
-        "id": "789c5412-7b57-4060-a22d-ec713fe1e7ed",
+        "id": "a92b92b1-2b1d-4d58-a797-a40dc06e9669",
         "name": "Tool - Support Ticket"
       },
       {
@@ -1065,10 +1185,10 @@
         "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
         "typeVersion": 2.2,
         "position": [
-          496,
-          944
+          -24720,
+          11392
         ],
-        "id": "7e0e22f5-9cdc-4129-b217-e91d72a7f60e",
+        "id": "1ca6f9b4-9228-451a-88f3-82b95d4c14f9",
         "name": "Tool - Schedule Callback"
       },
       {
@@ -1100,10 +1220,10 @@
         "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
         "typeVersion": 2.2,
         "position": [
-          720,
-          592
+          -24496,
+          11040
         ],
-        "id": "3a806110-e88c-4ffb-8cec-29705d736453",
+        "id": "ce929c0c-5e88-4414-b6a6-5877a9f760fc",
         "name": "Tool - Promotions"
       },
       {
@@ -1135,10 +1255,10 @@
         "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
         "typeVersion": 2.2,
         "position": [
-          704,
-          736
+          -24512,
+          11184
         ],
-        "id": "fdd33a5e-6111-403e-954f-097f26205562",
+        "id": "df52df86-2287-499c-a17a-09cf6c3f8e50",
         "name": "Tool - Risk Assessment"
       },
       {
@@ -1175,10 +1295,10 @@
         "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
         "typeVersion": 2.2,
         "position": [
-          704,
-          896
+          -24512,
+          11344
         ],
-        "id": "ba04b3bd-6bd5-4d14-beac-f06461e1f645",
+        "id": "b16f64ac-d26d-410a-aedc-fb4278d44efc",
         "name": "Tool - FAQ Search"
       },
       {
@@ -1188,10 +1308,10 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          80,
-          368
+          -25136,
+          10816
         ],
-        "id": "bf6dc7a6-3a3b-40e7-b024-3ee9f9e68a58",
+        "id": "b66ab862-2c56-486f-9f65-1061fa4080cb",
         "name": "Compliance Filter"
       },
       {
@@ -1201,10 +1321,10 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          -112,
-          160
+          -25328,
+          10608
         ],
-        "id": "ac55a624-49b6-4c74-89fb-345b1a177dfc",
+        "id": "90777c96-4938-40a3-a9cb-d221a8fe2bba",
         "name": "Escalation Handler"
       },
       {
@@ -1216,10 +1336,10 @@
         "type": "n8n-nodes-base.postgres",
         "typeVersion": 2.6,
         "position": [
-          288,
-          368
+          -24928,
+          10816
         ],
-        "id": "a9b7946e-8e4e-4f72-8f31-3129091a8c58",
+        "id": "a318fa5f-bb65-4cc6-9a75-2fd65887fb15",
         "name": "DB - Comprehensive Audit Log",
         "credentials": {
           "postgres": {
@@ -1237,10 +1357,10 @@
         "type": "n8n-nodes-base.postgres",
         "typeVersion": 2.6,
         "position": [
-          480,
-          368
+          -24736,
+          10816
         ],
-        "id": "07dfd46f-c01b-4880-b989-b8741a123111",
+        "id": "db8b0105-e319-4e3e-a065-b8d343dc6f5e",
         "name": "DB - Update Session",
         "credentials": {
           "postgres": {
@@ -1256,23 +1376,23 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          672,
-          368
+          -24544,
+          10816
         ],
-        "id": "ac9fe3ab-4c7b-4cdc-9f49-50701c7d1c1f",
+        "id": "60e9dc11-3fc0-422a-972f-dcf6962d2c45",
         "name": "Preserve Context After Session"
       },
       {
         "parameters": {
-          "jsCode": "// Format final response based on channel\nconst context = $input.first().json;\nconst channel = context.channel;\nlet response = context.filtered_response || context.output || 'I apologize, but I encountered an issue. Please try again or contact support.';\n\n// Channel-specific formatting\nif (channel === 'whatsapp') {\n  // WhatsApp formatting (limited markdown)\n  response = response\n    .replace(/\\*\\*([^*]+)\\*\\*/g, '*$1*')  // Bold\n    .replace(/^- /gm, '• ');               // Bullet points\n}\nelse if (channel === 'telegram') {\n  // Telegram supports HTML\n  response = response\n    .replace(/\\*\\*([^*]+)\\*\\*/g, '<b>$1</b>')\n    .replace(/\\*([^*]+)\\*/g, '<i>$1</i>')\n    .replace(/_([^_]+)_/g, '<i>$1</i>');\n}\nelse if (channel === 'email') {\n  // Email - add signature\n  response += `\\n\\n---\\nBest regards,\\nAlex\\nCMS Prime Support Team\\n\\nThis is an automated response. For urgent matters, please call +971 4 xxx xxxx.`;\n}\n\nreturn [{\n  output: response,\n  channel: channel,\n  session_id: context.session_id,\n  user_phone: context.user_phone,\n  metadata: context.metadata\n}];\n"
+          "jsCode": "// Format final response based on channel\nconst context = $input.first().json;\nconst channel = context.channel;\nlet response = context.filtered_response || context.output || 'I apologize, but I encountered an issue. Please try again or contact support.';\n\n// Channel-specific formatting\nif (channel === 'whatsapp') {\n  // WhatsApp formatting (limited markdown)\n  response = response\n    .replace(/\\*\\*([^*]+)\\*\\*/g, '*$1*')  // Bold\n    .replace(/^- /gm, '• ');               // Bullet points\n}\nelse if (channel === 'telegram') {\n  // Telegram supports HTML\n  response = response\n    .replace(/\\*\\*([^*]+)\\*\\*/g, '<b>$1</b>')\n    .replace(/\\*([^*]+)\\*/g, '<i>$1</i>')\n    .replace(/_([^_]+)_/g, '<i>$1</i>');\n}\nelse if (channel === 'email') {\n  // Email - add signature\n  response += `\\n\\n---\\nBest regards,\\nAlex\\nCMS Prime Support Team\\n\\nThis is an automated response. For urgent matters, please call +971 4 xxx xxxx.`;\n}\n\nreturn [{\n  output: response,\n  channel: channel,\n  session_id: context.session_id,\n  user_phone: context.user_phone,\n  metadata: context.metadata,\n  message_type: context.message_type || 'text'\n}];\n"
         },
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          880,
-          368
+          -24336,
+          10816
         ],
-        "id": "974ddd1b-2c38-47ab-b72f-aa3acf8218a4",
+        "id": "e08f42d7-b5d5-4c3b-8a8a-0cb3973ed777",
         "name": "Format Response"
       },
       {
@@ -1302,10 +1422,10 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2,
         "position": [
-          1088,
-          240
+          -24128,
+          10688
         ],
-        "id": "0ae69cea-05e5-4001-bdb0-f73e70c3457f",
+        "id": "283a6f5b-89ae-4aff-a837-a736ebc9efa9",
         "name": "IF - WhatsApp?"
       },
       {
@@ -1333,10 +1453,10 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.3,
         "position": [
-          1408,
-          176
+          -23808,
+          10624
         ],
-        "id": "1e1a54e9-98d1-4a7a-98c7-b50e2b6fa715",
+        "id": "fd1e6433-4fec-4419-bdec-549fb0fe5305",
         "name": "Send WhatsApp Response"
       },
       {
@@ -1366,10 +1486,10 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2,
         "position": [
-          1296,
-          400
+          -23920,
+          10848
         ],
-        "id": "bf43bb56-7ba6-4d8e-bc13-524875036a48",
+        "id": "f06e6d0a-c786-4aa6-95c3-dbcbb8c7e273",
         "name": "IF - Telegram?"
       },
       {
@@ -1383,10 +1503,10 @@
         "type": "n8n-nodes-base.telegram",
         "typeVersion": 1.2,
         "position": [
-          1584,
-          336
+          -23424,
+          10992
         ],
-        "id": "ec5687e0-5e8b-4eac-b839-c4fb16f8aa4f",
+        "id": "a1638889-8e49-400a-82cd-4f97883b993e",
         "name": "Send Telegram Response",
         "webhookId": "52cdca7a-bb17-40e4-a24e-f6852315927f",
         "credentials": {
@@ -1412,10 +1532,10 @@
         "type": "n8n-nodes-base.set",
         "typeVersion": 3.4,
         "position": [
-          1344,
-          736
+          -23872,
+          11184
         ],
-        "id": "6d0244d7-44a0-4d50-986c-3a034430ae3c",
+        "id": "bda9fb9f-42b0-4584-b77b-849d52388fb6",
         "name": "Return Web/Default Response"
       },
       {
@@ -1427,15 +1547,92 @@
         "type": "n8n-nodes-base.postgres",
         "typeVersion": 2.6,
         "position": [
-          -1712,
-          672
+          -26928,
+          11120
         ],
-        "id": "59c47c06-7143-4a59-a091-919bdf4f2788",
+        "id": "f1d3b618-0493-4ec1-8798-3caca2d514a6",
         "name": "DB - Audit (Auth Fail)",
         "credentials": {
           "postgres": {
             "id": "yNVFJmXSqNtKGgso",
             "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 1
+            },
+            "conditions": [
+              {
+                "id": "8a480928-89d7-4a52-afe9-f509039e397b",
+                "leftValue": "={{ $json.message_type || 'text' }}",
+                "rightValue": "voice",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          -23728,
+          10848
+        ],
+        "id": "6c2ccfd4-d0fc-44da-9dd7-8c9773fa2a96",
+        "name": "IF - Telegram Voice Reply?"
+      },
+      {
+        "parameters": {
+          "resource": "audio",
+          "input": "={{ (($json.output || '').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').trim()).slice(0, 2000) }}",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.openAi",
+        "typeVersion": 1.8,
+        "position": [
+          -23232,
+          10640
+        ],
+        "id": "ce2fbfdd-3199-46cc-bf1c-b25419edfae6",
+        "name": "Telegram - Generate Voice Response",
+        "credentials": {
+          "openAiApi": {
+            "id": "jqIg0jyWAkPQG4Ce",
+            "name": "OpenAi account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "sendAudio",
+          "chatId": "={{ $('IF - Telegram Voice Reply?').item.json.metadata?.chat_id }}",
+          "binaryData": true,
+          "additionalFields": {}
+        },
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          -23008,
+          10688
+        ],
+        "id": "5a4b8d66-1b2b-4eae-92bb-49fdcf5cdb7a",
+        "name": "Send Telegram Voice Response",
+        "webhookId": "cb0bf5fc-69c1-41d4-9f8f-b8265a41f000",
+        "credentials": {
+          "telegramApi": {
+            "id": "txTzVvWQaqPSnMci",
+            "name": "Telegram account"
           }
         }
       }
@@ -1465,6 +1662,57 @@
         ]
       },
       "Telegram Trigger": {
+        "main": [
+          [
+            {
+              "node": "IF - Telegram Voice?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IF - Telegram Voice?": {
+        "main": [
+          [
+            {
+              "node": "Telegram - Get Voice File",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Channel Normalizer",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Telegram - Get Voice File": {
+        "main": [
+          [
+            {
+              "node": "Telegram - Transcribe Voice",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Telegram - Transcribe Voice": {
+        "main": [
+          [
+            {
+              "node": "Telegram - Apply Transcript",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Telegram - Apply Transcript": {
         "main": [
           [
             {
@@ -2002,7 +2250,7 @@
         "main": [
           [
             {
-              "node": "Send Telegram Response",
+              "node": "IF - Telegram Voice Reply?",
               "type": "main",
               "index": 0
             }
@@ -2026,14 +2274,43 @@
             }
           ]
         ]
+      },
+      "IF - Telegram Voice Reply?": {
+        "main": [
+          [
+            {
+              "node": "Telegram - Generate Voice Response",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Send Telegram Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Telegram - Generate Voice Response": {
+        "main": [
+          [
+            {
+              "node": "Send Telegram Voice Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
-    "active": false,
+    "active": true,
     "settings": {
       "executionOrder": "v1",
       "availableInMCP": false
     },
-    "versionId": "61cd639b-9a31-43d2-8e18-973798ff0169",
+    "versionId": "3de40722-54a2-4880-8f21-0066cb2e6587",
     "meta": {
       "templateCredsSetupCompleted": true,
       "instanceId": "495f6278a9dd899c69efc38f92904361f03ad646b8c63a3d991806ec829debf6"

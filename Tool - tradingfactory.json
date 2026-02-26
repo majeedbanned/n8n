@@ -1,0 +1,139 @@
+{
+  "name": "TOOL - TradingFactory News",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "currency",
+              "type": "string"
+            },
+            {
+              "name": "impact",
+              "type": "string"
+            },
+            {
+              "name": "limit",
+              "type": "number"
+            },
+            {
+              "name": "hours_ahead",
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -400,
+        300
+      ],
+      "id": "tool-trigger",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize input parameters\nconst input = $input.first().json || {};\n\nconst currency = String(input.currency || '').trim().toUpperCase();\n\nconst allowedImpacts = ['low', 'medium', 'high', 'all'];\nlet impact = String(input.impact || 'all').trim().toLowerCase();\nif (!allowedImpacts.includes(impact)) impact = 'all';\n\nconst limit = Math.min(Math.max(Number(input.limit) || 8, 1), 25);\nconst hoursAhead = Math.min(Math.max(Number(input.hours_ahead) || 168, 1), 336);\n\nreturn [{ currency, impact, limit, hours_ahead: hoursAhead }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -200,
+        300
+      ],
+      "id": "normalize-input",
+      "name": "Normalize Input"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        0,
+        300
+      ],
+      "id": "fetch-news",
+      "name": "Fetch TradingFactory News"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format and filter TradingFactory/ForexFactory calendar items\nconst normalized = $('Normalize Input').item.json;\nconst rawItems = $input.all().map(i => i.json).filter(Boolean);\n\nlet events = [];\nif (rawItems.length === 1 && Array.isArray(rawItems[0])) {\n  events = rawItems[0];\n} else if (Array.isArray(rawItems)) {\n  events = rawItems;\n}\n\nconst normalizeImpact = (v) => {\n  const s = String(v ?? '').toLowerCase();\n  if (s.includes('high') || s === '3') return 'high';\n  if (s.includes('med') || s === '2') return 'medium';\n  if (s.includes('low') || s === '1') return 'low';\n  return 'unknown';\n};\n\nconst toDate = (v) => {\n  const d = new Date(v);\n  return Number.isNaN(d.getTime()) ? null : d;\n};\n\nconst now = new Date();\nconst horizon = new Date(now.getTime() + normalized.hours_ahead * 60 * 60 * 1000);\n\nconst filtered = events\n  .map((e) => {\n    const date = toDate(e.date || e.datetime || e.timestamp);\n    const impact = normalizeImpact(e.impact);\n    return {\n      title: e.title || e.event || 'Economic Event',\n      currency: String(e.currency || e.ccy || '').toUpperCase(),\n      country: e.country || null,\n      impact,\n      date: date ? date.toISOString() : null,\n      actual: e.actual ?? null,\n      forecast: e.forecast ?? null,\n      previous: e.previous ?? null,\n      source: 'TradingFactory',\n      url: e.url || 'https://www.forexfactory.com/calendar'\n    };\n  })\n  .filter((e) => e.date !== null)\n  .filter((e) => !normalized.currency || e.currency === normalized.currency)\n  .filter((e) => normalized.impact === 'all' || e.impact === normalized.impact)\n  .filter((e) => {\n    const d = new Date(e.date);\n    return d >= now && d <= horizon;\n  })\n  .sort((a, b) => new Date(a.date) - new Date(b.date))\n  .slice(0, normalized.limit);\n\nreturn [{\n  ok: true,\n  source: 'TradingFactory',\n  filters: normalized,\n  news_count: filtered.length,\n  news: filtered,\n  timestamp: new Date().toISOString(),\n  disclaimer: 'Economic calendar data is informational only, not financial advice.'\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        300
+      ],
+      "id": "format-output",
+      "name": "Format News"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "Fetch TradingFactory News",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch TradingFactory News": {
+      "main": [
+        [
+          {
+            "node": "Format News",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1.0.0",
+  "meta": {
+    "instanceId": "broker-ai-tool-tradingfactory-news"
+  },
+  "id": "TOOL_TRADINGFACTORY_NEWS",
+  "tags": [
+    "tool",
+    "market",
+    "news"
+  ]
+}

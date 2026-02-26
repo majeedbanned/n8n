@@ -12,8 +12,11 @@
         },
         "type": "@n8n/n8n-nodes-langchain.chatTrigger",
         "typeVersion": 1.4,
-        "position": [-28736, 10816],
-        "id": "5afd8d87-2e88-446b-9ce4-7a2ac1baf85b",
+        "position": [
+          -76688,
+          27952
+        ],
+        "id": "8edb5240-54dd-49f4-8366-8e513175f8dd",
         "name": "Web Chat Trigger",
         "webhookId": "broker-ai-web-chat"
       },
@@ -25,20 +28,28 @@
         },
         "type": "n8n-nodes-base.webhook",
         "typeVersion": 2,
-        "position": [-28736, 11008],
-        "id": "c3bc52db-6876-4a5e-8dd5-45fa7308bfa9",
+        "position": [
+          -76688,
+          28144
+        ],
+        "id": "c4dde0a8-91ab-486d-9b32-b936c723d6f8",
         "name": "WhatsApp Webhook",
         "webhookId": "broker-ai-whatsapp"
       },
       {
         "parameters": {
-          "updates": ["message"],
+          "updates": [
+            "message"
+          ],
           "additionalFields": {}
         },
         "type": "n8n-nodes-base.telegramTrigger",
         "typeVersion": 1.1,
-        "position": [-28736, 11216],
-        "id": "a34f74cd-78ca-4b0b-a65d-94c483b400a5",
+        "position": [
+          -76688,
+          28352
+        ],
+        "id": "1d729a54-12af-4d1f-a5aa-2a0e5e52d760",
         "name": "Telegram Trigger",
         "webhookId": "4600682b-8d05-479b-95b4-f508a2a9954d",
         "credentials": {
@@ -62,13 +73,19 @@
                 "id": "b0381adf-f70c-4d19-89e6-c6b66a40f8c6",
                 "leftValue": "={{ $json.message && $json.message.voice && $json.message.voice.file_id ? 'voice' : 'not_voice' }}",
                 "rightValue": "voice",
-                "operator": { "type": "string", "operation": "equals" }
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
               },
               {
                 "id": "cae3b91a-2a1e-4831-8fd7-7895b359bf80",
                 "leftValue": "={{ $json.message && $json.message.text ? 'has_text' : 'no_text' }}",
                 "rightValue": "no_text",
-                "operator": { "type": "string", "operation": "equals" }
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
               }
             ],
             "combinator": "and"
@@ -77,8 +94,11 @@
         },
         "type": "n8n-nodes-base.if",
         "typeVersion": 2,
-        "position": [-28544, 11216],
-        "id": "68de3362-1ca7-4ab7-a240-1bd96530663f",
+        "position": [
+          -76352,
+          28592
+        ],
+        "id": "62a1c6c8-dd26-452a-8771-085b5025f53c",
         "name": "IF - Telegram Voice?"
       },
       {
@@ -89,8 +109,11 @@
         },
         "type": "n8n-nodes-base.telegram",
         "typeVersion": 1.2,
-        "position": [-28336, 11360],
-        "id": "4535b806-0127-409a-b030-74ac0cc1e354",
+        "position": [
+          -75792,
+          28640
+        ],
+        "id": "dba35739-7cc1-415e-b39d-b8fe0f7e7c42",
         "name": "Telegram - Get Voice File",
         "webhookId": "322ca2d9-460f-4f41-93c9-9538f6ade8ff",
         "credentials": {
@@ -108,8 +131,11 @@
         },
         "type": "@n8n/n8n-nodes-langchain.openAi",
         "typeVersion": 1.8,
-        "position": [-28128, 11360],
-        "id": "2011fd67-f548-43ff-af46-eafdd3a62733",
+        "position": [
+          -75584,
+          28640
+        ],
+        "id": "dba3fb5a-4246-4641-982e-40ac635fe5ba",
         "name": "Telegram - Transcribe Voice",
         "credentials": {
           "openAiApi": {
@@ -124,8 +150,11 @@
         },
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
-        "position": [-27920, 11360],
-        "id": "b97eaf6d-81f9-4e08-b904-3400fd14bfa2",
+        "position": [
+          -75376,
+          28640
+        ],
+        "id": "912b4a00-4d3e-49ea-a992-36e7cc7aae88",
         "name": "Telegram - Apply Transcript"
       },
       {
@@ -136,8 +165,11 @@
         },
         "type": "n8n-nodes-base.webhook",
         "typeVersion": 2,
-        "position": [-28736, 11408],
-        "id": "7738961d-d39a-458b-99ac-0b338682d68f",
+        "position": [
+          -76688,
+          28544
+        ],
+        "id": "fa5a8d8a-296a-4edb-a527-568f73998a4b",
         "name": "Email Webhook",
         "webhookId": "broker-ai-email"
       },
@@ -147,18 +179,24 @@
         },
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
-        "position": [-28336, 11008],
-        "id": "f877fcc4-ff30-4a29-8364-a312c9986d7b",
+        "position": [
+          -75984,
+          28160
+        ],
+        "id": "2b839de5-8a5d-429f-bda2-00dc9497bb68",
         "name": "Channel Normalizer"
       },
       {
         "parameters": {
-          "jsCode": "// Extract phone number from various identifier formats\nconst input = $input.first().json;\nlet user_phone = '';\nlet user_email = '';\nconst identifier = input.user_identifier || '';\n\nconst emailPattern = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\n\nif (emailPattern.test(identifier)) {\n  user_email = identifier;\n} else {\n  const cleaned = identifier.replace(/[^\\d+]/g, '');\n  if (cleaned.length >= 8) {\n    user_phone = cleaned.startsWith('+') ? cleaned : `+${cleaned}`;\n  }\n}\n\nif (!user_phone && !user_email && input.channel === 'telegram') {\n  user_phone = `telegram:${input.metadata?.user_id || input.session_id}`;\n}\n\n// TEST MODE ONLY\nuser_phone='+971556241060';\nreturn [{\n  ...input,\n  user_phone,\n  user_email,\n  user_text: input.message_text\n}];\n"
+          "jsCode": "// Extract phone number from various identifier formats\nconst input = $input.first().json;\nlet user_phone = '';\nlet user_email = '';\nconst identifier = input.user_identifier || '';\n\n// Phone extraction patterns\nconst phonePatterns = [\n  /^\\+?[1-9]\\d{6,14}$/,  // International format\n  /^\\+?\\d{10,15}$/,       // Various formats\n];\n\nconst emailPattern = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\n\nif (emailPattern.test(identifier)) {\n  user_email = identifier;\n} else {\n  // Clean and extract phone\n  const cleaned = identifier.replace(/[^\\d+]/g, '');\n  if (cleaned.length >= 8) {\n    user_phone = cleaned.startsWith('+') ? cleaned : `+${cleaned}`;\n  }\n}\n\n// For Telegram, try to get phone from metadata or use telegram ID\nif (!user_phone && !user_email && input.channel === 'telegram') {\n  user_phone = `telegram:${input.metadata?.user_id || input.session_id}`;\n}\n\nreturn [{\n  ...input,\n  user_phone,\n  user_email,\n  user_text: input.message_text\n}];\n"
         },
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
-        "position": [-28128, 11008],
-        "id": "b89bbff2-455a-4232-b203-cdafc07fa3ea",
+        "position": [
+          -75792,
+          28160
+        ],
+        "id": "a653eb24-30e2-4f54-97ec-6a754b29b316",
         "name": "Extract User Identifiers"
       },
       {
@@ -175,8 +213,11 @@
         },
         "type": "n8n-nodes-base.if",
         "typeVersion": 2,
-        "position": [-27936, 11008],
-        "id": "3aa7605c-916a-4f0a-b751-ba56235f6aa2",
+        "position": [
+          -75600,
+          28160
+        ],
+        "id": "912ff3f3-0092-43fc-a4ef-06eb04f8c455",
         "name": "IF - Have User Identifier?"
       },
       {
@@ -194,8 +235,11 @@
         },
         "type": "n8n-nodes-base.set",
         "typeVersion": 3.4,
-        "position": [-27728, 11216],
-        "id": "b54a2126-8bc0-4e5c-8e1c-999d76690d7e",
+        "position": [
+          -75392,
+          28368
+        ],
+        "id": "fd291bd8-171e-4f16-8881-47ba9c0f431a",
         "name": "Missing Identifier Response"
       },
       {
@@ -205,32 +249,49 @@
           "sendHeaders": true,
           "headerParameters": {
             "parameters": [
-              { "name": "accept", "value": "application/json" },
-              { "name": "Content-Type", "value": "application/json" },
-              { "name": "Authorization", "value": "=Bearer 805e6648071ff54087a78d1f5e0a5508a3ed4fd92f692c704b4e3120991fcf3df3d2eab8d57ffb782d6e4d4fba12648fb04cc76c807ff684c96e5d24" }
+              {
+                "name": "accept",
+                "value": "application/json"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "Authorization",
+                "value": "=Bearer 805e6648071ff54087a78d1f5e0a5508a3ed4fd92f692c704b4e3120991fcf3df3d2eab8d57ffb782d6e4d4fba12648fb04cc76c807ff684c96e5d24"
+              }
             ]
           },
           "sendBody": true,
           "specifyBody": "json",
           "jsonBody": "={{ $json.user_email ? {\"email\": $json.user_email} : {\"phone\": $json.user_phone} }}",
-          "options": { "timeout": 30000, "splitIntoItems": false }
+          "options": {
+            "timeout": 30000
+          }
         },
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.3,
-        "position": [-27728, 10912],
-        "id": "c98a623a-bfb0-42b9-8a05-ce55a47f22b1",
+        "position": [
+          -75424,
+          28064
+        ],
+        "id": "3f5a8496-a9a8-441f-8265-d3785a54e311",
         "name": "Auth - Lookup User",
-        "continueOnFail": true,
-        "alwaysOutputData": true
+        "alwaysOutputData": true,
+        "continueOnFail": true
       },
       {
         "parameters": {
-          "jsCode": "// Extract and validate user from API response\nconst res = $input.first().json;\nlet prevData = {};\ntry {\n  prevData = $('Extract User Identifiers').item.json || {};\n} catch (e) {\n  prevData = {};\n}\nlet u = null;\n\nif (Array.isArray(res)) u = res.length > 0 ? res[0] : null;\nelse if (res && typeof res === 'object' && Array.isArray(res.body)) u = res.body.length > 0 ? res.body[0] : null;\nelse if (res && typeof res === 'object' && Object.keys(res).length > 0 && res.id) u = res;\n\nif (!u) {\n  return [{ \n    auth_ok: false, \n    user: null,\n    is_admin: false,\n    ...prevData\n  }];\n}\n\nconst isVip = u.tradingVolume > 1000000 || u.totalDeposits > 50000 || u.isIb === true;\nconst tags = Array.isArray(u.tags) ? u.tags : [];\nconst isAdmin = tags.some((tag) => {\n  const normalized = String(tag || '').trim().toLowerCase();\n  return normalized === 'isadmin' || normalized === 'is admin';\n});\n\nreturn [{\n  auth_ok: true,\n  is_admin: isAdmin,\n  user: {\n    id: u.id ?? null,\n    managerId: u.managerId ?? null,\n    country: u.country ?? null,\n    firstName: u.firstName ?? null,\n    lastName: u.lastName ?? null,\n    fullName: `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'Valued Client',\n    email: u.email ?? null,\n    phone: u.phone ?? null,\n    language: u.language ?? 'en',\n    registrationDate: u.registrationDate ?? null,\n    lastLoginDate: u.lastLoginDate ?? null,\n    status: u.status ?? null,\n    isIb: u.isIb ?? false,\n    isVip: isVip,\n    isAdmin: isAdmin,\n    tags: tags,\n    verified: u.verified ?? null,\n    tradingStatus: u.tradingStatus ?? null,\n    lastDepositDate: u.lastDepositDate ?? null,\n    nationality: u.nationality ?? null\n  },\n  ...prevData\n}];\n"
+          "jsCode": "// Extract and validate user from API response\nconst res = $input.first().json;\nlet prevData = {};\ntry {\n  prevData = $('Extract User Identifiers').item.json || {};\n} catch (e) {\n  // Node not available, use empty object\n  prevData = {};\n}\nlet u = null;\n\nif (Array.isArray(res)) u = res.length > 0 ? res[0] : null;\nelse if (res && typeof res === 'object' && Array.isArray(res.body)) u = res.body.length > 0 ? res.body[0] : null;\nelse if (res && typeof res === 'object' && Object.keys(res).length > 0 && res.id) u = res;\n\nif (!u) {\n  return [{ \n    auth_ok: false, \n    user: null,\n    is_admin: false,\n    ...prevData\n  }];\n}\n\nconst isVip = u.tradingVolume > 1000000 || u.totalDeposits > 50000 || u.isIb === true;\nconst tags = Array.isArray(u.tags) ? u.tags : [];\nconst isAdmin = tags.some((tag) => {\n  const normalized = String(tag || '').trim().toLowerCase();\n  return normalized === 'isadmin' || normalized === 'is admin';\n});\n\nreturn [{\n  auth_ok: true,\n  is_admin: isAdmin,\n  user: {\n    id: u.id ?? null,\n    managerId: u.managerId ?? null,\n    country: u.country ?? null,\n    firstName: u.firstName ?? null,\n    lastName: u.lastName ?? null,\n    fullName: `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'Valued Client',\n    email: u.email ?? null,\n    phone: u.phone ?? null,\n    language: u.language ?? 'en',\n    registrationDate: u.registrationDate ?? null,\n    lastLoginDate: u.lastLoginDate ?? null,\n    status: u.status ?? null,\n    isIb: u.isIb ?? false,\n    isVip: isVip,\n    isAdmin: isAdmin,\n    tags: tags,\n    verified: u.verified ?? null,\n    tradingStatus: u.tradingStatus ?? null,\n    lastDepositDate: u.lastDepositDate ?? null,\n    nationality: u.nationality ?? null\n  },\n  ...prevData\n}];\n"
         },
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
-        "position": [-27536, 10912],
-        "id": "7c5fc8a7-5fe4-47ac-a24f-a7ddaa7218bd",
+        "position": [
+          -75136,
+          28064
+        ],
+        "id": "fde6134e-589d-442d-91c5-a9c22066806d",
         "name": "Auth - Extract User Fields"
       },
       {
@@ -247,8 +308,11 @@
         },
         "type": "n8n-nodes-base.if",
         "typeVersion": 2,
-        "position": [-27328, 10912],
-        "id": "d910ef9f-b9c1-45fd-8cc4-5cb246f6b93d",
+        "position": [
+          -74992,
+          28064
+        ],
+        "id": "f65923ba-e7b3-4dcd-8a68-a870b52a4aed",
         "name": "IF - Auth OK?"
       },
       {
@@ -266,18 +330,24 @@
         },
         "type": "n8n-nodes-base.set",
         "typeVersion": 3.4,
-        "position": [-27136, 11120],
-        "id": "b9fbd8fa-4abf-4df6-a03d-cd37cb2896e6",
+        "position": [
+          -74224,
+          28544
+        ],
+        "id": "daf3fbb9-db7c-4a4f-a2a3-2f543b6ee792",
         "name": "Auth Failed Response"
       },
       {
         "parameters": {
-          "jsCode": "// Language Detection using simple heuristics\nconst text = $input.first().json.user_text || '';\n\nconst patterns = {\n  ar: /[\\u0600-\\u06FF\\u0750-\\u077F]/,\n  fa: /[\\u0600-\\u06FF]/,\n  zh: /[\\u4E00-\\u9FFF]/,\n  ja: /[\\u3040-\\u309F\\u30A0-\\u30FF]/,\n  ko: /[\\uAC00-\\uD7AF]/,\n  ru: /[\\u0400-\\u04FF]/,\n  hi: /[\\u0900-\\u097F]/,\n  th: /[\\u0E00-\\u0E7F]/\n};\n\nlet detected_language = 'en';\nlet confidence = 0.5;\n\nfor (const [lang, pattern] of Object.entries(patterns)) {\n  if (pattern.test(text)) {\n    detected_language = lang;\n    confidence = 0.9;\n    break;\n  }\n}\n\nif (detected_language === 'en') {\n  const commonEnglish = /\\b(the|is|are|have|has|what|how|when|where|why|can|could|would|please|thanks|thank|hello|hi|help)\\b/i;\n  if (commonEnglish.test(text)) {\n    confidence = 0.85;\n  }\n}\n\nconst userLang = $input.first().json.user?.language;\nif (confidence < 0.7 && userLang) {\n  detected_language = userLang;\n  confidence = 0.6;\n}\n\nreturn [{\n  ...$input.first().json,\n  detected_language,\n  language_confidence: confidence\n}];\n"
+          "jsCode": "// Language Detection using simple heuristics\nconst text = $input.first().json.user_text || '';\n\n// Language patterns\nconst patterns = {\n  ar: /[\\u0600-\\u06FF\\u0750-\\u077F]/,  // Arabic\n  fa: /[\\u0600-\\u06FF]/,                // Persian (shares Arabic script)\n  zh: /[\\u4E00-\\u9FFF]/,                // Chinese\n  ja: /[\\u3040-\\u309F\\u30A0-\\u30FF]/,  // Japanese\n  ko: /[\\uAC00-\\uD7AF]/,                // Korean\n  ru: /[\\u0400-\\u04FF]/,                // Russian/Cyrillic\n  hi: /[\\u0900-\\u097F]/,                // Hindi\n  th: /[\\u0E00-\\u0E7F]/,                // Thai\n};\n\nlet detected_language = 'en'; // Default to English\nlet confidence = 0.5;\n\nfor (const [lang, pattern] of Object.entries(patterns)) {\n  if (pattern.test(text)) {\n    detected_language = lang;\n    confidence = 0.9;\n    break;\n  }\n}\n\n// Check for common English patterns if no script detected\nif (detected_language === 'en') {\n  const commonEnglish = /\\b(the|is|are|have|has|what|how|when|where|why|can|could|would|please|thanks|thank|hello|hi|help)\\b/i;\n  if (commonEnglish.test(text)) {\n    confidence = 0.85;\n  }\n}\n\n// Use user's profile language as fallback\nconst userLang = $input.first().json.user?.language;\nif (confidence < 0.7 && userLang) {\n  detected_language = userLang;\n  confidence = 0.6;\n}\n\nreturn [{\n  ...$input.first().json,\n  detected_language,\n  language_confidence: confidence\n}];\n"
         },
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
-        "position": [-27136, 10816],
-        "id": "4151c882-19df-46ba-95ad-63f6ea7428d9",
+        "position": [
+          -74768,
+          27840
+        ],
+        "id": "c897e74a-9b0d-4381-b413-0e7ead857799",
         "name": "Language Detector"
       },
       {
@@ -287,33 +357,51 @@
         },
         "type": "@n8n/n8n-nodes-langchain.chainLlm",
         "typeVersion": 1.4,
-        "position": [-26928, 10816],
-        "id": "68aa5b5c-49ff-4ef2-9558-b5c1ac25847d",
+        "position": [
+          -74608,
+          27712
+        ],
+        "id": "f0a4eb51-4c56-40be-af29-c4d8cd658069",
         "name": "Sentiment Analyzer"
       },
       {
         "parameters": {
-          "model": { "__rl": true, "mode": "list", "value": "gpt-4.1-mini" },
+          "model": {
+            "__rl": true,
+            "mode": "list",
+            "value": "gpt-4.1-mini"
+          },
           "builtInTools": {},
-          "options": { "temperature": 0 }
+          "options": {
+            "temperature": 0
+          }
         },
         "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
         "typeVersion": 1.3,
-        "position": [-26928, 11008],
-        "id": "f15b4f7d-8772-4ed7-b196-f12d506a6cb8",
+        "position": [
+          -74608,
+          27824
+        ],
+        "id": "081eb5ff-9bcd-40b5-a50e-554538e94702",
         "name": "Sentiment LLM",
         "credentials": {
-          "openAiApi": { "id": "jqIg0jyWAkPQG4Ce", "name": "OpenAi account" }
+          "openAiApi": {
+            "id": "jqIg0jyWAkPQG4Ce",
+            "name": "OpenAi account"
+          }
         }
       },
       {
         "parameters": {
-          "jsCode": "let input = {};\ntry {\n  input = $('Language Detector').item.json || {};\n} catch (e) {\n  input = $input.first().json || {};\n}\nconst sentimentRaw = $input.first().json.text || $input.first().json.response || '{}';\n\nlet sentiment = { sentiment: 'neutral', score: 0, is_urgent: false, confidence: 0.5 };\n\ntry {\n  let jsonStr = sentimentRaw;\n  const jsonMatch = sentimentRaw.match(/```json?\\s*([\\s\\S]*?)```/) || sentimentRaw.match(/\\{[\\s\\S]*\\}/);\n  if (jsonMatch) { jsonStr = jsonMatch[1] || jsonMatch[0]; }\n  sentiment = JSON.parse(jsonStr.trim());\n} catch (e) {\n  const text = (input.user_text || '').toLowerCase();\n  if (/angry|furious|terrible|worst|scam|fraud|steal|ridiculous/i.test(text)) {\n    sentiment = { sentiment: 'angry', score: -0.8, is_urgent: true, confidence: 0.7 };\n  } else if (/frustrated|annoyed|disappointed|upset|problem|issue|not working/i.test(text)) {\n    sentiment = { sentiment: 'frustrated', score: -0.5, is_urgent: false, confidence: 0.7 };\n  } else if (/urgent|asap|immediately|emergency|critical|help now/i.test(text)) {\n    sentiment = { sentiment: 'urgent', score: -0.3, is_urgent: true, confidence: 0.8 };\n  } else if (/thank|great|excellent|amazing|love|happy|pleased/i.test(text)) {\n    sentiment = { sentiment: 'positive', score: 0.7, is_urgent: false, confidence: 0.7 };\n  }\n}\n\nreturn [{\n  ...input,\n  sentiment: sentiment.sentiment,\n  sentiment_score: sentiment.score,\n  is_urgent: sentiment.is_urgent,\n  sentiment_confidence: sentiment.confidence\n}];\n"
+          "jsCode": "// Parse sentiment analysis result\nlet input = {};\ntry {\n  input = $('Language Detector').item.json || {};\n} catch (e) {\n  input = $input.first().json || {};\n}\nconst sentimentRaw = $input.first().json.text || $input.first().json.response || '{}';\n\nlet sentiment = { sentiment: 'neutral', score: 0, is_urgent: false, confidence: 0.5 };\n\ntry {\n  // Extract JSON from response (handle markdown code blocks)\n  let jsonStr = sentimentRaw;\n  const jsonMatch = sentimentRaw.match(/```json?\\s*([\\s\\S]*?)```/) || sentimentRaw.match(/\\{[\\s\\S]*\\}/);\n  if (jsonMatch) {\n    jsonStr = jsonMatch[1] || jsonMatch[0];\n  }\n  sentiment = JSON.parse(jsonStr.trim());\n} catch (e) {\n  // Fallback: keyword-based sentiment\n  const text = input.user_text.toLowerCase();\n  if (/angry|furious|terrible|worst|scam|fraud|steal|ridiculous/i.test(text)) {\n    sentiment = { sentiment: 'angry', score: -0.8, is_urgent: true, confidence: 0.7 };\n  } else if (/frustrated|annoyed|disappointed|upset|problem|issue|not working/i.test(text)) {\n    sentiment = { sentiment: 'frustrated', score: -0.5, is_urgent: false, confidence: 0.7 };\n  } else if (/urgent|asap|immediately|emergency|critical|help now/i.test(text)) {\n    sentiment = { sentiment: 'urgent', score: -0.3, is_urgent: true, confidence: 0.8 };\n  } else if (/thank|great|excellent|amazing|love|happy|pleased/i.test(text)) {\n    sentiment = { sentiment: 'positive', score: 0.7, is_urgent: false, confidence: 0.7 };\n  }\n}\n\nreturn [{\n  ...input,\n  sentiment: sentiment.sentiment,\n  sentiment_score: sentiment.score,\n  is_urgent: sentiment.is_urgent,\n  sentiment_confidence: sentiment.confidence\n}];\n"
         },
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
-        "position": [-26640, 10640],
-        "id": "aed9f0b9-4230-4285-b2a2-2f3ba28cfe26",
+        "position": [
+          -74304,
+          27712
+        ],
+        "id": "89d9f246-6a59-4e67-a8e1-786a0965460a",
         "name": "Parse Sentiment"
       },
       {
@@ -323,123 +411,126 @@
         },
         "type": "@n8n/n8n-nodes-langchain.chainLlm",
         "typeVersion": 1.4,
-        "position": [-26528, 10816],
-        "id": "45c9ff98-b046-4cec-afc7-ac754844e37a",
+        "position": [
+          -74160,
+          27712
+        ],
+        "id": "7398ad2e-99df-4f54-8beb-ba27ce75dd06",
         "name": "Intent Classifier"
       },
       {
         "parameters": {
-          "model": { "__rl": true, "mode": "list", "value": "gpt-4.1-mini" },
+          "model": {
+            "__rl": true,
+            "mode": "list",
+            "value": "gpt-4.1-mini"
+          },
           "builtInTools": {},
-          "options": { "temperature": 0 }
+          "options": {
+            "temperature": 0
+          }
         },
         "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
         "typeVersion": 1.3,
-        "position": [-26528, 11008],
-        "id": "5a8e3fb1-f5a6-4c85-831f-bb5aa76776f3",
+        "position": [
+          -74160,
+          27824
+        ],
+        "id": "e75090a9-e856-4822-8326-66b541a0661f",
         "name": "Intent LLM",
         "credentials": {
-          "openAiApi": { "id": "jqIg0jyWAkPQG4Ce", "name": "OpenAi account" }
+          "openAiApi": {
+            "id": "jqIg0jyWAkPQG4Ce",
+            "name": "OpenAi account"
+          }
         }
       },
       {
         "parameters": {
-          "jsCode": "let input = {};\ntry {\n  input = $('Parse Sentiment').item.json || {};\n} catch (e) {\n  input = $input.first().json || {};\n}\nconst intentRaw = $input.first().json.text || $input.first().json.response || '{}';\n\nlet intent = { intent: 'general_chat', confidence: 0.5, sub_intent: null };\n\ntry {\n  let jsonStr = intentRaw;\n  const jsonMatch = intentRaw.match(/```json?\\s*([\\s\\S]*?)```/) || intentRaw.match(/\\{[\\s\\S]*\\}/);\n  if (jsonMatch) { jsonStr = jsonMatch[1] || jsonMatch[0]; }\n  intent = JSON.parse(jsonStr.trim());\n} catch (e) {\n  const text = (input.user_text || '').toLowerCase();\n  if (/balance|equity|margin|account.*status|my account/i.test(text)) {\n    intent = { intent: 'account_inquiry', confidence: 0.8 };\n  } else if (/position|trade|order|buy|sell|lot|pip/i.test(text)) {\n    intent = { intent: 'trading_question', confidence: 0.8 };\n  } else if (/deposit|withdraw|transfer|fund|payment/i.test(text)) {\n    intent = { intent: 'deposit_withdrawal', confidence: 0.85 };\n  } else if (/price|market|eurusd|gold|bitcoin|forecast/i.test(text)) {\n    intent = { intent: 'market_analysis', confidence: 0.8 };\n  } else if (/human|agent|person|manager|supervisor|speak.*someone/i.test(text)) {\n    intent = { intent: 'escalation_request', confidence: 0.95 };\n  } else if (/document|kyc|verify|passport|id|proof/i.test(text)) {\n    intent = { intent: 'document_verification', confidence: 0.85 };\n  } else if (/bonus|promotion|offer|referral/i.test(text)) {\n    intent = { intent: 'promotions', confidence: 0.8 };\n  } else if (/login|password|platform|mt4|mt5|not working|error|crash/i.test(text)) {\n    intent = { intent: 'technical_support', confidence: 0.8 };\n  } else if (/complaint|unhappy|problem|issue|terrible|disappointed/i.test(text)) {\n    intent = { intent: 'complaint', confidence: 0.75 };\n  }\n}\n\nreturn [{\n  ...input,\n  intent: intent.intent,\n  intent_confidence: intent.confidence,\n  sub_intent: intent.sub_intent || null\n}];\n"
+          "jsCode": "// Parse intent classification result\nlet input = {};\ntry {\n  input = $('Parse Sentiment').item.json || {};\n} catch (e) {\n  input = $input.first().json || {};\n}\nconst intentRaw = $input.first().json.text || $input.first().json.response || '{}';\n\nlet intent = { intent: 'general_chat', confidence: 0.5, sub_intent: null };\n\ntry {\n  let jsonStr = intentRaw;\n  const jsonMatch = intentRaw.match(/```json?\\s*([\\s\\S]*?)```/) || intentRaw.match(/\\{[\\s\\S]*\\}/);\n  if (jsonMatch) {\n    jsonStr = jsonMatch[1] || jsonMatch[0];\n  }\n  intent = JSON.parse(jsonStr.trim());\n} catch (e) {\n  // Fallback keyword-based intent\n  const text = input.user_text.toLowerCase();\n  if (/balance|equity|margin|account.*status|my account/i.test(text)) {\n    intent = { intent: 'account_inquiry', confidence: 0.8 };\n  } else if (/position|trade|order|buy|sell|lot|pip/i.test(text)) {\n    intent = { intent: 'trading_question', confidence: 0.8 };\n  } else if (/deposit|withdraw|transfer|fund|payment/i.test(text)) {\n    intent = { intent: 'deposit_withdrawal', confidence: 0.85 };\n  } else if (/price|market|eurusd|gold|bitcoin|forecast/i.test(text)) {\n    intent = { intent: 'market_analysis', confidence: 0.8 };\n  } else if (/human|agent|person|manager|supervisor|speak.*someone/i.test(text)) {\n    intent = { intent: 'escalation_request', confidence: 0.95 };\n  } else if (/document|kyc|verify|passport|id|proof/i.test(text)) {\n    intent = { intent: 'document_verification', confidence: 0.85 };\n  } else if (/bonus|promotion|offer|referral/i.test(text)) {\n    intent = { intent: 'promotions', confidence: 0.8 };\n  } else if (/login|password|platform|mt4|mt5|not working|error|crash/i.test(text)) {\n    intent = { intent: 'technical_support', confidence: 0.8 };\n  } else if (/complaint|unhappy|problem|issue|terrible|disappointed/i.test(text)) {\n    intent = { intent: 'complaint', confidence: 0.75 };\n  }\n}\n\nreturn [{\n  ...input,\n  intent: intent.intent,\n  intent_confidence: intent.confidence,\n  sub_intent: intent.sub_intent || null\n}];\n"
         },
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
-        "position": [-26256, 10816],
-        "id": "1deae0b3-5790-40d8-9ca3-74669500e891",
+        "position": [
+          -73888,
+          27712
+        ],
+        "id": "a8c5d134-7b9f-4d57-839f-d9d3dfb67d3f",
         "name": "Parse Intent"
       },
       {
         "parameters": {
           "operation": "executeQuery",
-          "query": "-- Ensure table exists with all required columns\nDO $$\nBEGIN\n  IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'user_configs') THEN\n    CREATE TABLE user_configs (\n      id SERIAL PRIMARY KEY,\n      user_phone VARCHAR(30) UNIQUE NOT NULL,\n      client_id INTEGER,\n      system_prompt TEXT,\n      preferred_language VARCHAR(10) DEFAULT 'en',\n      communication_style VARCHAR(30) DEFAULT 'friendly_support',\n      is_vip BOOLEAN DEFAULT FALSE,\n      is_ib BOOLEAN DEFAULT FALSE,\n      verification_status VARCHAR(20) DEFAULT 'pending',\n      last_seen_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n      last_channel VARCHAR(20),\n      total_interactions INTEGER DEFAULT 0,\n      notification_enabled BOOLEAN DEFAULT TRUE,\n      proactive_alerts_enabled BOOLEAN DEFAULT TRUE,\n      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n      updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()\n    );\n  ELSE\n    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_configs' AND column_name = 'client_id') THEN ALTER TABLE user_configs ADD COLUMN client_id INTEGER; END IF;\n    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_configs' AND column_name = 'preferred_language') THEN ALTER TABLE user_configs ADD COLUMN preferred_language VARCHAR(10) DEFAULT 'en'; END IF;\n    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_configs' AND column_name = 'communication_style') THEN ALTER TABLE user_configs ADD COLUMN communication_style VARCHAR(30) DEFAULT 'friendly_support'; END IF;\n    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_configs' AND column_name = 'is_vip') THEN ALTER TABLE user_configs ADD COLUMN is_vip BOOLEAN DEFAULT FALSE; END IF;\n    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_configs' AND column_name = 'last_channel') THEN ALTER TABLE user_configs ADD COLUMN last_channel VARCHAR(20); END IF;\n    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_configs' AND column_name = 'total_interactions') THEN ALTER TABLE user_configs ADD COLUMN total_interactions INTEGER DEFAULT 0; END IF;\n    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_configs' AND column_name = 'system_prompt') THEN ALTER TABLE user_configs ADD COLUMN system_prompt TEXT; END IF;\n    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_configs' AND column_name = 'is_ib') THEN ALTER TABLE user_configs ADD COLUMN is_ib BOOLEAN DEFAULT FALSE; END IF;\n    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_configs' AND column_name = 'verification_status') THEN ALTER TABLE user_configs ADD COLUMN verification_status VARCHAR(20) DEFAULT 'pending'; END IF;\n    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_configs' AND column_name = 'notification_enabled') THEN ALTER TABLE user_configs ADD COLUMN notification_enabled BOOLEAN DEFAULT TRUE; END IF;\n    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_configs' AND column_name = 'proactive_alerts_enabled') THEN ALTER TABLE user_configs ADD COLUMN proactive_alerts_enabled BOOLEAN DEFAULT TRUE; END IF;\n    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_configs' AND column_name = 'created_at') THEN ALTER TABLE user_configs ADD COLUMN created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(); END IF;\n    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_configs' AND column_name = 'updated_at') THEN ALTER TABLE user_configs ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(); END IF;\n  END IF;\n  BEGIN\n    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_configs' AND column_name = 'system_prompt' AND is_nullable = 'NO') THEN\n      ALTER TABLE user_configs ALTER COLUMN system_prompt DROP NOT NULL;\n    END IF;\n  EXCEPTION WHEN OTHERS THEN NULL;\n  END;\nEND $$;\n\nINSERT INTO user_configs (user_phone, client_id, preferred_language, communication_style, is_vip, last_seen_at, last_channel, total_interactions, system_prompt)\nVALUES ('{{ $json.user_phone }}', {{ $json.user?.id ? $json.user.id : 'NULL' }}, '{{ $json.detected_language }}', 'friendly_support', {{ $json.user?.isVip || false }}, NOW(), '{{ $json.channel }}', 1, NULL)\nON CONFLICT (user_phone)\nDO UPDATE SET last_seen_at = NOW(), last_channel = EXCLUDED.last_channel, total_interactions = user_configs.total_interactions + 1, preferred_language = COALESCE(NULLIF(EXCLUDED.preferred_language, 'en'), user_configs.preferred_language), client_id = COALESCE(EXCLUDED.client_id, user_configs.client_id), is_vip = COALESCE(EXCLUDED.is_vip, user_configs.is_vip);",
+          "query": "-- Ensure table exists with all required columns\nDO $$\nBEGIN\n  -- Create table if it doesn't exist\n  IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'user_configs') THEN\n    CREATE TABLE user_configs (\n      id SERIAL PRIMARY KEY,\n      user_phone VARCHAR(30) UNIQUE NOT NULL,\n      client_id INTEGER,\n      system_prompt TEXT,\n      preferred_language VARCHAR(10) DEFAULT 'en',\n      communication_style VARCHAR(30) DEFAULT 'friendly_support',\n      is_vip BOOLEAN DEFAULT FALSE,\n      is_ib BOOLEAN DEFAULT FALSE,\n      verification_status VARCHAR(20) DEFAULT 'pending',\n      last_seen_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n      last_channel VARCHAR(20),\n      total_interactions INTEGER DEFAULT 0,\n      notification_enabled BOOLEAN DEFAULT TRUE,\n      proactive_alerts_enabled BOOLEAN DEFAULT TRUE,\n      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n      updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()\n    );\n  ELSE\n    -- Table exists, add missing columns\n    IF NOT EXISTS (\n      SELECT 1 FROM information_schema.columns \n      WHERE table_name = 'user_configs' AND column_name = 'client_id'\n    ) THEN\n      ALTER TABLE user_configs ADD COLUMN client_id INTEGER;\n    END IF;\n    \n    IF NOT EXISTS (\n      SELECT 1 FROM information_schema.columns \n      WHERE table_name = 'user_configs' AND column_name = 'preferred_language'\n    ) THEN\n      ALTER TABLE user_configs ADD COLUMN preferred_language VARCHAR(10) DEFAULT 'en';\n    END IF;\n    \n    IF NOT EXISTS (\n      SELECT 1 FROM information_schema.columns \n      WHERE table_name = 'user_configs' AND column_name = 'communication_style'\n    ) THEN\n      ALTER TABLE user_configs ADD COLUMN communication_style VARCHAR(30) DEFAULT 'friendly_support';\n    END IF;\n    \n    IF NOT EXISTS (\n      SELECT 1 FROM information_schema.columns \n      WHERE table_name = 'user_configs' AND column_name = 'is_vip'\n    ) THEN\n      ALTER TABLE user_configs ADD COLUMN is_vip BOOLEAN DEFAULT FALSE;\n    END IF;\n    \n    IF NOT EXISTS (\n      SELECT 1 FROM information_schema.columns \n      WHERE table_name = 'user_configs' AND column_name = 'last_channel'\n    ) THEN\n      ALTER TABLE user_configs ADD COLUMN last_channel VARCHAR(20);\n    END IF;\n    \n    IF NOT EXISTS (\n      SELECT 1 FROM information_schema.columns \n      WHERE table_name = 'user_configs' AND column_name = 'total_interactions'\n    ) THEN\n      ALTER TABLE user_configs ADD COLUMN total_interactions INTEGER DEFAULT 0;\n    END IF;\n    \n    IF NOT EXISTS (\n      SELECT 1 FROM information_schema.columns \n      WHERE table_name = 'user_configs' AND column_name = 'system_prompt'\n    ) THEN\n      ALTER TABLE user_configs ADD COLUMN system_prompt TEXT;\n    END IF;\n    \n    IF NOT EXISTS (\n      SELECT 1 FROM information_schema.columns \n      WHERE table_name = 'user_configs' AND column_name = 'is_ib'\n    ) THEN\n      ALTER TABLE user_configs ADD COLUMN is_ib BOOLEAN DEFAULT FALSE;\n    END IF;\n    \n    IF NOT EXISTS (\n      SELECT 1 FROM information_schema.columns \n      WHERE table_name = 'user_configs' AND column_name = 'verification_status'\n    ) THEN\n      ALTER TABLE user_configs ADD COLUMN verification_status VARCHAR(20) DEFAULT 'pending';\n    END IF;\n    \n    IF NOT EXISTS (\n      SELECT 1 FROM information_schema.columns \n      WHERE table_name = 'user_configs' AND column_name = 'notification_enabled'\n    ) THEN\n      ALTER TABLE user_configs ADD COLUMN notification_enabled BOOLEAN DEFAULT TRUE;\n    END IF;\n    \n    IF NOT EXISTS (\n      SELECT 1 FROM information_schema.columns \n      WHERE table_name = 'user_configs' AND column_name = 'proactive_alerts_enabled'\n    ) THEN\n      ALTER TABLE user_configs ADD COLUMN proactive_alerts_enabled BOOLEAN DEFAULT TRUE;\n    END IF;\n    \n    IF NOT EXISTS (\n      SELECT 1 FROM information_schema.columns \n      WHERE table_name = 'user_configs' AND column_name = 'created_at'\n    ) THEN\n      ALTER TABLE user_configs ADD COLUMN created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();\n    END IF;\n    \n    IF NOT EXISTS (\n      SELECT 1 FROM information_schema.columns \n      WHERE table_name = 'user_configs' AND column_name = 'updated_at'\n    ) THEN\n      ALTER TABLE user_configs ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();\n    END IF;\n  END IF;\n  \n  -- Ensure system_prompt is nullable (drop NOT NULL constraint if it exists)\n  BEGIN\n    IF EXISTS (\n      SELECT 1 FROM information_schema.columns \n      WHERE table_name = 'user_configs' \n      AND column_name = 'system_prompt'\n      AND is_nullable = 'NO'\n    ) THEN\n      ALTER TABLE user_configs ALTER COLUMN system_prompt DROP NOT NULL;\n    END IF;\n  EXCEPTION WHEN OTHERS THEN\n    -- Ignore errors\n    NULL;\n  END;\nEND $$;\n\n-- Now upsert user config\nINSERT INTO user_configs (\n  user_phone, \n  client_id,\n  preferred_language, \n  communication_style,\n  is_vip,\n  last_seen_at,\n  last_channel,\n  total_interactions,\n  system_prompt\n)\nVALUES (\n  '{{ $json.user_phone }}',\n  {{ $json.user?.id ? $json.user.id : 'NULL' }},\n  '{{ $json.detected_language }}',\n  'friendly_support',\n  {{ $json.user?.isVip || false }},\n  NOW(),\n  '{{ $json.channel }}',\n  1,\n  NULL\n)\nON CONFLICT (user_phone)\nDO UPDATE SET \n  last_seen_at = NOW(),\n  last_channel = EXCLUDED.last_channel,\n  total_interactions = user_configs.total_interactions + 1,\n  preferred_language = COALESCE(NULLIF(EXCLUDED.preferred_language, 'en'), user_configs.preferred_language),\n  client_id = COALESCE(EXCLUDED.client_id, user_configs.client_id),\n  is_vip = COALESCE(EXCLUDED.is_vip, user_configs.is_vip);",
           "options": {}
         },
         "type": "n8n-nodes-base.postgres",
         "typeVersion": 2.6,
-        "position": [-26128, 10816],
-        "id": "9e6b701d-fd18-4289-8ab8-891bf8e665db",
+        "position": [
+          -73760,
+          27712
+        ],
+        "id": "ee1378c4-558b-4183-842f-4fe46f2ca05b",
         "name": "DB - Upsert User Config",
         "credentials": {
-          "postgres": { "id": "yNVFJmXSqNtKGgso", "name": "Postgres account" }
+          "postgres": {
+            "id": "yNVFJmXSqNtKGgso",
+            "name": "Postgres account"
+          }
         }
       },
       {
         "parameters": {
           "operation": "executeQuery",
-          "query": "DO $$\nBEGIN\n  IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'user_preferences') THEN\n    CREATE TABLE user_preferences (\n      id SERIAL PRIMARY KEY, user_phone VARCHAR(30) UNIQUE NOT NULL, persona_override VARCHAR(30),\n      response_verbosity VARCHAR(20) DEFAULT 'normal', preferred_greeting VARCHAR(100),\n      topics_of_interest TEXT[] DEFAULT ARRAY[]::TEXT[], favorite_instruments TEXT[] DEFAULT ARRAY[]::TEXT[],\n      notification_preferences JSONB DEFAULT '{\"price_alerts\": true, \"margin_warnings\": true, \"deposit_confirmations\": true, \"promotion_updates\": true, \"news_alerts\": false}'::JSONB,\n      last_trading_activity TIMESTAMP WITH TIME ZONE, typical_trading_hours JSONB,\n      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()\n    );\n  END IF;\n  IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'chat_sessions') THEN\n    CREATE TABLE chat_sessions (\n      id SERIAL PRIMARY KEY, session_id VARCHAR(100) UNIQUE NOT NULL, user_phone VARCHAR(30) NOT NULL,\n      client_id INTEGER, channel VARCHAR(20) NOT NULL, session_start TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n      session_end TIMESTAMP WITH TIME ZONE, messages_count INTEGER DEFAULT 0,\n      sentiment_avg DECIMAL(3,2) DEFAULT 0, intents_detected TEXT[] DEFAULT ARRAY[]::TEXT[],\n      tools_used TEXT[] DEFAULT ARRAY[]::TEXT[], escalated BOOLEAN DEFAULT FALSE,\n      escalation_reason VARCHAR(50), escalation_time TIMESTAMP WITH TIME ZONE, resolved BOOLEAN DEFAULT FALSE,\n      resolution_notes TEXT, user_rating INTEGER CHECK (user_rating >= 1 AND user_rating <= 5),\n      user_feedback TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()\n    );\n  END IF;\nEND $$;\n\nSELECT uc.system_prompt, uc.preferred_language, uc.communication_style, uc.is_vip, uc.total_interactions,\n  COALESCE(up.persona_override, uc.communication_style) as active_persona, up.topics_of_interest,\n  up.notification_preferences,\n  (SELECT COUNT(*) FROM chat_sessions WHERE user_phone = '{{ $('Parse Intent').item.json.user_phone }}' AND escalated = true AND session_start > NOW() - INTERVAL '30 days') as recent_escalations,\n  (SELECT sentiment_avg FROM chat_sessions WHERE user_phone = '{{ $('Parse Intent').item.json.user_phone }}' ORDER BY session_start DESC LIMIT 1) as last_session_sentiment\nFROM user_configs uc\nLEFT JOIN user_preferences up ON uc.user_phone = up.user_phone\nWHERE uc.user_phone = '{{ $('Parse Intent').item.json.user_phone }}'\nLIMIT 1;",
+          "query": "-- Ensure required tables exist\nDO $$\nBEGIN\n  -- Create user_preferences table if it doesn't exist\n  IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'user_preferences') THEN\n    CREATE TABLE user_preferences (\n      id SERIAL PRIMARY KEY,\n      user_phone VARCHAR(30) UNIQUE NOT NULL,\n      persona_override VARCHAR(30),\n      response_verbosity VARCHAR(20) DEFAULT 'normal',\n      preferred_greeting VARCHAR(100),\n      topics_of_interest TEXT[] DEFAULT ARRAY[]::TEXT[],\n      favorite_instruments TEXT[] DEFAULT ARRAY[]::TEXT[],\n      notification_preferences JSONB DEFAULT '{\"price_alerts\": true, \"margin_warnings\": true, \"deposit_confirmations\": true, \"promotion_updates\": true, \"news_alerts\": false}'::JSONB,\n      last_trading_activity TIMESTAMP WITH TIME ZONE,\n      typical_trading_hours JSONB,\n      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n      updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()\n    );\n  END IF;\n  \n  -- Create chat_sessions table if it doesn't exist\n  IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'chat_sessions') THEN\n    CREATE TABLE chat_sessions (\n      id SERIAL PRIMARY KEY,\n      session_id VARCHAR(100) UNIQUE NOT NULL,\n      user_phone VARCHAR(30) NOT NULL,\n      client_id INTEGER,\n      channel VARCHAR(20) NOT NULL,\n      session_start TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n      session_end TIMESTAMP WITH TIME ZONE,\n      messages_count INTEGER DEFAULT 0,\n      sentiment_avg DECIMAL(3,2) DEFAULT 0,\n      intents_detected TEXT[] DEFAULT ARRAY[]::TEXT[],\n      tools_used TEXT[] DEFAULT ARRAY[]::TEXT[],\n      escalated BOOLEAN DEFAULT FALSE,\n      escalation_reason VARCHAR(50),\n      escalation_time TIMESTAMP WITH TIME ZONE,\n      resolved BOOLEAN DEFAULT FALSE,\n      resolution_notes TEXT,\n      user_rating INTEGER CHECK (user_rating >= 1 AND user_rating <= 5),\n      user_feedback TEXT,\n      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()\n    );\n  END IF;\nEND $$;\n\n-- Now query user context\nSELECT \n  uc.system_prompt,\n  uc.preferred_language,\n  uc.communication_style,\n  uc.is_vip,\n  uc.total_interactions,\n  COALESCE(up.persona_override, uc.communication_style) as active_persona,\n  up.topics_of_interest,\n  up.notification_preferences,\n  (\n    SELECT COUNT(*) FROM chat_sessions \n    WHERE user_phone = '{{ $('Parse Intent').item.json.user_phone }}' \n    AND escalated = true \n    AND session_start > NOW() - INTERVAL '30 days'\n  ) as recent_escalations,\n  (\n    SELECT sentiment_avg FROM chat_sessions \n    WHERE user_phone = '{{ $('Parse Intent').item.json.user_phone }}' \n    ORDER BY session_start DESC LIMIT 1\n  ) as last_session_sentiment\nFROM user_configs uc\nLEFT JOIN user_preferences up ON uc.user_phone = up.user_phone\nWHERE uc.user_phone = '{{ $('Parse Intent').item.json.user_phone }}'\nLIMIT 1;",
           "options": {}
         },
         "type": "n8n-nodes-base.postgres",
         "typeVersion": 2.6,
-        "position": [-25936, 10816],
-        "id": "03493650-ea18-46f9-befd-1f70c765ef90",
+        "position": [
+          -73648,
+          27712
+        ],
+        "id": "5c2d2e3c-5c78-4648-9055-48b49a6a261b",
         "name": "DB - Load User Context",
         "credentials": {
-          "postgres": { "id": "yNVFJmXSqNtKGgso", "name": "Postgres account" }
+          "postgres": {
+            "id": "yNVFJmXSqNtKGgso",
+            "name": "Postgres account"
+          }
         }
       },
       {
         "parameters": {
-          "jsCode": "let context = {};\ntry {\n  const parseIntentItems = $('Parse Intent').all();\n  if (parseIntentItems?.length) {\n    const pairedItem = $input.first().pairedItem;\n    if (pairedItem?.item?.length) {\n      const sourceIndex = pairedItem.item[0].index || 0;\n      context = parseIntentItems[sourceIndex]?.json || parseIntentItems[0].json || {};\n    } else context = parseIntentItems[0].json || {};\n  } else context = $('Parse Intent').item.json || {};\n} catch (e) { context = $input.first().json || {}; }\n\nconst dbConfig = $input.first().json || {};\nconst userText = String(context.user_text || context.message_text || '').trim();\nconst intent = String(context.intent || 'general_chat');\nconst intentConfidence = Number(context.intent_confidence || 0);\n\nconst patterns = [\n  { c: 'account', r: /\\b(balance|equity|margin|account|wallet|login|account type|account status)\\b/i },\n  { c: 'trading', r: /\\b(trade|trading|position|order|lot|pip|open position|history)\\b/i },\n  { c: 'funding', r: /\\b(deposit|withdraw|withdrawal|transfer|payment|funding)\\b/i },\n  { c: 'platform', r: /\\b(mt4|mt5|platform|server|connection|terminal|password)\\b/i },\n  { c: 'kyc', r: /\\b(kyc|verify|verification|document|passport|id|proof)\\b/i },\n  { c: 'promo', r: /\\b(promotion|bonus|offer|referral|campaign)\\b/i },\n  { c: 'market', r: /\\b(price|market|news|calendar|nfp|fomc|rates|eurusd|xauusd|gold|bitcoin|btc|eth|forex)\\b/i },\n  { c: 'support', r: /\\b(agent|human|manager|supervisor|support|ticket|callback)\\b/i },\n  { c: 'general_broker', r: /\\b(cms prime|broker|spread|commission|leverage)\\b/i }\n];\nlet scopeCategory = 'out_of_scope';\nfor (const p of patterns) { if (p.r.test(userText)) { scopeCategory = p.c; break; } }\nconst inScopeByIntent = new Set(['account_inquiry','trading_question','technical_support','complaint','deposit_withdrawal','market_analysis','document_verification','promotions','escalation_request','general_chat']);\nif (scopeCategory === 'out_of_scope' && inScopeByIntent.has(intent) && intentConfidence >= 0.55) scopeCategory = intent === 'general_chat' ? 'general_broker' : 'support';\nconst in_scope = scopeCategory !== 'out_of_scope' && userText.length > 0;\n\nconst toolMatrix = {\n  account_inquiry: ['get_account_summary'],\n  trading_question: ['get_open_positions','get_trade_history'],\n  technical_support: ['get_platform_status','submit_support_ticket'],\n  complaint: ['submit_support_ticket','schedule_callback'],\n  deposit_withdrawal: ['get_transactions'],\n  market_analysis: ['get_market_prices','get_market_news','get_economic_calendar'],\n  document_verification: ['get_document_status'],\n  promotions: ['get_promotions','search_faq'],\n  escalation_request: ['submit_support_ticket','schedule_callback'],\n  general_chat: ['search_faq']\n};\nconst allowed_tools = in_scope ? (toolMatrix[intent] || ['search_faq']) : [];\nconst requires_tools = in_scope && allowed_tools.length > 0;\nconst refusal_message = \"I don't have enough knowledge about that. I can only help with CMS Prime account, trading, platform, funding, verification, promotions, and market tools.\";\nconst safe_fallback_message = \"I couldn't retrieve reliable data right now. Please try again or contact support.\";\nconst router_status = userText ? 'ok' : 'degraded';\n\nconst shouldEscalate = (() => {\n  if (!in_scope) return { escalate: false, reason: null };\n  if (intent === 'escalation_request') return { escalate: true, reason: 'user_requested' };\n  if (context.sentiment_score < -0.6 && context.sentiment === 'angry') return { escalate: true, reason: 'negative_sentiment' };\n  if (context.user?.isVip && intent === 'complaint') return { escalate: true, reason: 'vip_complaint' };\n  if ((dbConfig.recent_escalations || 0) >= 3) return { escalate: true, reason: 'recurring_issues' };\n  return { escalate: false, reason: null };\n})();\n\nconst basePrompt = `You are Alex from CMS Prime Support. STRICT POLICY: (1) Never guess, infer, or fabricate facts. (2) For account/market/platform/funding/document/promotion data you MUST call tools first. (3) If tool data is missing or unreliable, respond exactly: \"${safe_fallback_message}\". (4) If request is out of CMS Prime scope, respond exactly: \"${refusal_message}\". (5) Do not answer unrelated questions.`;\nconst intentGuidance = {\n  account_inquiry: 'Call get_account_summary first.',\n  trading_question: 'Call get_open_positions or get_trade_history first.',\n  deposit_withdrawal: 'Call get_transactions first.',\n  market_analysis: 'Call get_market_prices/get_market_news/get_economic_calendar first.',\n  technical_support: 'Call get_platform_status first.',\n  document_verification: 'Call get_document_status first.',\n  promotions: 'Call get_promotions or search_faq first.',\n  escalation_request: 'Offer submit_support_ticket or schedule_callback.',\n  complaint: 'Be empathetic then offer escalation tools.',\n  general_chat: 'Use search_faq for company/product questions.'\n};\nconst system_prompt = basePrompt + ' ' + (intentGuidance[intent] || 'Use tools before factual answers.');\n\nreturn [{\n  ...context,\n  user_text: userText,\n  system_prompt,\n  selected_persona: dbConfig.active_persona || 'friendly_support',\n  should_escalate: shouldEscalate.escalate,\n  escalation_reason: shouldEscalate.reason,\n  db_config: dbConfig,\n  in_scope,\n  scope_category: scopeCategory,\n  requires_tools,\n  allowed_tools,\n  refusal_message,\n  safe_fallback_message,\n  router_status\n}];"
+          "jsCode": "// Smart Router & Prompt Builder (hardened, fail-closed)\nlet context = {};\ntry {\n  const parseIntentItems = $('Parse Intent').all();\n  if (parseIntentItems?.length) {\n    const pairedItem = $input.first().pairedItem;\n    if (pairedItem?.item?.length) {\n      const sourceIndex = pairedItem.item[0].index || 0;\n      context = parseIntentItems[sourceIndex]?.json || parseIntentItems[0].json || {};\n    } else context = parseIntentItems[0].json || {};\n  } else context = $('Parse Intent').item.json || {};\n} catch (e) { context = $input.first().json || {}; }\n\nconst dbConfig = $input.first().json || {};\nconst userText = String(context.user_text || context.message_text || '').trim();\nconst intent = String(context.intent || 'general_chat');\nconst intentConfidence = Number(context.intent_confidence || 0);\n\nconst patterns = [\n  { c: 'account', r: /\\b(balance|equity|margin|account|wallet|login|account type|account status)\\b/i },\n  { c: 'trading', r: /\\b(trade|trading|position|order|lot|pip|open position|history)\\b/i },\n  { c: 'funding', r: /\\b(deposit|withdraw|withdrawal|transfer|payment|funding)\\b/i },\n  { c: 'platform', r: /\\b(mt4|mt5|platform|server|connection|terminal|password)\\b/i },\n  { c: 'kyc', r: /\\b(kyc|verify|verification|document|passport|id|proof)\\b/i },\n  { c: 'promo', r: /\\b(promotion|bonus|offer|referral|campaign)\\b/i },\n  { c: 'market', r: /\\b(price|market|news|calendar|nfp|fomc|rates|eurusd|xauusd|gold|bitcoin|btc|eth|forex)\\b/i },\n  { c: 'support', r: /\\b(agent|human|manager|supervisor|support|ticket|callback)\\b/i },\n  { c: 'general_broker', r: /\\b(cms prime|broker|spread|commission|leverage)\\b/i }\n];\nlet scopeCategory = 'out_of_scope';\nfor (const p of patterns) { if (p.r.test(userText)) { scopeCategory = p.c; break; } }\nconst inScopeByIntent = new Set(['account_inquiry','trading_question','technical_support','complaint','deposit_withdrawal','market_analysis','document_verification','promotions','escalation_request','general_chat']);\nif (scopeCategory === 'out_of_scope' && inScopeByIntent.has(intent) && intentConfidence >= 0.55) scopeCategory = intent === 'general_chat' ? 'general_broker' : 'support';\nconst in_scope = scopeCategory !== 'out_of_scope' && userText.length > 0;\n\nconst toolMatrix = {\n  account_inquiry: ['get_account_summary'],\n  trading_question: ['get_open_positions','get_trade_history'],\n  technical_support: ['get_platform_status','submit_support_ticket'],\n  complaint: ['submit_support_ticket','schedule_callback'],\n  deposit_withdrawal: ['get_transactions'],\n  market_analysis: ['get_market_prices','get_market_news','get_economic_calendar'],\n  document_verification: ['get_document_status'],\n  promotions: ['get_promotions','search_faq'],\n  escalation_request: ['submit_support_ticket','schedule_callback'],\n  general_chat: ['search_faq']\n};\nconst allowed_tools = in_scope ? (toolMatrix[intent] || ['search_faq']) : [];\nconst requires_tools = in_scope && allowed_tools.length > 0;\nconst refusal_message = \"I don't have enough knowledge about that. I can only help with CMS Prime account, trading, platform, funding, verification, promotions, and market tools.\";\nconst safe_fallback_message = \"I couldn't retrieve reliable data right now. Please try again or contact support.\";\nconst router_status = userText ? 'ok' : 'degraded';\n\nconst shouldEscalate = (() => {\n  if (!in_scope) return { escalate: false, reason: null };\n  if (intent === 'escalation_request') return { escalate: true, reason: 'user_requested' };\n  if (context.sentiment_score < -0.6 && context.sentiment === 'angry') return { escalate: true, reason: 'negative_sentiment' };\n  if (context.user?.isVip && intent === 'complaint') return { escalate: true, reason: 'vip_complaint' };\n  if ((dbConfig.recent_escalations || 0) >= 3) return { escalate: true, reason: 'recurring_issues' };\n  return { escalate: false, reason: null };\n})();\n\nconst basePrompt = `You are Alex from CMS Prime Support.You are supportive, welcoming, and polite and frendly and sometimes fun and energetic. STRICT POLICY: (1) Never guess, infer, or fabricate facts. (2) For account/market/platform/funding/document/promotion data you MUST call tools first. (3) If tool data is missing or unreliable, respond exactly: \"${safe_fallback_message}\". (4) If request is out of CMS Prime scope, respond exactly: \"${refusal_message}\". (5) Do not answer unrelated questions. you have access to this data and try to use them during the conversation in nessessary : name:${$('IF - Auth OK?').first().json.user.firstName}  lname:${$('IF - Auth OK?').first().json.user.lastName} language:${$('IF - Auth OK?').first().json.user.language} lastLoginDate:${$('IF - Auth OK?').first().json.user.lastLoginDate} status:${$('IF - Auth OK?').first().json.user.status} verified:${$('IF - Auth OK?').first().json.user.verified}`;\nconst intentGuidance = {\n  account_inquiry: 'Call get_account_summary first.',\n  trading_question: 'Call get_open_positions or get_trade_history first.',\n  deposit_withdrawal: 'Call get_transactions first.',\n  market_analysis: 'Call get_market_prices/get_market_news/get_economic_calendar first.',\n  technical_support: 'Call get_platform_status first.',\n  document_verification: 'Call get_document_status first.',\n  promotions: 'Call get_promotions or search_faq first.',\n  escalation_request: 'Offer submit_support_ticket or schedule_callback.',\n  complaint: 'Be empathetic then offer escalation tools.',\n  general_chat: 'Use search_faq for company/product questions.'\n};\nconst system_prompt = basePrompt + ' ' + (intentGuidance[intent] || 'Use tools before factual answers.');\n\nreturn [{\n  ...context,\n  user_text: userText,\n  system_prompt,\n  selected_persona: dbConfig.active_persona || 'friendly_support',\n  should_escalate: shouldEscalate.escalate,\n  escalation_reason: shouldEscalate.reason,\n  db_config: dbConfig,\n  in_scope,\n  scope_category: scopeCategory,\n  requires_tools,\n  allowed_tools,\n  refusal_message,\n  safe_fallback_message,\n  router_status\n}];"
         },
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
-        "position": [-25712, 10816],
-        "id": "aecc758e-01f7-46dd-ae05-f1ddda620bc9",
+        "position": [
+          -73536,
+          27712
+        ],
+        "id": "d8b2f1d8-767f-4f50-910a-549dd4fe87bc",
         "name": "Smart Router & Prompt Builder"
       },
       {
         "parameters": {
           "conditions": {
-            "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 1 },
-            "conditions": [
-              {
-                "id": "if-in-scope-cond",
-                "leftValue": "={{ String($json.in_scope) }}",
-                "rightValue": "true",
-                "operator": { "type": "string", "operation": "equals" }
-              }
-            ],
-            "combinator": "and"
-          },
-          "options": {}
-        },
-        "type": "n8n-nodes-base.if",
-        "typeVersion": 2,
-        "position": [-25504, 10624],
-        "id": "f0f3f8c2-2d2a-4adb-8f0e-ifinscope",
-        "name": "IF - In Scope?"
-      },
-      {
-        "parameters": {
-          "assignments": {
-            "assignments": [
-              { "name": "output", "value": "={{ $json.refusal_message }}", "type": "string" }
-            ]
-          },
-          "includeOtherFields": true,
-          "options": {}
-        },
-        "type": "n8n-nodes-base.set",
-        "typeVersion": 3.4,
-        "position": [-25296, 10496],
-        "id": "c6d8e9aa-31bd-45b4-a6f8-outscope",
-        "name": "Set - Out of Scope Response"
-      },
-      {
-        "parameters": {
-          "conditions": {
-            "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 1 },
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 1
+            },
             "conditions": [
               {
                 "id": "a3cbfd04-4832-4c14-b546-898cea9d3e5b",
                 "leftValue": "={{ String($json.should_escalate) }}",
                 "rightValue": "true",
-                "operator": { "type": "string", "operation": "equals" }
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
               }
             ],
             "combinator": "and"
@@ -448,63 +539,12 @@
         },
         "type": "n8n-nodes-base.if",
         "typeVersion": 2,
-        "position": [-25504, 10832],
-        "id": "2739d9a4-e5cf-481d-87ee-a68002811294",
+        "position": [
+          -73056,
+          27776
+        ],
+        "id": "7cd9be70-36be-44a6-b565-8844cc869323",
         "name": "IF - Should Escalate?"
-      },
-      {
-        "parameters": {
-          "conditions": {
-            "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 1 },
-            "conditions": [
-              {
-                "id": "if-missing-ctx-text",
-                "leftValue": "={{ (!($json.user_text && String($json.user_text).trim().length > 0)).toString() }}",
-                "rightValue": "true",
-                "operator": { "type": "string", "operation": "equals" }
-              },
-              {
-                "id": "if-missing-ctx-router",
-                "leftValue": "={{ ($json.router_status === \"degraded\").toString() }}",
-                "rightValue": "true",
-                "operator": { "type": "string", "operation": "equals" }
-              }
-            ],
-            "combinator": "or"
-          },
-          "options": {}
-        },
-        "type": "n8n-nodes-base.if",
-        "typeVersion": 2,
-        "position": [-25328, 10752],
-        "id": "a2a0afab-a387-4dbc-9bc2-missingctx",
-        "name": "IF - Missing Critical Context?"
-      },
-      {
-        "parameters": {
-          "assignments": {
-            "assignments": [
-              { "name": "output", "value": "={{ $json.safe_fallback_message }}", "type": "string" }
-            ]
-          },
-          "includeOtherFields": true,
-          "options": {}
-        },
-        "type": "n8n-nodes-base.set",
-        "typeVersion": 3.4,
-        "position": [-25136, 10688],
-        "id": "de2a72e8-f909-4df4-bd26-fallbackset",
-        "name": "Set - Safe Fallback Response"
-      },
-      {
-        "parameters": {
-          "jsCode": "const context = $input.first().json;\nconst reason = context.escalation_reason;\n\nlet escalationMessage = '';\n\nswitch (reason) {\n  case 'user_requested':\n    escalationMessage = `I understand you'd like to speak with a human agent. Let me connect you with one of our specialists who can provide more personalized assistance.\\n\\nIn the meantime, I'm creating a priority support ticket so our team has all the context they need.`;\n    break;\n  case 'negative_sentiment':\n    escalationMessage = `I can see you're having a frustrating experience, and I'm really sorry about that. I want to make sure you get the best possible help, so I'm escalating this to a senior support specialist who will reach out to you shortly.\\n\\nIs there anything specific you'd like me to pass along to them?`;\n    break;\n  case 'vip_complaint':\n    escalationMessage = `As a valued VIP client, your satisfaction is our top priority. I'm immediately escalating this to your dedicated account manager who will personally follow up with you.\\n\\nThey will contact you within the next hour.`;\n    break;\n  case 'recurring_issues':\n    escalationMessage = `I notice you've had to reach out about issues multiple times recently, and I apologize that we haven't fully resolved things. I'm escalating this to our senior support team for a comprehensive review of your account.\\n\\nSomeone will contact you within 2 hours.`;\n    break;\n  default:\n    escalationMessage = `I'm connecting you with a human specialist who can better assist you. They'll have full context of our conversation.`;\n}\n\nreturn [{ ...context, output: escalationMessage, escalation_initiated: true }];\n"
-        },
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [-25328, 10608],
-        "id": "90777c96-4938-40a3-a9cb-d221a8fe2bba",
-        "name": "Escalation Handler"
       },
       {
         "parameters": {
@@ -516,380 +556,754 @@
         },
         "type": "@n8n/n8n-nodes-langchain.agent",
         "typeVersion": 3.1,
-        "position": [-25328, 10912],
-        "id": "3817e331-cd3a-4d18-bf51-70d4e1337d03",
+        "position": [
+          -72192,
+          28048
+        ],
+        "id": "bd7c9814-ad2a-418f-9d31-f949436867b9",
         "name": "AI Agent"
       },
       {
-        "parameters": {
-          "sessionIdType": "customKey",
-          "sessionKey": "={{ $('Registration Context Builder').item?.json?.sessionId || $('Smart Router & Prompt Builder').item?.json?.sessionId || $json.sessionId || $json.session_id || 'default' }}"
-        },
+        "parameters": {},
         "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
         "typeVersion": 1.3,
-        "position": [-25328, 11216],
-        "id": "e3b8b762-2cbd-4ba2-aab8-e66efd58d990",
+        "position": [
+          -72224,
+          28256
+        ],
+        "id": "8adb2459-8d64-4b67-9eaa-d22f8d359328",
         "name": "Postgres Chat Memory",
+        "alwaysOutputData": false,
+        "executeOnce": false,
         "credentials": {
-          "postgres": { "id": "yNVFJmXSqNtKGgso", "name": "Postgres account" }
+          "postgres": {
+            "id": "yNVFJmXSqNtKGgso",
+            "name": "Postgres account"
+          }
         }
       },
       {
         "parameters": {
-          "model": { "__rl": true, "mode": "list", "value": "gpt-4.1-mini" },
+          "model": {
+            "__rl": true,
+            "value": "gpt-5.2",
+            "mode": "list",
+            "cachedResultName": "gpt-5.2"
+          },
           "builtInTools": {},
-          "options": { "temperature": 0.1 }
+          "options": {
+            "temperature": 0.1
+          }
         },
         "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
         "typeVersion": 1.3,
-        "position": [-25536, 11216],
-        "id": "28aad4ea-c775-42a8-96d5-31573ae26fc7",
+        "position": [
+          -72352,
+          28240
+        ],
+        "id": "4335748c-d83c-4480-9001-9ee67ebaa850",
         "name": "OpenAI GPT-4.1 Mini",
         "credentials": {
-          "openAiApi": { "id": "jqIg0jyWAkPQG4Ce", "name": "OpenAi account" }
+          "openAiApi": {
+            "id": "jqIg0jyWAkPQG4Ce",
+            "name": "OpenAi account"
+          }
         }
       },
       {
         "parameters": {
-          "description": "Get complete account summary including balance, equity, margin, free margin, margin level, and account details.",
-          "workflowId": { "__rl": true, "value": "yJVOrcn0FBCWDBPVOvZx7", "mode": "list", "cachedResultUrl": "/workflow/yJVOrcn0FBCWDBPVOvZx7", "cachedResultName": "TOOL - Account Summary" },
+          "description": "You are a STRICT financial data computation engine.\n\nYour job is to analyze a provided JSON object containing account data and return ONLY exact, verifiable results computed directly from that data.\n\nZERO TOLERANCE FOR GUESSING OR APPROXIMATION.\n\nIf you are not completely certain of the result, you MUST say:\n\n\"Unable to determine with certainty from provided data.\"\n\nYou must NEVER provide estimates, assumptions, or inferred values.\n\n--------------------------------------------------\nINPUT DATA STRUCTURE\n--------------------------------------------------\n\n- ok: boolean\n- user_id: number\n- accounts_count: number\n- accounts: array of account objects\n\nEach account object contains:\n\n- login: string (unique identifier)\n- leverage: number\n- balance: number\n- equity: number\n- accountTypeId: number | null\n- serverId: number\n- accounttype: string (e.g., \"MT4 Live\", \"MT5 Demo\", \"Wallet\")\n\n--------------------------------------------------\nSTRICT DEFINITIONS (CASE-SENSITIVE)\n--------------------------------------------------\n\nWallet:\naccounttype == \"Wallet\"\n\nMT4 account:\naccounttype contains EXACT substring \"MT4\"\n\nMT5 account:\naccounttype contains EXACT substring \"MT5\"\n\nDemo account:\naccounttype contains EXACT substring \"Demo\"\n\nLive account:\naccounttype contains EXACT substring \"Live\"\n\nTrading account:\naccounttype != \"Wallet\"\n\nActive account:\nbalance > 0\n\nEmpty account:\nbalance == 0\n\nEquity difference:\nequity − balance\n\n--------------------------------------------------\nMANDATORY COMPUTATION RULES\n--------------------------------------------------\n\n1) ALWAYS iterate through ALL accounts.\n   Never rely on accounts_count alone.\n\n2) Perform exact numeric computation.\n   No rounding unless requested.\n\n3) NEVER approximate or estimate.\n\n4) NEVER assume missing data.\n\n5) NEVER fabricate values not present.\n\n6) If required fields are missing → refuse.\n\n7) If question is ambiguous → ask for clarification.\n\n8) If margin/free margin requested (not provided) → respond:\n   \"Margin data not available in input.\"\n\n9) Treat balance and equity as numeric values only.\n\n10) Currency assumed identical across accounts.\n\n--------------------------------------------------\nVERIFICATION STEP (MANDATORY)\n--------------------------------------------------\n\nBefore answering, internally verify:\n\n- Every qualifying account was counted exactly once\n- No account was skipped\n- No account counted twice\n- Result matches computed count or sum\n\nIf verification fails → refuse.\n\n--------------------------------------------------\nOUTPUT REQUIREMENTS\n--------------------------------------------------\n\nReturn answers in this format:\n\nRESULT: <exact numeric or factual result>\n\nBREAKDOWN (if applicable):\n- Criteria used\n- Count or list of matching accounts\n- Key supporting details (logins or totals)\n\nCONFIDENCE: EXACT\n\n--------------------------------------------------\nREFUSAL RULE\n--------------------------------------------------\n\nIf ANY uncertainty exists, output ONLY:\n\nRESULT: Unable to determine with certainty from provided data\nCONFIDENCE: INSUFFICIENT DATA\n\n--------------------------------------------------\nGENERAL SUMMARY (ONLY if explicitly requested)\n--------------------------------------------------\n\nReturn:\n\n- Total accounts (actual array length)\n- Total wallets\n- Total MT4 accounts\n- Total MT5 accounts\n- Total Live accounts\n- Total Demo accounts\n- Active accounts count\n- Total balance (all)\n- Highest balance account (login + value)\n- Average leverage (trading accounts only)\n\n--------------------------------------------------\nIMPORTANT BEHAVIORAL RULES\n--------------------------------------------------\n\n• Do NOT be conversational  \n• Do NOT explain reasoning unless asked  \n• Do NOT provide probabilities  \n• Do NOT say “approximately”  \n• Do NOT change answer after user insistence  \n• Accuracy is more important than completeness  \n\nYOU ARE A FINANCIAL CALCULATION ENGINE, NOT A CHATBOT.\n",
+          "workflowId": {
+            "__rl": true,
+            "value": "yJVOrcn0FBCWDBPVOvZx7",
+            "mode": "list",
+            "cachedResultUrl": "/workflow/yJVOrcn0FBCWDBPVOvZx7",
+            "cachedResultName": "TOOL - Account Summary"
+          },
           "workflowInputs": {
             "mappingMode": "defineBelow",
-            "value": { "user_id": 80733 },
-            "matchingColumns": ["user_id"],
-            "schema": [{ "id": "user_id", "displayName": "user_id", "required": false, "defaultMatch": false, "display": true, "canBeUsedToMatch": true, "type": "number", "removed": false }],
+            "value": {
+              "user_id": 80733
+            },
+            "matchingColumns": [
+              "user_id"
+            ],
+            "schema": [
+              {
+                "id": "user_id",
+                "displayName": "user_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "number",
+                "removed": false
+              }
+            ],
             "attemptToConvertTypes": false,
             "convertFieldsToString": false
           }
         },
         "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
         "typeVersion": 2.2,
-        "position": [-25136, 11008],
-        "id": "555b9d0d-ea30-41d4-85ed-274195a89e0e",
+        "position": [
+          -72480,
+          28896
+        ],
+        "id": "7e428296-d3c6-4d5a-8242-f239402c608e",
         "name": "Tool - Account Summary"
       },
       {
         "parameters": {
-          "description": "Get user's current open trading positions with profit/loss.",
-          "workflowId": { "__rl": true, "mode": "id", "value": "={{ $workflow.id }}_TOOL_POSITIONS" },
+          "description": "Get user's current open trading positions with profit/loss. Use when user asks about their open trades, current positions, or running P&L.",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "={{ $workflow.id }}_TOOL_POSITIONS"
+          },
           "workflowInputs": {
             "mappingMode": "defineBelow",
             "value": {
               "client_id": "={{ $('Smart Router & Prompt Builder').item.json.user.id }}",
-              "platform": "={{ $fromAI('platform', 'mt4 or mt5, default mt5', 'string') }}"
+              "platform": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('platform', 'mt4 or mt5, default mt5', 'string') }}"
             },
-            "matchingColumns": ["client_id"],
+            "matchingColumns": [
+              "client_id"
+            ],
             "schema": [
-              { "id": "client_id", "displayName": "client_id", "required": true, "type": "number" },
-              { "id": "platform", "displayName": "platform", "required": false, "type": "string" }
+              {
+                "id": "client_id",
+                "displayName": "client_id",
+                "required": true,
+                "type": "number"
+              },
+              {
+                "id": "platform",
+                "displayName": "platform",
+                "required": false,
+                "type": "string"
+              }
             ]
           }
         },
         "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
         "typeVersion": 2.2,
-        "position": [-25136, 11120],
-        "id": "c16eb2f1-97bd-409b-9c19-c1413eab8b9c",
+        "position": [
+          -72336,
+          28976
+        ],
+        "id": "1532dc6a-76e8-49a7-ab9d-f344e71a1977",
         "name": "Tool - Open Positions"
       },
       {
         "parameters": {
-          "description": "Get user's closed trade history with performance summary.",
-          "workflowId": { "__rl": true, "mode": "id", "value": "={{ $workflow.id }}_TOOL_TRADE_HISTORY" },
+          "description": "Get user's closed trade history with performance summary. Use when user asks about past trades, trading history, or performance statistics.",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "={{ $workflow.id }}_TOOL_TRADE_HISTORY"
+          },
           "workflowInputs": {
             "mappingMode": "defineBelow",
             "value": {
               "client_id": "={{ $('Smart Router & Prompt Builder').item.json.user.id }}",
-              "date_from": "={{ $fromAI('date_from', 'Start date YYYY-MM-DD, default 30 days ago', 'string') }}",
-              "date_to": "={{ $fromAI('date_to', 'End date YYYY-MM-DD, default today', 'string') }}",
-              "limit": "={{ $fromAI('limit', 'Max trades to return, default 20', 'number') }}"
+              "date_from": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('date_from', 'Start date YYYY-MM-DD, default 30 days ago', 'string') }}",
+              "date_to": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('date_to', 'End date YYYY-MM-DD, default today', 'string') }}",
+              "limit": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('limit', 'Max trades to return, default 20', 'number') }}"
             },
-            "matchingColumns": ["client_id"],
+            "matchingColumns": [
+              "client_id"
+            ],
             "schema": [
-              { "id": "client_id", "displayName": "client_id", "required": true, "type": "number" },
-              { "id": "date_from", "displayName": "date_from", "required": false, "type": "string" },
-              { "id": "date_to", "displayName": "date_to", "required": false, "type": "string" },
-              { "id": "limit", "displayName": "limit", "required": false, "type": "number" }
+              {
+                "id": "client_id",
+                "displayName": "client_id",
+                "required": true,
+                "type": "number"
+              },
+              {
+                "id": "date_from",
+                "displayName": "date_from",
+                "required": false,
+                "type": "string"
+              },
+              {
+                "id": "date_to",
+                "displayName": "date_to",
+                "required": false,
+                "type": "string"
+              },
+              {
+                "id": "limit",
+                "displayName": "limit",
+                "required": false,
+                "type": "number"
+              }
             ]
           }
         },
         "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
         "typeVersion": 2.2,
-        "position": [-25136, 11216],
-        "id": "af64daf3-b8a7-4547-8b30-5a2345f36048",
+        "position": [
+          -72336,
+          29072
+        ],
+        "id": "2f1cf46f-51e6-42d9-a7a5-48a3d1766676",
         "name": "Tool - Trade History"
       },
       {
         "parameters": {
-          "description": "Get user's transaction history including deposits, withdrawals, and transfers.",
-          "workflowId": { "__rl": true, "mode": "id", "value": "={{ $workflow.id }}_TOOL_TRANSACTIONS" },
+          "description": "Get user's transaction history including deposits, withdrawals, and transfers. Use when user asks about funding, deposit status, withdrawal history, or account transfers.",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "={{ $workflow.id }}_TOOL_TRANSACTIONS"
+          },
           "workflowInputs": {
             "mappingMode": "defineBelow",
             "value": {
               "client_id": "={{ $('Smart Router & Prompt Builder').item.json.user.id }}",
-              "type": "={{ $fromAI('type', 'deposit, withdrawal, transfer, bonus, or all', 'string') }}",
-              "status": "={{ $fromAI('status', 'pending, completed, failed, or all', 'string') }}",
-              "limit": "={{ $fromAI('limit', 'Max transactions, default 20', 'number') }}"
+              "type": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('type', 'deposit, withdrawal, transfer, bonus, or all', 'string') }}",
+              "status": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('status', 'pending, completed, failed, or all', 'string') }}",
+              "limit": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('limit', 'Max transactions, default 20', 'number') }}"
             },
-            "matchingColumns": ["client_id"],
+            "matchingColumns": [
+              "client_id"
+            ],
             "schema": [
-              { "id": "client_id", "displayName": "client_id", "required": true, "type": "number" },
-              { "id": "type", "displayName": "type", "required": false, "type": "string" },
-              { "id": "status", "displayName": "status", "required": false, "type": "string" },
-              { "id": "limit", "displayName": "limit", "required": false, "type": "number" }
+              {
+                "id": "client_id",
+                "displayName": "client_id",
+                "required": true,
+                "type": "number"
+              },
+              {
+                "id": "type",
+                "displayName": "type",
+                "required": false,
+                "type": "string"
+              },
+              {
+                "id": "status",
+                "displayName": "status",
+                "required": false,
+                "type": "string"
+              },
+              {
+                "id": "limit",
+                "displayName": "limit",
+                "required": false,
+                "type": "number"
+              }
             ]
           }
         },
         "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
         "typeVersion": 2.2,
-        "position": [-25136, 11312],
-        "id": "8cb92ae5-2046-4f64-8eb4-405c4f23a6b7",
+        "position": [
+          -72336,
+          29168
+        ],
+        "id": "490d0320-9e64-4334-be14-0568a4c84347",
         "name": "Tool - Transactions"
       },
       {
         "parameters": {
-          "description": "Get real-time market prices for trading instruments.",
-          "workflowId": { "__rl": true, "mode": "id", "value": "={{ $workflow.id }}_TOOL_MARKET_PRICES" },
+          "description": "Get real-time market prices for trading instruments. Use when user asks about current prices, quotes, spreads, or market rates for forex pairs, commodities, indices, or crypto.",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "={{ $workflow.id }}_TOOL_MARKET_PRICES"
+          },
           "workflowInputs": {
             "mappingMode": "defineBelow",
-            "value": { "symbols": "={{ $fromAI('symbols', 'Comma-separated symbols like EURUSD,XAUUSD,BTCUSD', 'string') }}" },
+            "value": {
+              "symbols": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('symbols', 'Comma-separated symbols like EURUSD,XAUUSD,BTCUSD', 'string') }}"
+            },
             "matchingColumns": [],
-            "schema": [{ "id": "symbols", "displayName": "symbols", "required": true, "type": "string" }]
+            "schema": [
+              {
+                "id": "symbols",
+                "displayName": "symbols",
+                "required": true,
+                "type": "string"
+              }
+            ]
           }
         },
         "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
         "typeVersion": 2.2,
-        "position": [-24928, 11008],
-        "id": "354bdb79-7130-42e1-bd4d-aa805b1bbe4e",
+        "position": [
+          -72128,
+          28848
+        ],
+        "id": "23a130ec-4419-4fa3-be94-3cf2e3fa8b75",
         "name": "Tool - Market Prices"
       },
       {
         "parameters": {
-          "description": "Get latest financial market news.",
-          "workflowId": { "__rl": true, "mode": "id", "value": "TOOL_TRADINGFACTORY_NEWS" },
+          "description": "Get latest financial market news. Use when user asks about market news, what's happening in the markets, or news affecting specific assets.",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "TOOL_TRADINGFACTORY_NEWS"
+          },
           "workflowInputs": {
             "mappingMode": "defineBelow",
             "value": {
-              "currency": "={{ $fromAI('currency', 'Currency code like USD, EUR, GBP, JPY. Leave empty for all.', 'string') }}",
-              "impact": "={{ $fromAI('impact', 'high, medium, low, or all', 'string') }}",
-              "limit": "={{ $fromAI('limit', 'Number of events to return, default 8', 'number') }}",
-              "hours_ahead": "={{ $fromAI('hours_ahead', 'How many hours ahead to scan, default 168', 'number') }}"
+              "currency": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('currency', 'Currency code like USD, EUR, GBP, JPY. Leave empty for all.', 'string') }}",
+              "impact": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('impact', 'high, medium, low, or all', 'string') }}",
+              "limit": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('limit', 'Number of events to return, default 8', 'number') }}",
+              "hours_ahead": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('hours_ahead', 'How many hours ahead to scan, default 168', 'number') }}"
             },
             "matchingColumns": [],
             "schema": [
-              { "id": "currency", "displayName": "currency", "required": false, "type": "string" },
-              { "id": "impact", "displayName": "impact", "required": false, "type": "string" },
-              { "id": "limit", "displayName": "limit", "required": false, "type": "number" },
-              { "id": "hours_ahead", "displayName": "hours_ahead", "required": false, "type": "number" }
+              {
+                "id": "currency",
+                "displayName": "currency",
+                "required": false,
+                "type": "string"
+              },
+              {
+                "id": "impact",
+                "displayName": "impact",
+                "required": false,
+                "type": "string"
+              },
+              {
+                "id": "limit",
+                "displayName": "limit",
+                "required": false,
+                "type": "number"
+              },
+              {
+                "id": "hours_ahead",
+                "displayName": "hours_ahead",
+                "required": false,
+                "type": "number"
+              }
             ]
           }
         },
         "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
         "typeVersion": 2.2,
-        "position": [-24928, 11120],
-        "id": "296ff398-6eeb-4bfa-af6b-098369cf7dea",
+        "position": [
+          -72128,
+          28976
+        ],
+        "id": "5d66a08d-4d1a-44ec-adc5-1c249ba7a9d4",
         "name": "Tool - Market News"
       },
       {
         "parameters": {
-          "description": "Get upcoming economic calendar events.",
-          "workflowId": { "__rl": true, "mode": "id", "value": "={{ $workflow.id }}_TOOL_ECONOMIC_CALENDAR" },
+          "description": "Get upcoming economic calendar events. Use when user asks about economic events, news releases, NFP, FOMC, interest rate decisions, or what's coming up that might affect markets.",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "={{ $workflow.id }}_TOOL_ECONOMIC_CALENDAR"
+          },
           "workflowInputs": {
             "mappingMode": "defineBelow",
             "value": {
-              "importance": "={{ $fromAI('importance', 'low, medium, high, or all', 'string') }}",
-              "currencies": "={{ $fromAI('currencies', 'Currency codes like USD,EUR,GBP or all', 'string') }}",
-              "days_ahead": "={{ $fromAI('days_ahead', 'Days to look ahead, default 7', 'number') }}"
+              "importance": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('importance', 'low, medium, high, or all', 'string') }}",
+              "currencies": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('currencies', 'Currency codes like USD,EUR,GBP or all', 'string') }}",
+              "days_ahead": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('days_ahead', 'Days to look ahead, default 7', 'number') }}"
             },
             "matchingColumns": [],
             "schema": [
-              { "id": "importance", "displayName": "importance", "required": false, "type": "string" },
-              { "id": "currencies", "displayName": "currencies", "required": false, "type": "string" },
-              { "id": "days_ahead", "displayName": "days_ahead", "required": false, "type": "number" }
+              {
+                "id": "importance",
+                "displayName": "importance",
+                "required": false,
+                "type": "string"
+              },
+              {
+                "id": "currencies",
+                "displayName": "currencies",
+                "required": false,
+                "type": "string"
+              },
+              {
+                "id": "days_ahead",
+                "displayName": "days_ahead",
+                "required": false,
+                "type": "number"
+              }
             ]
           }
         },
         "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
         "typeVersion": 2.2,
-        "position": [-24928, 11216],
-        "id": "4170189d-50da-4f4a-a583-710976cc8713",
+        "position": [
+          -72128,
+          29072
+        ],
+        "id": "af8a54dd-0de0-4afd-9999-6b49dcfdd485",
         "name": "Tool - Economic Calendar"
       },
       {
         "parameters": {
-          "description": "Trading calculator for pip value, margin requirements, and profit/loss scenarios.",
-          "workflowId": { "__rl": true, "mode": "id", "value": "={{ $workflow.id }}_TOOL_CALCULATOR" },
+          "description": "Trading calculator for pip value, margin requirements, and profit/loss scenarios. Use when user wants to calculate potential profit, required margin, pip value, or risk/reward.",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "={{ $workflow.id }}_TOOL_CALCULATOR"
+          },
           "workflowInputs": {
             "mappingMode": "defineBelow",
             "value": {
-              "symbol": "={{ $fromAI('symbol', 'Trading symbol like EURUSD', 'string') }}",
-              "lot_size": "={{ $fromAI('lot_size', 'Position size in lots', 'number') }}",
-              "operation": "={{ $fromAI('operation', 'pip_value, margin, or profit_calc', 'string') }}",
-              "entry_price": "={{ $fromAI('entry_price', 'Entry price for profit calculation', 'number') }}",
-              "exit_price": "={{ $fromAI('exit_price', 'Exit price for profit calculation', 'number') }}",
-              "leverage": "={{ $fromAI('leverage', 'Account leverage like 100 or 500', 'number') }}"
+              "symbol": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('symbol', 'Trading symbol like EURUSD', 'string') }}",
+              "lot_size": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('lot_size', 'Position size in lots', 'number') }}",
+              "operation": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('operation', 'pip_value, margin, or profit_calc', 'string') }}",
+              "entry_price": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('entry_price', 'Entry price for profit calculation', 'number') }}",
+              "exit_price": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('exit_price', 'Exit price for profit calculation', 'number') }}",
+              "leverage": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('leverage', 'Account leverage like 100 or 500', 'number') }}"
             },
             "matchingColumns": [],
             "schema": [
-              { "id": "symbol", "displayName": "symbol", "required": true, "type": "string" },
-              { "id": "lot_size", "displayName": "lot_size", "required": true, "type": "number" },
-              { "id": "operation", "displayName": "operation", "required": true, "type": "string" },
-              { "id": "entry_price", "displayName": "entry_price", "required": false, "type": "number" },
-              { "id": "exit_price", "displayName": "exit_price", "required": false, "type": "number" },
-              { "id": "leverage", "displayName": "leverage", "required": false, "type": "number" }
+              {
+                "id": "symbol",
+                "displayName": "symbol",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "id": "lot_size",
+                "displayName": "lot_size",
+                "required": true,
+                "type": "number"
+              },
+              {
+                "id": "operation",
+                "displayName": "operation",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "id": "entry_price",
+                "displayName": "entry_price",
+                "required": false,
+                "type": "number"
+              },
+              {
+                "id": "exit_price",
+                "displayName": "exit_price",
+                "required": false,
+                "type": "number"
+              },
+              {
+                "id": "leverage",
+                "displayName": "leverage",
+                "required": false,
+                "type": "number"
+              }
             ]
           }
         },
         "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
         "typeVersion": 2.2,
-        "position": [-24928, 11312],
-        "id": "59593272-a99c-4476-8704-ea747df36004",
+        "position": [
+          -72128,
+          29168
+        ],
+        "id": "9bf4c989-355c-4e99-a87c-11e5aaeba6c4",
         "name": "Tool - Trading Calculator"
       },
       {
         "parameters": {
-          "description": "Check MT4/MT5 platform server status.",
-          "workflowId": { "__rl": true, "mode": "id", "value": "={{ $workflow.id }}_TOOL_PLATFORM_STATUS" },
+          "description": "Check MT4/MT5 platform server status. Use when user reports connection issues or asks if the platform is working.",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "={{ $workflow.id }}_TOOL_PLATFORM_STATUS"
+          },
           "workflowInputs": {
             "mappingMode": "defineBelow",
-            "value": { "platform": "={{ $fromAI('platform', 'mt4 or mt5', 'string') }}" },
+            "value": {
+              "platform": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('platform', 'mt4 or mt5', 'string') }}"
+            },
             "matchingColumns": [],
-            "schema": [{ "id": "platform", "displayName": "platform", "required": false, "type": "string" }]
+            "schema": [
+              {
+                "id": "platform",
+                "displayName": "platform",
+                "required": false,
+                "type": "string"
+              }
+            ]
           }
         },
         "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
         "typeVersion": 2.2,
-        "position": [-24736, 11008],
-        "id": "4c9fd1ea-43ba-44a5-88c3-8440a6e7f515",
+        "position": [
+          -71936,
+          28848
+        ],
+        "id": "25fb59da-7958-4f2f-b377-9ec65509de59",
         "name": "Tool - Platform Status"
       },
       {
         "parameters": {
-          "description": "Check user's KYC and document verification status.",
-          "workflowId": { "__rl": true, "mode": "id", "value": "={{ $workflow.id }}_TOOL_DOCUMENT_STATUS" },
+          "description": "Check user's KYC and document verification status. Use when user asks about verification, documents, KYC status, or what documents are needed.",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "={{ $workflow.id }}_TOOL_DOCUMENT_STATUS"
+          },
           "workflowInputs": {
             "mappingMode": "defineBelow",
-            "value": { "client_id": "={{ $('Smart Router & Prompt Builder').item.json.user.id }}" },
-            "matchingColumns": ["client_id"],
-            "schema": [{ "id": "client_id", "displayName": "client_id", "required": true, "type": "number" }]
+            "value": {
+              "client_id": "={{ $('Smart Router & Prompt Builder').item.json.user.id }}"
+            },
+            "matchingColumns": [
+              "client_id"
+            ],
+            "schema": [
+              {
+                "id": "client_id",
+                "displayName": "client_id",
+                "required": true,
+                "type": "number"
+              }
+            ]
           }
         },
         "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
         "typeVersion": 2.2,
-        "position": [-24736, 11120],
-        "id": "eb1102ea-82c3-42b7-8514-224be4cc5a99",
+        "position": [
+          -71936,
+          28976
+        ],
+        "id": "1bbc0ed4-7675-4555-b265-88caad36d9b4",
         "name": "Tool - Document Status"
       },
       {
         "parameters": {
-          "description": "Create a support ticket for human follow-up.",
-          "workflowId": { "__rl": true, "mode": "id", "value": "={{ $workflow.id }}_TOOL_SUPPORT_TICKET" },
+          "description": "Create a support ticket for human follow-up. Use when issue needs human attention, user requests escalation, or problem is complex.",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "={{ $workflow.id }}_TOOL_SUPPORT_TICKET"
+          },
           "workflowInputs": {
             "mappingMode": "defineBelow",
             "value": {
               "client_id": "={{ $('Smart Router & Prompt Builder').item.json.user.id }}",
-              "category": "={{ $fromAI('category', 'technical, account, trading, complaint, other', 'string') }}",
-              "priority": "={{ $fromAI('priority', 'low, medium, high, urgent', 'string') }}",
-              "subject": "={{ $fromAI('subject', 'Brief ticket subject', 'string') }}",
-              "description": "={{ $fromAI('description', 'Detailed description of the issue', 'string') }}"
+              "category": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('category', 'technical, account, trading, complaint, other', 'string') }}",
+              "priority": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('priority', 'low, medium, high, urgent', 'string') }}",
+              "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('subject', 'Brief ticket subject', 'string') }}",
+              "description": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('description', 'Detailed description of the issue', 'string') }}"
             },
-            "matchingColumns": ["client_id"],
+            "matchingColumns": [
+              "client_id"
+            ],
             "schema": [
-              { "id": "client_id", "displayName": "client_id", "required": true, "type": "number" },
-              { "id": "category", "displayName": "category", "required": true, "type": "string" },
-              { "id": "priority", "displayName": "priority", "required": true, "type": "string" },
-              { "id": "subject", "displayName": "subject", "required": true, "type": "string" },
-              { "id": "description", "displayName": "description", "required": true, "type": "string" }
+              {
+                "id": "client_id",
+                "displayName": "client_id",
+                "required": true,
+                "type": "number"
+              },
+              {
+                "id": "category",
+                "displayName": "category",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "id": "priority",
+                "displayName": "priority",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "id": "subject",
+                "displayName": "subject",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "id": "description",
+                "displayName": "description",
+                "required": true,
+                "type": "string"
+              }
             ]
           }
         },
         "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
         "typeVersion": 2.2,
-        "position": [-24720, 11264],
-        "id": "a92b92b1-2b1d-4d58-a797-a40dc06e9669",
+        "position": [
+          -71920,
+          29120
+        ],
+        "id": "9d89be09-c487-44ba-90e2-589bca65be64",
         "name": "Tool - Support Ticket"
       },
       {
         "parameters": {
-          "description": "Schedule a callback with the user's Relationship Manager.",
-          "workflowId": { "__rl": true, "mode": "id", "value": "={{ $workflow.id }}_TOOL_SCHEDULE_CALLBACK" },
+          "description": "Schedule a callback with the user's Relationship Manager. Use when user wants to speak with someone or needs a consultation.",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "={{ $workflow.id }}_TOOL_SCHEDULE_CALLBACK"
+          },
           "workflowInputs": {
             "mappingMode": "defineBelow",
             "value": {
               "client_id": "={{ $('Smart Router & Prompt Builder').item.json.user.id }}",
-              "preferred_datetime": "={{ $fromAI('preferred_datetime', 'Preferred date and time for callback', 'string') }}",
-              "timezone": "={{ $fromAI('timezone', 'User timezone like UTC+4 or Asia/Dubai', 'string') }}",
-              "topic": "={{ $fromAI('topic', 'What they want to discuss', 'string') }}"
+              "preferred_datetime": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('preferred_datetime', 'Preferred date and time for callback', 'string') }}",
+              "timezone": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('timezone', 'User timezone like UTC+4 or Asia/Dubai', 'string') }}",
+              "topic": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('topic', 'What they want to discuss', 'string') }}"
             },
-            "matchingColumns": ["client_id"],
+            "matchingColumns": [
+              "client_id"
+            ],
             "schema": [
-              { "id": "client_id", "displayName": "client_id", "required": true, "type": "number" },
-              { "id": "preferred_datetime", "displayName": "preferred_datetime", "required": false, "type": "string" },
-              { "id": "timezone", "displayName": "timezone", "required": false, "type": "string" },
-              { "id": "topic", "displayName": "topic", "required": false, "type": "string" }
+              {
+                "id": "client_id",
+                "displayName": "client_id",
+                "required": true,
+                "type": "number"
+              },
+              {
+                "id": "preferred_datetime",
+                "displayName": "preferred_datetime",
+                "required": false,
+                "type": "string"
+              },
+              {
+                "id": "timezone",
+                "displayName": "timezone",
+                "required": false,
+                "type": "string"
+              },
+              {
+                "id": "topic",
+                "displayName": "topic",
+                "required": false,
+                "type": "string"
+              }
             ]
           }
         },
         "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
         "typeVersion": 2.2,
-        "position": [-24720, 11392],
-        "id": "1ca6f9b4-9228-451a-88f3-82b95d4c14f9",
+        "position": [
+          -71920,
+          29248
+        ],
+        "id": "9d95af56-5374-41f8-bfe8-e25c88f42603",
         "name": "Tool - Schedule Callback"
       },
       {
         "parameters": {
-          "description": "Get current promotions and bonus offers available to the user.",
-          "workflowId": { "__rl": true, "mode": "id", "value": "={{ $workflow.id }}_TOOL_PROMOTIONS" },
-          "workflowInputs": {
-            "mappingMode": "defineBelow",
-            "value": { "client_id": "={{ $('Smart Router & Prompt Builder').item.json.user.id }}" },
-            "matchingColumns": ["client_id"],
-            "schema": [{ "id": "client_id", "displayName": "client_id", "required": true, "type": "number" }]
-          }
-        },
-        "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-        "typeVersion": 2.2,
-        "position": [-24496, 11040],
-        "id": "ce929c0c-5e88-4414-b6a6-5877a9f760fc",
-        "name": "Tool - Promotions"
-      },
-      {
-        "parameters": {
-          "description": "Get portfolio risk assessment including exposure analysis and recommendations.",
-          "workflowId": { "__rl": true, "mode": "id", "value": "={{ $workflow.id }}_TOOL_RISK_ASSESSMENT" },
-          "workflowInputs": {
-            "mappingMode": "defineBelow",
-            "value": { "client_id": "={{ $('Smart Router & Prompt Builder').item.json.user.id }}" },
-            "matchingColumns": ["client_id"],
-            "schema": [{ "id": "client_id", "displayName": "client_id", "required": true, "type": "number" }]
-          }
-        },
-        "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-        "typeVersion": 2.2,
-        "position": [-24512, 11184],
-        "id": "df52df86-2287-499c-a17a-09cf6c3f8e50",
-        "name": "Tool - Risk Assessment"
-      },
-      {
-        "parameters": {
-          "description": "Search FAQ and knowledge base for answers.",
-          "workflowId": { "__rl": true, "mode": "id", "value": "={{ $workflow.id }}_TOOL_FAQ_SEARCH" },
+          "description": "Get current promotions and bonus offers available to the user. Use when user asks about bonuses, promotions, or special offers.",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "={{ $workflow.id }}_TOOL_PROMOTIONS"
+          },
           "workflowInputs": {
             "mappingMode": "defineBelow",
             "value": {
-              "query": "={{ $fromAI('query', 'Search query for FAQ', 'string') }}",
-              "category": "={{ $fromAI('category', 'Category: account, trading, platform, deposit, withdrawal, verification, general', 'string') }}"
+              "client_id": "={{ $('Smart Router & Prompt Builder').item.json.user.id }}"
             },
-            "matchingColumns": [],
+            "matchingColumns": [
+              "client_id"
+            ],
             "schema": [
-              { "id": "query", "displayName": "query", "required": true, "type": "string" },
-              { "id": "category", "displayName": "category", "required": false, "type": "string" }
+              {
+                "id": "client_id",
+                "displayName": "client_id",
+                "required": true,
+                "type": "number"
+              }
             ]
           }
         },
         "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
         "typeVersion": 2.2,
-        "position": [-24512, 11344],
-        "id": "b16f64ac-d26d-410a-aedc-fb4278d44efc",
+        "position": [
+          -71696,
+          28896
+        ],
+        "id": "e60cf02d-846a-4cec-b620-5591fbc191c8",
+        "name": "Tool - Promotions"
+      },
+      {
+        "parameters": {
+          "description": "Get portfolio risk assessment including exposure analysis and recommendations. Use when user asks about risk, exposure, or wants portfolio analysis.",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "={{ $workflow.id }}_TOOL_RISK_ASSESSMENT"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "client_id": "={{ $('Smart Router & Prompt Builder').item.json.user.id }}"
+            },
+            "matchingColumns": [
+              "client_id"
+            ],
+            "schema": [
+              {
+                "id": "client_id",
+                "displayName": "client_id",
+                "required": true,
+                "type": "number"
+              }
+            ]
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+        "typeVersion": 2.2,
+        "position": [
+          -71712,
+          29040
+        ],
+        "id": "4ee9317c-f93e-47da-b681-2285aedab8ff",
+        "name": "Tool - Risk Assessment"
+      },
+      {
+        "parameters": {
+          "description": "Search FAQ and knowledge base for answers. Use for general questions about how things work, processes, or common issues.",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "={{ $workflow.id }}_TOOL_FAQ_SEARCH"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('query', 'Search query for FAQ', 'string') }}",
+              "category": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('category', 'Category: account, trading, platform, deposit, withdrawal, verification, general', 'string') }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "query",
+                "displayName": "query",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "id": "category",
+                "displayName": "category",
+                "required": false,
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+        "typeVersion": 2.2,
+        "position": [
+          -71632,
+          29232
+        ],
+        "id": "a3c9e9bf-bb1e-4844-8f3d-2b22bb720bc2",
         "name": "Tool - FAQ Search"
       },
       {
@@ -898,70 +1312,112 @@
         },
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
-        "position": [-25136, 10816],
-        "id": "b66ab862-2c56-486f-9f65-1061fa4080cb",
+        "position": [
+          -71472,
+          27776
+        ],
+        "id": "82fabddf-9a79-41bf-8f41-93265ffe1a75",
         "name": "Compliance Filter"
       },
       {
         "parameters": {
-          "operation": "executeQuery",
-          "query": "INSERT INTO chat_audit_logs (user_phone, client_id, channel, session_id, inbound_text, detected_language, sentiment, sentiment_score, intent_classified, outbound_text, response_time_ms, escalated, escalation_reason, compliance_flags, persona_used, created_at)\nVALUES ('{{ $json.user_phone || '' }}', {{ $json.user?.id || 'NULL' }}, '{{ $json.channel || '' }}', '{{ $json.session_id || '' }}', '{{ ($json.user_text || '').replace(/'/g, \"''\") }}', '{{ $json.detected_language || '' }}', '{{ $json.sentiment || '' }}', {{ $json.sentiment_score || 0 }}, '{{ $json.intent || '' }}', '{{ (($json.filtered_response || $json.output || '')).replace(/'/g, \"''\") }}', {{ $json.response_time_ms || 0 }}, {{ $json.should_escalate || $json.escalation_initiated || false }}, {{ $json.escalation_reason ? `'${$json.escalation_reason.replace(/'/g, \"''\")}'` : 'NULL' }}, '{{ JSON.stringify($json.compliance_flags || []) }}'::JSONB, '{{ $json.selected_persona || 'friendly_support' }}', NOW())\nRETURNING id, user_phone, channel, session_id;",
-          "options": {}
-        },
-        "type": "n8n-nodes-base.postgres",
-        "typeVersion": 2.6,
-        "position": [-24928, 10816],
-        "id": "a318fa5f-bb65-4cc6-9a75-2fd65887fb15",
-        "name": "DB - Comprehensive Audit Log",
-        "credentials": {
-          "postgres": { "id": "yNVFJmXSqNtKGgso", "name": "Postgres account" }
-        }
-      },
-      {
-        "parameters": {
-          "operation": "executeQuery",
-          "query": "INSERT INTO chat_sessions (user_phone, session_id, session_start, channel, messages_count, sentiment_avg, escalated)\nVALUES ('{{ $json.user_phone }}', '{{ $json.session_id }}', NOW(), '{{ $json.channel }}', 1, {{ $json.sentiment_score || 0 }}, {{ $json.should_escalate || $json.escalation_initiated || false }})\nON CONFLICT (session_id)\nDO UPDATE SET messages_count = chat_sessions.messages_count + 1, sentiment_avg = (chat_sessions.sentiment_avg * chat_sessions.messages_count + {{ $json.sentiment_score || 0 }}) / (chat_sessions.messages_count + 1), escalated = chat_sessions.escalated OR {{ $json.should_escalate || $json.escalation_initiated || false }}, session_end = NOW()\nRETURNING id, user_phone, session_id, channel, messages_count;",
-          "options": {}
-        },
-        "type": "n8n-nodes-base.postgres",
-        "typeVersion": 2.6,
-        "position": [-24736, 10816],
-        "id": "db8b0105-e319-4e3e-a065-b8d343dc6f5e",
-        "name": "DB - Update Session",
-        "credentials": {
-          "postgres": { "id": "yNVFJmXSqNtKGgso", "name": "Postgres account" }
-        }
-      },
-      {
-        "parameters": {
-          "jsCode": "let originalData = {};\ntry {\n  const complianceItems = $('Compliance Filter').all();\n  if (complianceItems && complianceItems.length > 0) {\n    const pairedItem = $input.first().pairedItem;\n    if (pairedItem && pairedItem.item && pairedItem.item.length > 0) {\n      const sourceIndex = pairedItem.item[0].index || 0;\n      originalData = complianceItems[sourceIndex]?.json || complianceItems[0].json || {};\n    } else {\n      originalData = complianceItems[0].json || {};\n    }\n  } else {\n    originalData = $('Compliance Filter').item.json || {};\n  }\n} catch (e) {\n  originalData = $input.first().json || {};\n}\n\nconst sessionResult = $input.first().json || {};\n\nreturn [{\n  ...originalData,\n  session_updated: true,\n  session_id: sessionResult.session_id || originalData.session_id,\n  user_phone: sessionResult.user_phone || originalData.user_phone,\n  channel: sessionResult.channel || originalData.channel\n}];\n"
+          "jsCode": "// Handle escalation path\nconst context = $input.first().json;\nconst reason = context.escalation_reason;\n\nlet escalationMessage = '';\n\nswitch (reason) {\n  case 'user_requested':\n    escalationMessage = `I understand you'd like to speak with a human agent. Let me connect you with one of our specialists who can provide more personalized assistance.\\n\\nIn the meantime, I'm creating a priority support ticket so our team has all the context they need.`;\n    break;\n  case 'negative_sentiment':\n    escalationMessage = `I can see you're having a frustrating experience, and I'm really sorry about that. I want to make sure you get the best possible help, so I'm escalating this to a senior support specialist who will reach out to you shortly.\\n\\nIs there anything specific you'd like me to pass along to them?`;\n    break;\n  case 'vip_complaint':\n    escalationMessage = `As a valued VIP client, your satisfaction is our top priority. I'm immediately escalating this to your dedicated account manager who will personally follow up with you.\\n\\nThey will contact you within the next hour.`;\n    break;\n  case 'recurring_issues':\n    escalationMessage = `I notice you've had to reach out about issues multiple times recently, and I apologize that we haven't fully resolved things. I'm escalating this to our senior support team for a comprehensive review of your account.\\n\\nSomeone will contact you within 2 hours.`;\n    break;\n  default:\n    escalationMessage = `I'm connecting you with a human specialist who can better assist you. They'll have full context of our conversation.`;\n}\n\nreturn [{\n  ...context,\n  output: escalationMessage,\n  escalation_initiated: true\n}];\n"
         },
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
-        "position": [-24544, 10816],
-        "id": "60e9dc11-3fc0-422a-972f-dcf6962d2c45",
+        "position": [
+          -72704,
+          27696
+        ],
+        "id": "3d19f78f-dd3a-46c1-a2de-d02919abe082",
+        "name": "Escalation Handler"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "-- Log comprehensive audit record\nINSERT INTO chat_audit_logs (\n  user_phone,\n  client_id,\n  channel,\n  session_id,\n  inbound_text,\n  detected_language,\n  sentiment,\n  sentiment_score,\n  intent_classified,\n  outbound_text,\n  response_time_ms,\n  escalated,\n  escalation_reason,\n  compliance_flags,\n  persona_used,\n  created_at\n)\nVALUES (\n  '{{ $json.user_phone || '' }}',\n  {{ $json.user?.id || 'NULL' }},\n  '{{ $json.channel || '' }}',\n  '{{ $json.session_id || '' }}',\n  '{{ ($json.user_text || '').replace(/'/g, \"''\") }}',\n  '{{ $json.detected_language || '' }}',\n  '{{ $json.sentiment || '' }}',\n  {{ $json.sentiment_score || 0 }},\n  '{{ $json.intent || '' }}',\n  '{{ (($json.filtered_response || $json.output || '')).replace(/'/g, \"''\") }}',\n  {{ $json.response_time_ms || 0 }},\n  {{ $json.should_escalate || $json.escalation_initiated || false }},\n  {{ $json.escalation_reason ? `'${$json.escalation_reason.replace(/'/g, \"''\")}'` : 'NULL' }},\n  '{{ JSON.stringify($json.compliance_flags || []) }}'::JSONB,\n  '{{ $json.selected_persona || 'friendly_support' }}',\n  NOW()\n)\nRETURNING id, user_phone, channel, session_id;",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          -71328,
+          27776
+        ],
+        "id": "3b940dd3-87c1-42f9-b9d9-0e280f02ef80",
+        "name": "DB - Comprehensive Audit Log",
+        "credentials": {
+          "postgres": {
+            "id": "yNVFJmXSqNtKGgso",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "-- Update or create session record\nINSERT INTO chat_sessions (\n  user_phone,\n  session_id,\n  session_start,\n  channel,\n  messages_count,\n  sentiment_avg,\n  escalated\n)\nVALUES (\n  '{{ $json.user_phone }}',\n  '{{ $json.session_id }}',\n  NOW(),\n  '{{ $json.channel }}',\n  1,\n  {{ $json.sentiment_score || 0 }},\n  {{ $json.should_escalate || $json.escalation_initiated || false }}\n)\nON CONFLICT (session_id)\nDO UPDATE SET\n  messages_count = chat_sessions.messages_count + 1,\n  sentiment_avg = (chat_sessions.sentiment_avg * chat_sessions.messages_count + {{ $json.sentiment_score || 0 }}) / (chat_sessions.messages_count + 1),\n  escalated = chat_sessions.escalated OR {{ $json.should_escalate || $json.escalation_initiated || false }},\n  session_end = NOW()\nRETURNING id, user_phone, session_id, channel, messages_count;",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          -71168,
+          27760
+        ],
+        "id": "705c10e3-4888-4362-9a7f-47d6ca6a8aa8",
+        "name": "DB - Update Session",
+        "credentials": {
+          "postgres": {
+            "id": "yNVFJmXSqNtKGgso",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// Preserve context data from previous nodes\n// Get original data from Compliance Filter (which has filtered_response, output, etc.)\nlet originalData = {};\ntry {\n  const complianceItems = $('Compliance Filter').all();\n  if (complianceItems && complianceItems.length > 0) {\n    const pairedItem = $input.first().pairedItem;\n    if (pairedItem && pairedItem.item && pairedItem.item.length > 0) {\n      const sourceIndex = pairedItem.item[0].index || 0;\n      originalData = complianceItems[sourceIndex]?.json || complianceItems[0].json || {};\n    } else {\n      originalData = complianceItems[0].json || {};\n    }\n  } else {\n    originalData = $('Compliance Filter').item.json || {};\n  }\n} catch (e) {\n  // Fallback: use current input (from DB - Update Session)\n  originalData = $input.first().json || {};\n}\n\n// Get session update result\nconst sessionResult = $input.first().json || {};\n\n// Merge: prioritize original data (has filtered_response, output, etc.)\nreturn [{\n  ...originalData,\n  session_updated: true,\n  // Update session-specific fields from DB result if available\n  session_id: sessionResult.session_id || originalData.session_id,\n  user_phone: sessionResult.user_phone || originalData.user_phone,\n  channel: sessionResult.channel || originalData.channel\n}];\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -71040,
+          27760
+        ],
+        "id": "9c439858-9f75-4adc-993e-d2da0541330c",
         "name": "Preserve Context After Session"
       },
       {
         "parameters": {
-          "jsCode": "const context = $input.first().json;\nconst channel = context.channel;\nlet response = context.filtered_response || context.output || 'I apologize, but I encountered an issue. Please try again or contact support.';\n\nif (channel === 'whatsapp') {\n  response = response.replace(/\\*\\*([^*]+)\\*\\*/g, '*$1*').replace(/^- /gm, '• ');\n}\nelse if (channel === 'telegram') {\n  response = response.replace(/\\*\\*([^*]+)\\*\\*/g, '<b>$1</b>').replace(/\\*([^*]+)\\*/g, '<i>$1</i>').replace(/_([^_]+)_/g, '<i>$1</i>');\n}\nelse if (channel === 'email') {\n  response += `\\n\\n---\\nBest regards,\\nAlex\\nCMS Prime Support Team\\n\\nThis is an automated response. For urgent matters, please call +971 4 xxx xxxx.`;\n}\n\nreturn [{ output: response, channel: channel, session_id: context.session_id, user_phone: context.user_phone, metadata: context.metadata, message_type: context.message_type || 'text' }];\n"
+          "jsCode": "// Format final response based on channel\nconst context = $input.first().json;\nconst channel = context.channel;\nlet response = context.filtered_response || context.output || 'I apologize, but I encountered an issue. Please try again or contact support.';\n\n// Channel-specific formatting\nif (channel === 'whatsapp') {\n  // WhatsApp formatting (limited markdown)\n  response = response\n    .replace(/\\*\\*([^*]+)\\*\\*/g, '*$1*')  // Bold\n    .replace(/^- /gm, '• ');               // Bullet points\n}\nelse if (channel === 'telegram') {\n  // Telegram supports HTML\n  response = response\n    .replace(/\\*\\*([^*]+)\\*\\*/g, '<b>$1</b>')\n    .replace(/\\*([^*]+)\\*/g, '<i>$1</i>')\n    .replace(/_([^_]+)_/g, '<i>$1</i>');\n}\nelse if (channel === 'email') {\n  // Email - add signature\n  response += `\\n\\n---\\nBest regards,\\nAlex\\nCMS Prime Support Team\\n\\nThis is an automated response. For urgent matters, please call +971 4 xxx xxxx.`;\n}\n\nreturn [{\n  output: response,\n  channel: channel,\n  session_id: context.session_id,\n  user_phone: context.user_phone,\n  metadata: context.metadata,\n  message_type: context.message_type || 'text'\n}];\n"
         },
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
-        "position": [-24336, 10816],
-        "id": "e08f42d7-b5d5-4c3b-8a8a-0cb3973ed777",
+        "position": [
+          -70896,
+          27760
+        ],
+        "id": "5fc97975-d678-4c79-be37-572a6fe472a5",
         "name": "Format Response"
       },
       {
         "parameters": {
           "conditions": {
-            "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 1 },
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 1
+            },
             "conditions": [
               {
                 "id": "0cb092ab-9fc6-47fc-bb31-d71f0deea6be",
-                "leftValue": "={{ $json.channel }}",
-                "rightValue": "whatsup",
-                "operator": { "type": "string", "operation": "equals" }
+                "leftValue": "={{ $('Channel Normalizer').item.json.channel }}",
+                "rightValue": "whatsapp",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
               }
             ],
             "combinator": "and"
@@ -970,8 +1426,11 @@
         },
         "type": "n8n-nodes-base.if",
         "typeVersion": 2,
-        "position": [-24128, 10688],
-        "id": "283a6f5b-89ae-4aff-a837-a736ebc9efa9",
+        "position": [
+          -70720,
+          27808
+        ],
+        "id": "ba57d9ed-4374-49ce-8d44-acb0b5285e7d",
         "name": "IF - WhatsApp?"
       },
       {
@@ -981,31 +1440,48 @@
           "sendHeaders": true,
           "headerParameters": {
             "parameters": [
-              { "name": "Authorization", "value": "Bearer WHATSAPP_ACCESS_TOKEN" },
-              { "name": "Content-Type", "value": "application/json" }
+              {
+                "name": "Authorization",
+                "value": "Bearer WHATSAPP_ACCESS_TOKEN"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
             ]
           },
           "sendBody": true,
           "specifyBody": "json",
-          "jsonBody": "={\n  \"messaging_product\": \"whatsapp\",\n  \"to\": \"{{ $json.user_phone.replace('+', '') }}\",\n  \"type\": \"text\",\n  \"text\": { \"body\": \"{{ $json.output.replace(/\"/g, '\\\\\"').replace(/\\n/g, '\\\\n') }}\" }\n}",
+          "jsonBody": "={\n  \"messaging_product\": \"whatsapp\",\n  \"to\": \"{{ $json.user_phone.replace('+', '') }}\",\n  \"type\": \"text\",\n  \"text\": {\n    \"body\": \"{{ $json.output.replace(/\"/g, '\\\\\"').replace(/\\n/g, '\\\\n') }}\"\n  }\n}",
           "options": {}
         },
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.3,
-        "position": [-23808, 10624],
-        "id": "fd1e6433-4fec-4419-bdec-549fb0fe5305",
+        "position": [
+          -69728,
+          27360
+        ],
+        "id": "ef6c58cf-a5d2-49cb-a1ff-6e3764389652",
         "name": "Send WhatsApp Response"
       },
       {
         "parameters": {
           "conditions": {
-            "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 1 },
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 1
+            },
             "conditions": [
               {
                 "id": "aff8422e-7745-4e70-98ee-1549ddcfb81e",
-                "leftValue": "={{ $json.channel }}",
+                "leftValue": "={{ $('Channel Normalizer').all()[0].json.channel }}",
                 "rightValue": "telegram",
-                "operator": { "type": "string", "operation": "equals" }
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
               }
             ],
             "combinator": "and"
@@ -1014,66 +1490,99 @@
         },
         "type": "n8n-nodes-base.if",
         "typeVersion": 2,
-        "position": [-23920, 10848],
-        "id": "f06e6d0a-c786-4aa6-95c3-dbcbb8c7e273",
+        "position": [
+          -70528,
+          27920
+        ],
+        "id": "ccf79a46-bad6-4388-9aba-38e1adbf8c64",
         "name": "IF - Telegram?"
       },
       {
         "parameters": {
-          "chatId": "={{ $json.metadata?.chat_id }}",
+          "chatId": "={{ $('Channel Normalizer').all()[0].json.metadata.chat_id}}",
           "text": "={{ $json.output }}",
-          "additionalFields": { "parse_mode": "HTML" }
+          "additionalFields": {
+            "appendAttribution": false,
+            "parse_mode": "HTML"
+          }
         },
         "type": "n8n-nodes-base.telegram",
         "typeVersion": 1.2,
-        "position": [-23424, 10992],
-        "id": "a1638889-8e49-400a-82cd-4f97883b993e",
+        "position": [
+          -69728,
+          28064
+        ],
+        "id": "bbdb5173-0122-4044-bd43-d468eed4de19",
         "name": "Send Telegram Response",
         "webhookId": "52cdca7a-bb17-40e4-a24e-f6852315927f",
         "credentials": {
-          "telegramApi": { "id": "txTzVvWQaqPSnMci", "name": "Telegram account" }
+          "telegramApi": {
+            "id": "txTzVvWQaqPSnMci",
+            "name": "Telegram account"
+          }
         }
       },
       {
         "parameters": {
           "assignments": {
             "assignments": [
-              { "name": "output", "value": "={{ $json.output }}", "type": "string" }
+              {
+                "name": "output",
+                "value": "={{ $json.output }}",
+                "type": "string"
+              }
             ]
           },
           "options": {}
         },
         "type": "n8n-nodes-base.set",
         "typeVersion": 3.4,
-        "position": [-23872, 11184],
-        "id": "bda9fb9f-42b0-4584-b77b-849d52388fb6",
+        "position": [
+          -69728,
+          28416
+        ],
+        "id": "03cddd47-0b5b-4136-b518-d30f5a9b0cef",
         "name": "Return Web/Default Response"
       },
       {
         "parameters": {
           "operation": "executeQuery",
-          "query": "INSERT INTO chat_audit_logs (user_phone, client_id, channel, inbound_text, outbound_text, escalated, created_at)\nVALUES ('{{ $('Extract User Identifiers').item.json.user_phone }}', NULL, '{{ $('Extract User Identifiers').item.json.channel }}', '{{ $('Extract User Identifiers').item.json.user_text.replace(/'/g, \"''\") }}', '{{ $json.output.replace(/'/g, \"''\") }}', false, NOW());",
+          "query": "INSERT INTO chat_audit_logs (user_phone, client_id, channel, inbound_text, outbound_text, escalated, created_at)\nVALUES (\n  '{{ $('Extract User Identifiers').item.json.user_phone }}',\n  NULL,\n  '{{ $('Extract User Identifiers').item.json.channel }}',\n  '{{ $('Extract User Identifiers').item.json.user_text.replace(/'/g, \"''\") }}',\n  '{{ $json.output.replace(/'/g, \"''\") }}',\n  false,\n  NOW()\n);",
           "options": {}
         },
         "type": "n8n-nodes-base.postgres",
         "typeVersion": 2.6,
-        "position": [-26928, 11120],
-        "id": "f1d3b618-0493-4ec1-8798-3caca2d514a6",
+        "position": [
+          -73872,
+          28544
+        ],
+        "id": "438438b5-f0ba-4e25-89d4-60e18bf18a17",
         "name": "DB - Audit (Auth Fail)",
         "credentials": {
-          "postgres": { "id": "yNVFJmXSqNtKGgso", "name": "Postgres account" }
+          "postgres": {
+            "id": "yNVFJmXSqNtKGgso",
+            "name": "Postgres account"
+          }
         }
       },
       {
         "parameters": {
           "conditions": {
-            "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 1 },
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 1
+            },
             "conditions": [
               {
-                "id": "8a480928-89d7-4a52-afe9-f509039e397b",
-                "leftValue": "={{ $json.message_type || 'text' }}",
-                "rightValue": "voice",
-                "operator": { "type": "string", "operation": "equals" }
+                "id": "b5601f9f-5375-46e6-87af-70e7b270293b",
+                "leftValue": "={{ $json.metadata.original.message.voice.mime_type }}",
+                "rightValue": "=audio/ogg",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
               }
             ],
             "combinator": "and"
@@ -1082,8 +1591,11 @@
         },
         "type": "n8n-nodes-base.if",
         "typeVersion": 2,
-        "position": [-23728, 10848],
-        "id": "6c2ccfd4-d0fc-44da-9dd7-8c9773fa2a96",
+        "position": [
+          -70224,
+          27888
+        ],
+        "id": "1521446c-7a60-4a58-8221-a48f8f1345f0",
         "name": "IF - Telegram Voice Reply?"
       },
       {
@@ -1094,40 +1606,60 @@
         },
         "type": "@n8n/n8n-nodes-langchain.openAi",
         "typeVersion": 1.8,
-        "position": [-23232, 10640],
-        "id": "ce2fbfdd-3199-46cc-bf1c-b25419edfae6",
+        "position": [
+          -69936,
+          27744
+        ],
+        "id": "df2863d3-e61c-4293-936a-dcf81c80644a",
         "name": "Telegram - Generate Voice Response",
         "credentials": {
-          "openAiApi": { "id": "jqIg0jyWAkPQG4Ce", "name": "OpenAi account" }
+          "openAiApi": {
+            "id": "jqIg0jyWAkPQG4Ce",
+            "name": "OpenAi account"
+          }
         }
       },
       {
         "parameters": {
           "operation": "sendAudio",
-          "chatId": "={{ $('IF - Telegram Voice Reply?').item.json.metadata?.chat_id }}",
+          "chatId": "={{ $('Channel Normalizer').all()[0].json.metadata.chat_id}}",
           "binaryData": true,
           "additionalFields": {}
         },
         "type": "n8n-nodes-base.telegram",
         "typeVersion": 1.2,
-        "position": [-23008, 10688],
-        "id": "5a4b8d66-1b2b-4eae-92bb-49fdcf5cdb7a",
+        "position": [
+          -69712,
+          27792
+        ],
+        "id": "9f668630-1f45-4dab-ae6a-b333269b797d",
         "name": "Send Telegram Voice Response",
         "webhookId": "cb0bf5fc-69c1-41d4-9f8f-b8265a41f000",
         "credentials": {
-          "telegramApi": { "id": "txTzVvWQaqPSnMci", "name": "Telegram account" }
+          "telegramApi": {
+            "id": "txTzVvWQaqPSnMci",
+            "name": "Telegram account"
+          }
         }
       },
       {
         "parameters": {
           "conditions": {
-            "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 1 },
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 1
+            },
             "conditions": [
               {
-                "id": "auth-lookup-failed-cond",
-                "leftValue": "={{ String((!!$json.error) || (!!$json.code && Number($json.code) >= 400) || (!!$json.statusCode && Number($json.statusCode) >= 400) || (Array.isArray($json.body) && $json.body.length === 0) || (Object.keys($json || {}).length === 0)) }}",
+                "id": "if-in-scope-cond",
+                "leftValue": "={{ String($json.in_scope) }}",
                 "rightValue": "true",
-                "operator": { "type": "string", "operation": "equals" }
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
               }
             ],
             "combinator": "and"
@@ -1136,20 +1668,119 @@
         },
         "type": "n8n-nodes-base.if",
         "typeVersion": 2,
-        "position": [-27536, 10912],
-        "id": "8ea018f7-6b5f-4ad8-b0ad-authlookupfail",
-        "name": "IF - Auth Lookup Failed?"
+        "position": [
+          -73392,
+          27712
+        ],
+        "id": "d1583ef4-0e86-4648-a13f-7b36c562ca6f",
+        "name": "IF - In Scope?"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "name": "output",
+                "value": "={{ $json.refusal_message }}",
+                "type": "string"
+              }
+            ]
+          },
+          "includeOtherFields": true,
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -72816,
+          27520
+        ],
+        "id": "d1c9532d-0943-48ca-bf39-a359a444aa23",
+        "name": "Set - Out of Scope Response"
       },
       {
         "parameters": {
           "conditions": {
-            "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 1 },
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 1
+            },
+            "conditions": [
+              {
+                "id": "if-missing-ctx-text",
+                "leftValue": "={{ (!($json.user_text && String($json.user_text).trim().length > 0)).toString() }}",
+                "rightValue": "true",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              },
+              {
+                "id": "if-missing-ctx-router",
+                "leftValue": "={{ ($json.router_status === \"degraded\").toString() }}",
+                "rightValue": "true",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "or"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          -72976,
+          28016
+        ],
+        "id": "b0b5e2bc-27be-4473-9f36-09a89cc8fa32",
+        "name": "IF - Missing Critical Context?"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "name": "output",
+                "value": "={{ $json.safe_fallback_message }}",
+                "type": "string"
+              }
+            ]
+          },
+          "includeOtherFields": true,
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -72544,
+          27856
+        ],
+        "id": "e02d0083-a6be-40c1-8473-5befb01e62c9",
+        "name": "Set - Safe Fallback Response"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 1
+            },
             "conditions": [
               {
                 "id": "reg-intent-cond",
                 "leftValue": "={{ String(($json.registration_in_progress === true) || /\\b(register|registration|sign\\s?up|signup|open\\s+account|create\\s+account)\\b/i.test($json.user_text || '') || /[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/i.test($json.user_text || '') || /^[A-Za-z\\s'-]{2,50}$/.test(String($json.user_text || '').trim())) }}",
                 "rightValue": "true",
-                "operator": { "type": "string", "operation": "equals" }
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
               }
             ],
             "combinator": "and"
@@ -1158,28 +1789,24 @@
         },
         "type": "n8n-nodes-base.if",
         "typeVersion": 2,
-        "position": [-27136, 10976],
-        "id": "d1ff5fd7-98f2-4b20-a654-regintent",
+        "position": [
+          -74384,
+          28240
+        ],
+        "id": "2f4ff5f9-0af3-4e57-a1e6-a56702a6eca1",
         "name": "IF - Registration Intent or Ongoing?"
       },
       {
         "parameters": {
-          "jsCode": "// =============================================================\n// FIXED: Registration - Restore Input Context\n// Changes: preserves draft_registration across turns; guarantees\n// sessionId is consistent so Postgres Chat Memory matches sessions\n// =============================================================\nconst current = $input.first().json || {};\nlet base = {};\ntry {\n  base = $('Extract User Identifiers').item.json || {};\n} catch (e) {\n  base = {};\n}\n\n// Reliably pick sessionId — prefer the Web Chat Trigger value (base)\n// because that is what Postgres Chat Memory uses as its lookup key.\nconst sessionId =\n  base.sessionId ||\n  base.session_id ||\n  current.sessionId ||\n  current.session_id ||\n  `reg_${Date.now()}`;\n\nconst messageText =\n  base.user_text ||\n  base.message_text ||\n  current.user_text ||\n  current.message_text ||\n  '';\n\n// Preserve any existing draft — do NOT overwrite with an empty object\nconst existingDraft =\n  base.registration_context ||\n  current.registration_context ||\n  base.draft_registration ||\n  current.draft_registration ||\n  {};\n\nreturn [{\n  ...base,\n  ...current,\n  user_text: messageText,\n  message_text: messageText,\n  session_id: sessionId,\n  sessionId: sessionId,\n  registration_in_progress: true,\n  registration_context: existingDraft,\n  draft_registration: existingDraft\n}];\n"
+          "jsCode": "const input = $input.first().json || {};\nconst registrationPrompt = `You are Alex from CMS Prime Registration Support.\n\nVOICE AND STYLE\n\nSound like a polite, friendly , a bit fun human support specialist\n\nStart the conversation with a warm greeting and thank the user for contacting CMS Prime\n\nInform them that it looks like they are not yet registered\n\nBe calm, supportive, and slightly casual (never robotic)\n\nKeep responses short, clear, and helpful\n\nUse natural phrases such as: “Thanks”, “No problem”, “Great, got it”, “Almost done”\n\nREGISTRATION MODE — CORE BEHAVIOR\n\nYour ONLY task is to collect information required to create a CMS Prime account.\n\nRequired fields:\n\nemail\n\nfirstName\n\nlastName\n\nnationality\n\ncountry\n\npassword\n\nphonenumber (must be in international format, e.g., +971552521234- use your social media phone number to be able to chat with us) \n\nINITIAL REQUEST RULE\n\nOn the first message:\n\nAsk the user to provide ALL required details at once in a single message\n\nClearly list the required fields\n\nTell them they can also send the information step-by-step if easier\n\nPARTIAL INPUT HANDLING\n\nIf the user provides only some fields:\n\nSave all received values using chat memory\n\nDo NOT ask again for fields already provided\n\nAsk ONLY for the remaining missing fields\n\nContinue until all required fields are collected\n\nMEMORY RULES\n\nUse chat memory on every turn\n\nReuse previously provided values\n\nInfer context from short replies (yes/no, etc.)\n\nNever lose already collected data\n\nQUESTION STRATEGY\n\nPrefer asking for all missing fields together\n\nIf needed, you may ask one field at a time\n\nKeep prompts short and clear\n\nFOCUS RULE\n\nDo not answer unrelated questions while registration is incomplete\n\nPolitely steer the conversation back to registration\n\nCOMPLETION & SUBMISSION\n\nWhen ALL required information is collected:\n\nShow a clear summary of all details\n\nAsk for explicit confirmation (yes) to proceed\n\nWait for confirmation before submission\n\nSUCCESS RESPONSE\n\nIf registration_ok is true:\n\nConfirm success in a friendly, human way and tel an activation link has been sent to your email . just click on it to access to your client CRM\n\nDo not provide unnecessary extra information\n\nWELCOME MESSAGE RULE\n\nDo NOT repeat greeting after the first message\n\nContinue naturally from previous context\n`;\n\nconst sessionId = input.sessionId || input.session_id || '';\nconst userText = input.user_text || input.message_text || '';\n\nreturn [{\n  ...input,\n  sessionId: sessionId,\n  session_id: sessionId,\n  user_text: userText,\n  message_text: userText,\n  registration_in_progress: true,\n  registration_context: input.registration_context || {},\n  system_prompt: registrationPrompt\n}];"
         },
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
-        "position": [-27040, 10976],
-        "id": "5c9f09d4-71ac-4a1e-a535-regrestorectx",
-        "name": "Registration - Restore Input Context"
-      },
-      {
-        "parameters": {
-          "jsCode": "// =============================================================\n// FIXED: Registration Context Builder\n// Changes:\n//   1. Never resets registration_context / draft_registration to {}\n//   2. Injects the current draft into the system prompt so the agent\n//      can always see what has already been collected\n//   3. Strengthened rules: agent MUST pass ALL known fields on every\n//      tool call, NEVER ask for a field already provided\n// =============================================================\nconst input = $input.first().json || {};\n\n// Carry forward any accumulated draft from previous turns\nconst existingDraft =\n  input.registration_context ||\n  input.draft_registration ||\n  {};\n\nconst registrationPrompt = `You are Alex from CMS Prime Registration Support.\n\nVOICE AND STYLE:\n- Sound like a polite, friendly, human support specialist.\n- Be warm, calm, and a bit casual — never robotic.\n- Keep responses short and clear.\n- Use supportive phrases naturally: \"No problem\", \"Thanks\", \"Great, got it\".\n\nCURRENT DRAFT DATA (already collected — do NOT ask for these again):\n${JSON.stringify(existingDraft, null, 2)}\n\nREGISTRATION MODE RULES:\n1. Your ONLY task is collecting the 4 required fields: email, firstName, lastName, nationality.\n2. CRITICAL MEMORY RULE: On EVERY turn, consult CURRENT DRAFT DATA above AND the full chat\n   history. NEVER ask for a field that is already in the draft or was already given in chat.\n3. CRITICAL TOOL RULE: On EVERY turn you MUST call Tool - User Registration.\n   You MUST pass ALL values already collected — both from the draft AND what the user just said.\n   Example: if email and firstName are in the draft, pass email and firstName AND the new value.\n   Passing empty strings for known fields is FORBIDDEN.\n4. Ask for ONE missing field at a time.\n5. Do NOT answer unrelated questions while registration is in progress.\n6. Before final submission, display a full summary and require explicit \"yes\" confirmation.\n7. If registration_ok is true in the tool response, confirm success warmly and stop.\n8. Do NOT repeat welcome messages after the first turn.\n9. Do NOT restart the conversation.\n\nFIELD COLLECTION ORDER (skip fields already in the draft):\n1. email\n2. firstName\n3. lastName\n4. nationality\n`;\n\nconst sessionId = input.sessionId || input.session_id || `reg_${Date.now()}`;\nconst userText = input.user_text || input.message_text || '';\n\nreturn [{\n  ...input,\n  sessionId: sessionId,\n  session_id: sessionId,\n  user_text: userText,\n  message_text: userText,\n  registration_in_progress: true,\n  registration_context: existingDraft,\n  draft_registration: existingDraft,\n  system_prompt: registrationPrompt\n}];\n"
-        },
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [-26944, 10976],
-        "id": "1530f8de-bf3d-4203-a33a-regctx",
+        "position": [
+          -74064,
+          28160
+        ],
+        "id": "3f704512-7e61-4009-87c9-0486add1b506",
         "name": "Registration Context Builder"
       },
       {
@@ -1192,193 +1819,1245 @@
         },
         "type": "@n8n/n8n-nodes-langchain.agent",
         "typeVersion": 3.1,
-        "position": [-26736, 10976],
-        "id": "9468bc7d-64c8-4db6-b72a-regagent",
+        "position": [
+          -73312,
+          28576
+        ],
+        "id": "d24f2dde-dc56-465c-b255-dd2de69fa660",
         "name": "Registration AI Agent"
       },
       {
         "parameters": {
-          "description": "Registration engine. ALWAYS call this on every registration turn. ALWAYS pass ALL known field values (email, firstName, lastName, nationality) collected so far — including values from previous turns and the current draft. Passing empty strings for already-known fields is FORBIDDEN. The tool merges fields, validates, asks for the next missing field, and only submits after explicit user confirmation.",
+          "description": "Registration engine. Always call this tool on every registration turn. Always resend all known values (email, firstName, lastName, nationality,phone number), including values from previous turns, so data is not lost. The tool validates, asks next field, confirms summary, and submits registration only after explicit user confirmation.",
           "workflowId": {
             "__rl": true,
-            "mode": "id",
-            "value": "TOOL_USER_REGISTRATION"
+            "value": "hpWWwjOxa-_IJ1fHu7YYA",
+            "mode": "list",
+            "cachedResultUrl": "/workflow/hpWWwjOxa-_IJ1fHu7YYA",
+            "cachedResultName": "TOOL - User Registration.json"
           },
           "workflowInputs": {
             "mappingMode": "defineBelow",
             "value": {
-              "session_id": "={{ $json.sessionId || $json.session_id || '' }}",
-              "user_text": "={{ $json.user_text || $json.message_text || '' }}",
-              "channel": "={{ $json.channel || 'web' }}",
-              "draft_registration": "={{ JSON.stringify($json.registration_context || $json.draft_registration || {}) }}",
-              "email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('email', 'User email address if already known from draft or chat history, else empty string', 'string') }}",
-              "firstName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('firstName', 'User first name if already known from draft or chat history, else empty string', 'string') }}",
-              "lastName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('lastName', 'User last name if already known from draft or chat history, else empty string', 'string') }}",
-              "nationality": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('nationality', 'User nationality if already known from draft or chat history, else empty string', 'string') }}"
+              "lead": true,
+              "session_id": "={{ $('Registration Context Builder').item.json.session_id }}",
+              "email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('email', ``, 'string') }}",
+              "firstName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('firstName', ``, 'string') }}",
+              "lastName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('lastName', ``, 'string') }}",
+              "phone": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('phone', ``, 'string') }}",
+              "password": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('password', ``, 'string') }}",
+              "confirmPassword": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('confirmPassword', ``, 'string') }}",
+              "nationality": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('nationality', ``, 'string') }}",
+              "country": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('country', ``, 'string') }}",
+              "tin": "1"
             },
             "matchingColumns": [],
             "schema": [
-              { "id": "session_id",         "displayName": "session_id",         "required": false, "type": "string" },
-              { "id": "user_text",          "displayName": "user_text",          "required": false, "type": "string" },
-              { "id": "channel",            "displayName": "channel",            "required": false, "type": "string" },
-              { "id": "draft_registration", "displayName": "draft_registration", "required": false, "type": "string" },
-              { "id": "email",              "displayName": "email",              "required": false, "type": "string" },
-              { "id": "firstName",          "displayName": "firstName",          "required": false, "type": "string" },
-              { "id": "lastName",           "displayName": "lastName",           "required": false, "type": "string" },
-              { "id": "nationality",        "displayName": "nationality",        "required": false, "type": "string" }
-            ]
+              {
+                "id": "session_id",
+                "displayName": "session_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "user_text",
+                "displayName": "user_text",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": true
+              },
+              {
+                "id": "channel",
+                "displayName": "channel",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": true
+              },
+              {
+                "id": "draft_registration",
+                "displayName": "draft_registration",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "object",
+                "removed": true
+              },
+              {
+                "id": "email",
+                "displayName": "email",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "firstName",
+                "displayName": "firstName",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "lastName",
+                "displayName": "lastName",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "phone",
+                "displayName": "phone",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "password",
+                "displayName": "password",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "confirmPassword",
+                "displayName": "confirmPassword",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "nationality",
+                "displayName": "nationality",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "country",
+                "displayName": "country",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "tin",
+                "displayName": "tin",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "lead",
+                "displayName": "lead",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "boolean"
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
           }
         },
         "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
         "typeVersion": 2.2,
-        "position": [-26528, 11184],
-        "id": "9ec0c2b8-4b5c-4cf2-8fe3-regtool",
+        "position": [
+          -73120,
+          28896
+        ],
+        "id": "5a84f487-a74f-40a9-9392-dad835f115ad",
         "name": "Tool - User Registration"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 1
+            },
+            "conditions": [
+              {
+                "id": "auth-lookup-failed-cond",
+                "leftValue": "={{ String((!!$json.error) || (!!$json.code && Number($json.code) >= 400) || (!!$json.statusCode && Number($json.statusCode) >= 400) || (Array.isArray($json.body) && $json.body.length === 0) || (Object.keys($json || {}).length === 0)) }}",
+                "rightValue": "true",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          -75296,
+          27792
+        ],
+        "id": "49250d5d-e1ba-476e-9f92-93e6bf6b28b7",
+        "name": "IF - Auth Lookup Failed?"
+      },
+      {
+        "parameters": {
+          "jsCode": "const current = $input.first().json || {};\nlet base = {};\ntry {\n  base = $('Extract User Identifiers').item.json || {};\n} catch (e) {\n  base = {};\n}\n\nconst sessionId = base.sessionId || base.session_id || current.sessionId || current.session_id || '';\nconst messageText = base.user_text || base.message_text || current.user_text || current.message_text || '';\n\nreturn [{\n  ...base,\n  ...current,\n  user_text: messageText,\n  message_text: base.message_text || messageText,\n  session_id: sessionId,\n  sessionId: sessionId,\n  registration_in_progress: true,\n  registration_context: base.registration_context || current.registration_context || {}\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -74352,
+          28000
+        ],
+        "id": "ab7ff9ec-dfd0-41b7-bd25-a1b24b15b050",
+        "name": "Registration - Restore Input Context"
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "mode": "list",
+            "value": "gpt-4.1-mini"
+          },
+          "builtInTools": {},
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          -73424,
+          28928
+        ],
+        "id": "87e2f0b1-3cc5-451d-a7d7-104891a03284",
+        "name": "OpenAI Chat Model",
+        "credentials": {
+          "openAiApi": {
+            "id": "jqIg0jyWAkPQG4Ce",
+            "name": "OpenAi account"
+          }
+        }
+      },
+      {
+        "parameters": {},
+        "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+        "typeVersion": 1.3,
+        "position": [
+          -73248,
+          28912
+        ],
+        "id": "788d3ccf-ed63-440f-add3-35400da93130",
+        "name": "Postgres Chat Memory1",
+        "credentials": {
+          "postgres": {
+            "id": "yNVFJmXSqNtKGgso",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "b44a34ce-6a95-4599-b3d2-11705009ed1a",
+                "leftValue": "={{ $json.is_admin }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          -72576,
+          28032
+        ],
+        "id": "35d17a94-729c-4819-9dd8-ebe3c5d524b2",
+        "name": "If"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3.1,
+        "position": [
+          -71200,
+          28032
+        ],
+        "id": "13eba12a-f041-4c48-b71f-ce253735c515",
+        "name": "admin agent"
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "mode": "list",
+            "value": "gpt-4.1-mini"
+          },
+          "builtInTools": {},
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          -71392,
+          28208
+        ],
+        "id": "dbd45b22-5fa2-4241-bbf2-dcaf3b7ccdd0",
+        "name": "OpenAI Chat Model1",
+        "credentials": {
+          "openAiApi": {
+            "id": "jqIg0jyWAkPQG4Ce",
+            "name": "OpenAi account"
+          }
+        }
+      },
+      {
+        "parameters": {},
+        "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+        "typeVersion": 1.3,
+        "position": [
+          -71264,
+          28192
+        ],
+        "id": "2540fb78-0658-46d5-8e3b-43ff9428bfad",
+        "name": "Postgres Chat Memory2",
+        "credentials": {
+          "postgres": {
+            "id": "yNVFJmXSqNtKGgso",
+            "name": "Postgres account"
+          }
+        }
       }
     ],
-  
     "pinData": {},
-  
     "connections": {
-      "Web Chat Trigger": { "main": [[{ "node": "Channel Normalizer", "type": "main", "index": 0 }]] },
-      "WhatsApp Webhook": { "main": [[{ "node": "Channel Normalizer", "type": "main", "index": 0 }]] },
-      "Telegram Trigger": { "main": [[{ "node": "IF - Telegram Voice?", "type": "main", "index": 0 }]] },
+      "Web Chat Trigger": {
+        "main": [
+          [
+            {
+              "node": "Channel Normalizer",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "WhatsApp Webhook": {
+        "main": [
+          [
+            {
+              "node": "Channel Normalizer",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Telegram Trigger": {
+        "main": [
+          [
+            {
+              "node": "IF - Telegram Voice?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
       "IF - Telegram Voice?": {
         "main": [
-          [{ "node": "Telegram - Get Voice File", "type": "main", "index": 0 }],
-          [{ "node": "Channel Normalizer", "type": "main", "index": 0 }]
+          [
+            {
+              "node": "Telegram - Get Voice File",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Channel Normalizer",
+              "type": "main",
+              "index": 0
+            }
+          ]
         ]
       },
-      "Telegram - Get Voice File": { "main": [[{ "node": "Telegram - Transcribe Voice", "type": "main", "index": 0 }]] },
-      "Telegram - Transcribe Voice": { "main": [[{ "node": "Telegram - Apply Transcript", "type": "main", "index": 0 }]] },
-      "Telegram - Apply Transcript": { "main": [[{ "node": "Channel Normalizer", "type": "main", "index": 0 }]] },
-      "Email Webhook": { "main": [[{ "node": "Channel Normalizer", "type": "main", "index": 0 }]] },
-      "Channel Normalizer": { "main": [[{ "node": "Extract User Identifiers", "type": "main", "index": 0 }]] },
-      "Extract User Identifiers": { "main": [[{ "node": "IF - Have User Identifier?", "type": "main", "index": 0 }]] },
+      "Telegram - Get Voice File": {
+        "main": [
+          [
+            {
+              "node": "Telegram - Transcribe Voice",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Telegram - Transcribe Voice": {
+        "main": [
+          [
+            {
+              "node": "Telegram - Apply Transcript",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Telegram - Apply Transcript": {
+        "main": [
+          [
+            {
+              "node": "Channel Normalizer",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Email Webhook": {
+        "main": [
+          [
+            {
+              "node": "Channel Normalizer",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Channel Normalizer": {
+        "main": [
+          [
+            {
+              "node": "Extract User Identifiers",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Extract User Identifiers": {
+        "main": [
+          [
+            {
+              "node": "IF - Have User Identifier?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
       "IF - Have User Identifier?": {
         "main": [
-          [{ "node": "Auth - Lookup User", "type": "main", "index": 0 }],
-          [{ "node": "Missing Identifier Response", "type": "main", "index": 0 }]
+          [
+            {
+              "node": "Auth - Lookup User",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Missing Identifier Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
         ]
       },
-      "Missing Identifier Response": { "main": [[{ "node": "Return Web/Default Response", "type": "main", "index": 0 }]] },
-      "Auth - Lookup User": { "main": [[{ "node": "IF - Auth Lookup Failed?", "type": "main", "index": 0 }]] },
-      "IF - Auth Lookup Failed?": {
+      "Missing Identifier Response": {
         "main": [
-          [{ "node": "Registration - Restore Input Context", "type": "main", "index": 0 }],
-          [{ "node": "Auth - Extract User Fields", "type": "main", "index": 0 }]
+          [
+            {
+              "node": "Return Web/Default Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
         ]
       },
-      "Auth - Extract User Fields": { "main": [[{ "node": "IF - Auth OK?", "type": "main", "index": 0 }]] },
+      "Auth - Lookup User": {
+        "main": [
+          [
+            {
+              "node": "IF - Auth Lookup Failed?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Auth - Extract User Fields": {
+        "main": [
+          [
+            {
+              "node": "IF - Auth OK?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
       "IF - Auth OK?": {
         "main": [
-          [{ "node": "Language Detector", "type": "main", "index": 0 }],
-          [{ "node": "Auth Failed Response", "type": "main", "index": 0 }]
+          [
+            {
+              "node": "Language Detector",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Auth Failed Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
         ]
       },
-      "Auth Failed Response": { "main": [[{ "node": "DB - Audit (Auth Fail)", "type": "main", "index": 0 }]] },
-      "DB - Audit (Auth Fail)": { "main": [[{ "node": "Return Web/Default Response", "type": "main", "index": 0 }]] },
-      "Language Detector": { "main": [[{ "node": "Sentiment Analyzer", "type": "main", "index": 0 }]] },
-      "Sentiment Analyzer": { "main": [[{ "node": "Parse Sentiment", "type": "main", "index": 0 }]] },
-      "Sentiment LLM": { "ai_languageModel": [[{ "node": "Sentiment Analyzer", "type": "ai_languageModel", "index": 0 }]] },
-      "Parse Sentiment": { "main": [[{ "node": "Intent Classifier", "type": "main", "index": 0 }]] },
-      "Intent Classifier": { "main": [[{ "node": "Parse Intent", "type": "main", "index": 0 }]] },
-      "Intent LLM": { "ai_languageModel": [[{ "node": "Intent Classifier", "type": "ai_languageModel", "index": 0 }]] },
-      "Parse Intent": { "main": [[{ "node": "DB - Upsert User Config", "type": "main", "index": 0 }]] },
-      "DB - Upsert User Config": { "main": [[{ "node": "DB - Load User Context", "type": "main", "index": 0 }]] },
-      "DB - Load User Context": { "main": [[{ "node": "Smart Router & Prompt Builder", "type": "main", "index": 0 }]] },
-      "Smart Router & Prompt Builder": { "main": [[{ "node": "IF - In Scope?", "type": "main", "index": 0 }]] },
-      "IF - In Scope?": {
+      "Auth Failed Response": {
         "main": [
-          [{ "node": "IF - Should Escalate?", "type": "main", "index": 0 }],
-          [{ "node": "Set - Out of Scope Response", "type": "main", "index": 0 }]
+          [
+            {
+              "node": "DB - Audit (Auth Fail)",
+              "type": "main",
+              "index": 0
+            }
+          ]
         ]
       },
-      "Set - Out of Scope Response": { "main": [[{ "node": "Compliance Filter", "type": "main", "index": 0 }]] },
+      "DB - Audit (Auth Fail)": {
+        "main": [
+          [
+            {
+              "node": "Return Web/Default Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Language Detector": {
+        "main": [
+          [
+            {
+              "node": "Sentiment Analyzer",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Sentiment Analyzer": {
+        "main": [
+          [
+            {
+              "node": "Parse Sentiment",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Sentiment LLM": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Sentiment Analyzer",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse Sentiment": {
+        "main": [
+          [
+            {
+              "node": "Intent Classifier",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Intent Classifier": {
+        "main": [
+          [
+            {
+              "node": "Parse Intent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Intent LLM": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Intent Classifier",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse Intent": {
+        "main": [
+          [
+            {
+              "node": "DB - Upsert User Config",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "DB - Upsert User Config": {
+        "main": [
+          [
+            {
+              "node": "DB - Load User Context",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Smart Router & Prompt Builder": {
+        "main": [
+          [
+            {
+              "node": "IF - In Scope?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
       "IF - Should Escalate?": {
         "main": [
-          [{ "node": "Escalation Handler", "type": "main", "index": 0 }],
-          [{ "node": "IF - Missing Critical Context?", "type": "main", "index": 0 }]
+          [
+            {
+              "node": "Escalation Handler",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "IF - Missing Critical Context?",
+              "type": "main",
+              "index": 0
+            }
+          ]
         ]
       },
-      "Escalation Handler": { "main": [[{ "node": "Compliance Filter", "type": "main", "index": 0 }]] },
-      "IF - Missing Critical Context?": {
+      "Escalation Handler": {
         "main": [
-          [{ "node": "Set - Safe Fallback Response", "type": "main", "index": 0 }],
-          [{ "node": "AI Agent", "type": "main", "index": 0 }]
+          [
+            {
+              "node": "Compliance Filter",
+              "type": "main",
+              "index": 0
+            }
+          ]
         ]
       },
-      "Set - Safe Fallback Response": { "main": [[{ "node": "Compliance Filter", "type": "main", "index": 0 }]] },
-      "AI Agent": { "main": [[{ "node": "Compliance Filter", "type": "main", "index": 0 }]] },
+      "AI Agent": {
+        "main": [
+          [
+            {
+              "node": "Compliance Filter",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
       "OpenAI GPT-4.1 Mini": {
         "ai_languageModel": [
-          [{ "node": "AI Agent", "type": "ai_languageModel", "index": 0 }],
-          [{ "node": "Registration AI Agent", "type": "ai_languageModel", "index": 0 }]
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
         ]
       },
       "Postgres Chat Memory": {
         "ai_memory": [
-          [{ "node": "AI Agent", "type": "ai_memory", "index": 0 }],
-          [{ "node": "Registration AI Agent", "type": "ai_memory", "index": 0 }]
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
         ]
       },
-      "Tool - Account Summary":    { "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]] },
-      "Tool - Open Positions":     { "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]] },
-      "Tool - Trade History":      { "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]] },
-      "Tool - Transactions":       { "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]] },
-      "Tool - Market Prices":      { "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]] },
-      "Tool - Market News":        { "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]] },
-      "Tool - Economic Calendar":  { "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]] },
-      "Tool - Trading Calculator": { "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]] },
-      "Tool - Platform Status":    { "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]] },
-      "Tool - Document Status":    { "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]] },
-      "Tool - Support Ticket":     { "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]] },
-      "Tool - Schedule Callback":  { "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]] },
-      "Tool - Promotions":         { "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]] },
-      "Tool - Risk Assessment":    { "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]] },
-      "Tool - FAQ Search":         { "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]] },
-      "Compliance Filter": { "main": [[{ "node": "DB - Comprehensive Audit Log", "type": "main", "index": 0 }]] },
-      "DB - Comprehensive Audit Log": { "main": [[{ "node": "DB - Update Session", "type": "main", "index": 0 }]] },
-      "DB - Update Session": { "main": [[{ "node": "Preserve Context After Session", "type": "main", "index": 0 }]] },
-      "Preserve Context After Session": { "main": [[{ "node": "Format Response", "type": "main", "index": 0 }]] },
-      "Format Response": { "main": [[{ "node": "IF - WhatsApp?", "type": "main", "index": 0 }]] },
+      "Tool - Account Summary": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Tool - Open Positions": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Tool - Trade History": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Tool - Transactions": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Tool - Market Prices": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Tool - Market News": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Tool - Economic Calendar": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Tool - Trading Calculator": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Tool - Platform Status": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Tool - Document Status": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Tool - Support Ticket": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Tool - Schedule Callback": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Tool - Promotions": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Tool - Risk Assessment": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Tool - FAQ Search": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Compliance Filter": {
+        "main": [
+          [
+            {
+              "node": "DB - Comprehensive Audit Log",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "DB - Comprehensive Audit Log": {
+        "main": [
+          [
+            {
+              "node": "DB - Update Session",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "DB - Update Session": {
+        "main": [
+          [
+            {
+              "node": "Preserve Context After Session",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Preserve Context After Session": {
+        "main": [
+          [
+            {
+              "node": "Format Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Format Response": {
+        "main": [
+          [
+            {
+              "node": "IF - WhatsApp?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
       "IF - WhatsApp?": {
         "main": [
-          [{ "node": "Send WhatsApp Response", "type": "main", "index": 0 }],
-          [{ "node": "IF - Telegram?", "type": "main", "index": 0 }]
+          [
+            {
+              "node": "Send WhatsApp Response",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "IF - Telegram?",
+              "type": "main",
+              "index": 0
+            }
+          ]
         ]
       },
       "IF - Telegram?": {
         "main": [
-          [{ "node": "IF - Telegram Voice Reply?", "type": "main", "index": 0 }],
-          [{ "node": "Return Web/Default Response", "type": "main", "index": 0 }]
+          [
+            {
+              "node": "IF - Telegram Voice Reply?",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Return Web/Default Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "DB - Load User Context": {
+        "main": [
+          [
+            {
+              "node": "Smart Router & Prompt Builder",
+              "type": "main",
+              "index": 0
+            }
+          ]
         ]
       },
       "IF - Telegram Voice Reply?": {
         "main": [
-          [{ "node": "Telegram - Generate Voice Response", "type": "main", "index": 0 }],
-          [{ "node": "Send Telegram Response", "type": "main", "index": 0 }]
+          [
+            {
+              "node": "Telegram - Generate Voice Response",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Send Telegram Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
         ]
       },
-      "Telegram - Generate Voice Response": { "main": [[{ "node": "Send Telegram Voice Response", "type": "main", "index": 0 }]] },
+      "Telegram - Generate Voice Response": {
+        "main": [
+          [
+            {
+              "node": "Send Telegram Voice Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IF - In Scope?": {
+        "main": [
+          [
+            {
+              "node": "IF - Should Escalate?",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Set - Out of Scope Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IF - Missing Critical Context?": {
+        "main": [
+          [
+            {
+              "node": "Set - Safe Fallback Response",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "If",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set - Out of Scope Response": {
+        "main": [
+          [
+            {
+              "node": "Compliance Filter",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set - Safe Fallback Response": {
+        "main": [
+          [
+            {
+              "node": "Compliance Filter",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
       "IF - Registration Intent or Ongoing?": {
         "main": [
-          [{ "node": "Registration Context Builder", "type": "main", "index": 0 }],
-          [{ "node": "Auth Failed Response", "type": "main", "index": 0 }]
+          [
+            {
+              "node": "Registration Context Builder",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Auth Failed Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
         ]
       },
-      "Registration - Restore Input Context": { "main": [[{ "node": "Registration Context Builder", "type": "main", "index": 0 }]] },
-      "Registration Context Builder": { "main": [[{ "node": "Registration AI Agent", "type": "main", "index": 0 }]] },
-      "Registration AI Agent": { "main": [[{ "node": "Compliance Filter", "type": "main", "index": 0 }]] },
-      "Tool - User Registration": { "ai_tool": [[{ "node": "Registration AI Agent", "type": "ai_tool", "index": 0 }]] }
+      "Registration Context Builder": {
+        "main": [
+          [
+            {
+              "node": "Registration AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Registration AI Agent": {
+        "main": [
+          [
+            {
+              "node": "Compliance Filter",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Tool - User Registration": {
+        "ai_tool": [
+          [
+            {
+              "node": "Registration AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IF - Auth Lookup Failed?": {
+        "main": [
+          [
+            {
+              "node": "Registration - Restore Input Context",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Auth - Extract User Fields",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Registration - Restore Input Context": {
+        "main": [
+          [
+            {
+              "node": "Registration Context Builder",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Registration AI Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Postgres Chat Memory1": {
+        "ai_memory": [
+          [
+            {
+              "node": "Registration AI Agent",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If": {
+        "main": [
+          [
+            {
+              "node": "admin agent",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Chat Model1": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "admin agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Postgres Chat Memory2": {
+        "ai_memory": [
+          [
+            {
+              "node": "admin agent",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "admin agent": {
+        "main": [
+          [
+            {
+              "node": "Compliance Filter",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
     },
-  
     "active": true,
     "settings": {
       "executionOrder": "v1",
       "availableInMCP": false
     },
-    "versionId": "3de40722-54a2-4880-8f21-0066cb2e6587",
+    "versionId": "edbcc1b2-de4b-471e-957a-10048474b442",
     "meta": {
       "templateCredsSetupCompleted": true,
       "instanceId": "495f6278a9dd899c69efc38f92904361f03ad646b8c63a3d991806ec829debf6"

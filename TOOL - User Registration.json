@@ -1,0 +1,238 @@
+{
+  "name": "TOOL - User Registration.json",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "session_id"
+            },
+            {
+              "name": "user_text"
+            },
+            {
+              "name": "channel"
+            },
+            {
+              "name": "draft_registration",
+              "type": "object"
+            },
+            {
+              "name": "email"
+            },
+            {
+              "name": "firstName"
+            },
+            {
+              "name": "lastName"
+            },
+            {
+              "name": "phone"
+            },
+            {
+              "name": "password"
+            },
+            {
+              "name": "confirmPassword"
+            },
+            {
+              "name": "nationality"
+            },
+            {
+              "name": "country"
+            },
+            {
+              "name": "tin"
+            },
+            {
+              "name": "lead",
+              "type": "boolean"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1440,
+        432
+      ],
+      "id": "b5e8e6c8-206c-4823-8193-ac7710946f1d",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Deterministic registration collector aligned with website payload\nconst input = $input.first().json || {};\nconst userText = String(input.user_text || '').trim();\nconst draft = (input.draft_registration && typeof input.draft_registration === 'object') ? { ...input.draft_registration } : {};\n\nconst COUNTRY_OPTIONS = [\n  { code: 'AF', country: 'Afghanistan' }, { code: 'AX', country: 'Aland Islands' }, { code: 'AL', country: 'Albania' },\n  { code: 'DZ', country: 'Algeria' }, { code: 'AS', country: 'American Samoa' }, { code: 'AD', country: 'Andorra' },\n  { code: 'AO', country: 'Angola' }, { code: 'AI', country: 'Anguilla' }, { code: 'AQ', country: 'Antarctica' },\n  { code: 'AG', country: 'Antigua Barbuda' }, { code: 'AR', country: 'Argentina' }, { code: 'AM', country: 'Armenia' },\n  { code: 'AW', country: 'Aruba' }, { code: 'AU', country: 'Australia' }, { code: 'AT', country: 'Austria' },\n  { code: 'AZ', country: 'Azerbaijan' }, { code: 'BS', country: 'Bahamas' }, { code: 'BH', country: 'Bahrain' },\n  { code: 'BD', country: 'Bangladesh' }, { code: 'BB', country: 'Barbados' }, { code: 'BY', country: 'Belarus' },\n  { code: 'BE', country: 'Belgium' }, { code: 'BZ', country: 'Belize' }, { code: 'BJ', country: 'Benin' },\n  { code: 'BM', country: 'Bermuda' }, { code: 'BT', country: 'Bhutan' }, { code: 'BO', country: 'Bolivia' },\n  { code: 'BA', country: 'Bosnia Herzegovina' }, { code: 'BW', country: 'Botswana' }, { code: 'BV', country: 'Bouvet Island' },\n  { code: 'BR', country: 'Brazil' }, { code: 'IO', country: 'British Indian Ocean Territory' }, { code: 'VG', country: 'British Virgin Islands' },\n  { code: 'BN', country: 'Brunei' }, { code: 'BG', country: 'Bulgaria' }, { code: 'BF', country: 'Burkina Faso' },\n  { code: 'BI', country: 'Burundi' }, { code: 'KH', country: 'Cambodia' }, { code: 'CM', country: 'Cameroon' },\n  { code: 'CA', country: 'Canada' }, { code: 'CV', country: 'Cape Verde' }, { code: 'BQ', country: 'Caribbean Netherlands' },\n  { code: 'KY', country: 'Cayman Islands' }, { code: 'CF', country: 'Central African Republic' }, { code: 'TD', country: 'Chad' },\n  { code: 'CL', country: 'Chile' }, { code: 'CN', country: 'China' }, { code: 'CX', country: 'Christmas Island' },\n  { code: 'CC', country: 'Cocos Keeling Islands' }, { code: 'CO', country: 'Colombia' }, { code: 'KM', country: 'Comoros' },\n  { code: 'CG', country: 'Congo Brazzaville' }, { code: 'CD', country: 'Congo Kinshasa' }, { code: 'CK', country: 'Cook Islands' },\n  { code: 'CR', country: 'Costa Rica' }, { code: 'CI', country: 'Cote d Ivoire' }, { code: 'HR', country: 'Croatia' },\n  { code: 'CU', country: 'Cuba' }, { code: 'CW', country: 'Curacao' }, { code: 'CY', country: 'Cyprus' },\n  { code: 'CZ', country: 'Czech Republic' }, { code: 'DK', country: 'Denmark' }, { code: 'DJ', country: 'Djibouti' },\n  { code: 'DM', country: 'Dominica' }, { code: 'DO', country: 'Dominican Republic' }, { code: 'EC', country: 'Ecuador' },\n  { code: 'EG', country: 'Egypt' }, { code: 'SV', country: 'El Salvador' }, { code: 'GQ', country: 'Equatorial Guinea' },\n  { code: 'ER', country: 'Eritrea' }, { code: 'EE', country: 'Estonia' }, { code: 'SZ', country: 'Eswatini' },\n  { code: 'ET', country: 'Ethiopia' }, { code: 'FK', country: 'Falkland Islands' }, { code: 'FO', country: 'Faroe Islands' },\n  { code: 'FJ', country: 'Fiji' }, { code: 'FI', country: 'Finland' }, { code: 'FR', country: 'France' },\n  { code: 'GF', country: 'French Guiana' }, { code: 'PF', country: 'French Polynesia' }, { code: 'TF', country: 'French Southern Territories' },\n  { code: 'GA', country: 'Gabon' }, { code: 'GM', country: 'Gambia' }, { code: 'GE', country: 'Georgia' },\n  { code: 'DE', country: 'Germany' }, { code: 'GH', country: 'Ghana' }, { code: 'GI', country: 'Gibraltar' },\n  { code: 'GR', country: 'Greece' }, { code: 'GL', country: 'Greenland' }, { code: 'GD', country: 'Grenada' },\n  { code: 'GP', country: 'Guadeloupe' }, { code: 'GU', country: 'Guam' }, { code: 'GT', country: 'Guatemala' },\n  { code: 'GG', country: 'Guernsey' }, { code: 'GN', country: 'Guinea' }, { code: 'GW', country: 'Guinea Bissau' },\n  { code: 'GY', country: 'Guyana' }, { code: 'HT', country: 'Haiti' }, { code: 'HM', country: 'Heard McDonald Islands' },\n  { code: 'HN', country: 'Honduras' }, { code: 'HK', country: 'Hong Kong SAR China' }, { code: 'HU', country: 'Hungary' },\n  { code: 'IS', country: 'Iceland' }, { code: 'IN', country: 'India' }, { code: 'ID', country: 'Indonesia' },\n  { code: 'IR', country: 'Iran' }, { code: 'IQ', country: 'Iraq' }, { code: 'IE', country: 'Ireland' },\n  { code: 'IM', country: 'Isle of Man' }, { code: 'IL', country: 'Israel' }, { code: 'IT', country: 'Italy' },\n  { code: 'JM', country: 'Jamaica' }, { code: 'JP', country: 'Japan' }, { code: 'JE', country: 'Jersey' },\n  { code: 'JO', country: 'Jordan' }, { code: 'KZ', country: 'Kazakhstan' }, { code: 'KE', country: 'Kenya' },\n  { code: 'KI', country: 'Kiribati' }, { code: 'KW', country: 'Kuwait' }, { code: 'KG', country: 'Kyrgyzstan' },\n  { code: 'LA', country: 'Laos' }, { code: 'LV', country: 'Latvia' }, { code: 'LB', country: 'Lebanon' },\n  { code: 'LS', country: 'Lesotho' }, { code: 'LR', country: 'Liberia' }, { code: 'LY', country: 'Libya' },\n  { code: 'LI', country: 'Liechtenstein' }, { code: 'LT', country: 'Lithuania' }, { code: 'LU', country: 'Luxembourg' },\n  { code: 'MO', country: 'Macao SAR China' }, { code: 'MG', country: 'Madagascar' }, { code: 'MW', country: 'Malawi' },\n  { code: 'MY', country: 'Malaysia' }, { code: 'MV', country: 'Maldives' }, { code: 'ML', country: 'Mali' },\n  { code: 'MT', country: 'Malta' }, { code: 'MH', country: 'Marshall Islands' }, { code: 'MQ', country: 'Martinique' },\n  { code: 'MR', country: 'Mauritania' }, { code: 'MU', country: 'Mauritius' }, { code: 'YT', country: 'Mayotte' },\n  { code: 'MX', country: 'Mexico' }, { code: 'FM', country: 'Micronesia' }, { code: 'MD', country: 'Moldova' },\n  { code: 'MC', country: 'Monaco' }, { code: 'MN', country: 'Mongolia' }, { code: 'ME', country: 'Montenegro' },\n  { code: 'MS', country: 'Montserrat' }, { code: 'MA', country: 'Morocco' }, { code: 'MZ', country: 'Mozambique' },\n  { code: 'MM', country: 'Myanmar Burma' }, { code: 'NA', country: 'Namibia' }, { code: 'NR', country: 'Nauru' },\n  { code: 'NP', country: 'Nepal' }, { code: 'NL', country: 'Netherlands' }, { code: 'NC', country: 'New Caledonia' },\n  { code: 'NZ', country: 'New Zealand' }, { code: 'NI', country: 'Nicaragua' }, { code: 'NE', country: 'Niger' },\n  { code: 'NG', country: 'Nigeria' }, { code: 'NU', country: 'Niue' }, { code: 'NF', country: 'Norfolk Island' },\n  { code: 'KP', country: 'North Korea' }, { code: 'MK', country: 'North Macedonia' }, { code: 'MP', country: 'Northern Mariana Islands' },\n  { code: 'NO', country: 'Norway' }, { code: 'OM', country: 'Oman' }, { code: 'PK', country: 'Pakistan' },\n  { code: 'PW', country: 'Palau' }, { code: 'PS', country: 'Palestinian Territories' }, { code: 'PA', country: 'Panama' },\n  { code: 'PG', country: 'Papua New Guinea' }, { code: 'PY', country: 'Paraguay' }, { code: 'PE', country: 'Peru' },\n  { code: 'PH', country: 'Philippines' }, { code: 'PN', country: 'Pitcairn Islands' }, { code: 'PL', country: 'Poland' },\n  { code: 'PT', country: 'Portugal' }, { code: 'PR', country: 'Puerto Rico' }, { code: 'QA', country: 'Qatar' },\n  { code: 'RE', country: 'Reunion' }, { code: 'RO', country: 'Romania' }, { code: 'RU', country: 'Russia' },\n  { code: 'RW', country: 'Rwanda' }, { code: 'WS', country: 'Samoa' }, { code: 'SM', country: 'San Marino' },\n  { code: 'ST', country: 'Sao Tome Principe' }, { code: 'SA', country: 'Saudi Arabia' }, { code: 'SN', country: 'Senegal' },\n  { code: 'RS', country: 'Serbia' }, { code: 'SC', country: 'Seychelles' }, { code: 'SL', country: 'Sierra Leone' },\n  { code: 'SG', country: 'Singapore' }, { code: 'SX', country: 'Sint Maarten' }, { code: 'SK', country: 'Slovakia' },\n  { code: 'SI', country: 'Slovenia' }, { code: 'SB', country: 'Solomon Islands' }, { code: 'SO', country: 'Somalia' },\n  { code: 'ZA', country: 'South Africa' }, { code: 'KR', country: 'South Korea' }, { code: 'SS', country: 'South Sudan' },\n  { code: 'ES', country: 'Spain' }, { code: 'LK', country: 'Sri Lanka' }, { code: 'BL', country: 'St Barthelemy' },\n  { code: 'SH', country: 'St Helena' }, { code: 'KN', country: 'St Kitts Nevis' }, { code: 'LC', country: 'St Lucia' },\n  { code: 'MF', country: 'St Martin' }, { code: 'PM', country: 'St Pierre Miquelon' }, { code: 'VC', country: 'St Vincent Grenadines' },\n  { code: 'SD', country: 'Sudan' }, { code: 'SR', country: 'Suriname' }, { code: 'SJ', country: 'Svalbard Jan Mayen' },\n  { code: 'SE', country: 'Sweden' }, { code: 'CH', country: 'Switzerland' }, { code: 'SY', country: 'Syria' },\n  { code: 'TW', country: 'Taiwan' }, { code: 'TJ', country: 'Tajikistan' }, { code: 'TZ', country: 'Tanzania' },\n  { code: 'TH', country: 'Thailand' }, { code: 'TL', country: 'Timor Leste' }, { code: 'TG', country: 'Togo' },\n  { code: 'TK', country: 'Tokelau' }, { code: 'TO', country: 'Tonga' }, { code: 'TT', country: 'Trinidad Tobago' },\n  { code: 'TN', country: 'Tunisia' }, { code: 'TR', country: 'Turkiye' }, { code: 'TM', country: 'Turkmenistan' },\n  { code: 'TC', country: 'Turks Caicos Islands' }, { code: 'TV', country: 'Tuvalu' }, { code: 'UM', country: 'U S Outlying Islands' },\n  { code: 'VI', country: 'U S Virgin Islands' }, { code: 'UG', country: 'Uganda' }, { code: 'UA', country: 'Ukraine' },\n  { code: 'AE', country: 'United Arab Emirates' }, { code: 'GB', country: 'United Kingdom' }, { code: 'US', country: 'United States' },\n  { code: 'UY', country: 'Uruguay' }, { code: 'UZ', country: 'Uzbekistan' }, { code: 'VU', country: 'Vanuatu' },\n  { code: 'VA', country: 'Vatican City' }, { code: 'VE', country: 'Venezuela' }, { code: 'VN', country: 'Vietnam' },\n  { code: 'WF', country: 'Wallis Futuna' }, { code: 'EH', country: 'Western Sahara' }, { code: 'YE', country: 'Yemen' },\n  { code: 'ZM', country: 'Zambia' }, { code: 'ZW', country: 'Zimbabwe' }\n];\n\nconst normalizeText = (v) => String(v || '')\n  .toLowerCase()\n  .replace(/[^a-z0-9]+/g, ' ')\n  .trim()\n  .replace(/\\s+/g, ' ');\n\nconst COUNTRY_BY_NAME = {};\nconst COUNTRY_CODES = new Set();\nfor (const item of COUNTRY_OPTIONS) {\n  COUNTRY_CODES.add(item.code);\n  COUNTRY_BY_NAME[normalizeText(item.country)] = item.code;\n}\n// Common aliases\nCOUNTRY_BY_NAME['uae'] = 'AE';\nCOUNTRY_BY_NAME['uk'] = 'GB';\nCOUNTRY_BY_NAME['usa'] = 'US';\nCOUNTRY_BY_NAME['united states of america'] = 'US';\nCOUNTRY_BY_NAME['ivory coast'] = 'CI';\n\nconst emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})/;\nconst phoneRegex = /(\\+?[1-9]\\d{7,14})/;\n\nconst extractName = (text) => {\n  const m = text.match(/(?:my name is|i am|i'm|name)\\s+([A-Za-z][A-Za-z\\s'-]{1,60})/i);\n  if (!m) return { firstName: '', lastName: '' };\n  const parts = m[1].trim().split(/\\s+/).filter(Boolean);\n  if (parts.length < 2) return { firstName: '', lastName: '' };\n  return { firstName: parts[0], lastName: parts.slice(1).join(' ') };\n};\n\nconst extractPassword = (text) => {\n  const m = text.match(/(?:password\\s*(?:is|:)\\s*)([^\\s]{6,})/i);\n  return m ? m[1].trim() : '';\n};\n\nconst normalizeCountryCode = (value) => {\n  const raw = String(value || '').trim();\n  if (!raw) return '';\n  const upper = raw.toUpperCase();\n  if (/^[A-Z]{2}$/.test(upper) && COUNTRY_CODES.has(upper)) return upper;\n  const mapped = COUNTRY_BY_NAME[normalizeText(raw)];\n  return mapped || '';\n};\n\nconst normalizeTin = (value) => {\n  const v = String(value || '').trim();\n  return (v === '1' || v === '2') ? v : '';\n};\n\nconst fromName = extractName(userText);\nconst emailFromText = (userText.match(emailRegex) || [])[1] || '';\nconst phoneFromText = (userText.match(phoneRegex) || [])[1] || '';\nconst passFromText = extractPassword(userText);\n\nconst merged = {\n  firstName: String(input.firstName || draft.firstName || fromName.firstName || '').trim(),\n  lastName: String(input.lastName || draft.lastName || fromName.lastName || '').trim(),\n  email: String(input.email || draft.email || emailFromText || '').trim(),\n  phone: String(input.phone || draft.phone || phoneFromText || '').trim(),\n  password: String(input.password || draft.password || passFromText || '').trim(),\n  confirmPassword: String(input.confirmPassword || draft.confirmPassword || '').trim(),\n  nationality: normalizeCountryCode(input.nationality || draft.nationality || ''),\n  country: normalizeCountryCode(input.country || draft.country || ''),\n  tin: normalizeTin(input.tin || draft.tin || ''),\n  lead: true\n};\n\nconst validFirst = /^[A-Za-z][A-Za-z\\s'-]{1,49}$/.test(merged.firstName);\nconst validLast = /^[A-Za-z][A-Za-z\\s'-]{1,49}$/.test(merged.lastName);\nconst validEmail = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(merged.email);\nconst validPhone = /^\\+?[1-9]\\d{7,14}$/.test(merged.phone);\nconst validPassword = merged.password.length >= 6;\nconst validConfirm = merged.confirmPassword.length >= 6 && merged.confirmPassword === merged.password;\nconst validNat = /^[A-Z]{2}$/.test(merged.nationality);\nconst validCountry = /^[A-Z]{2}$/.test(merged.country);\nconst validTin = merged.tin === '1' || merged.tin === '2';\n\nconst sequence = ['firstName','lastName','email','phone','password','confirmPassword','nationality','country','tin'];\nconst invalid = {\n  firstName: !validFirst,\n  lastName: !validLast,\n  email: !validEmail,\n  phone: !validPhone,\n  password: !validPassword,\n  confirmPassword: !validConfirm,\n  nationality: !validNat,\n  country: !validCountry,\n  tin: !validTin\n};\n\nconst prompts = {\n  firstName: 'Could you share your first name, please?',\n  lastName: 'Thanks. What is your last name?',\n  email: 'Great. Could you share your email address?',\n  phone: 'Please share your phone number in international format, for example +9715xxxxxxx.',\n  password: 'Please set a password (minimum 6 characters).',\n  confirmPassword: 'Please confirm your password by typing it again exactly the same.',\n  nationality: 'Please share your nationality as a country name or 2-letter code (for example United Arab Emirates or AE).',\n  country: 'Please share your country of residence as a country name or 2-letter code (for example United Arab Emirates or AE).',\n  tin: 'Please choose your platform: reply 1 for MT4 or 2 for MT5.'\n};\n\nconst missing = sequence.filter((k) => invalid[k]);\nconst yesPattern = /^(yes|y|confirm|confirmed|correct|proceed|go ahead|ok|okay)$/i;\nconst noPattern = /^(no|n|change|edit|wrong|not correct|incorrect)$/i;\n\nif (missing.length > 0) {\n  const next = missing[0];\n  let msg = 'Happy to help with your registration. ' + prompts[next];\n  if (next === 'confirmPassword' && merged.password && merged.confirmPassword && merged.confirmPassword !== merged.password) {\n    msg = 'The passwords do not match. Please type the same password again in confirm password.';\n  }\n  return [{\n    collecting: true,\n    registration_ok: false,\n    ready_to_submit: false,\n    missing_fields: missing,\n    draft_registration: merged,\n    output: msg\n  }];\n}\n\nconst platformLabel = merged.tin === '1' ? 'MT4' : 'MT5';\nconst maskedPassword = '*'.repeat(Math.max(6, merged.password.length));\n\nif (yesPattern.test(userText)) {\n  return [{\n    collecting: false,\n    registration_ok: false,\n    ready_to_submit: true,\n    missing_fields: [],\n    draft_registration: merged,\n    submit_payload: {\n      firstName: merged.firstName,\n      lastName: merged.lastName,\n      email: merged.email,\n      phone: merged.phone,\n      password: merged.password,\n      nationality: merged.nationality,\n      country: merged.country,\n      tin: merged.tin,\n      lead: true\n    }\n  }];\n}\n\nif (noPattern.test(userText)) {\n  return [{\n    collecting: true,\n    registration_ok: false,\n    ready_to_submit: false,\n    missing_fields: [],\n    draft_registration: merged,\n    output: 'No worries at all. Tell me what you want to update: first name, last name, email, phone, password, nationality, country, or platform (MT4/MT5).'\n  }];\n}\n\nreturn [{\n  collecting: true,\n  registration_ok: false,\n  ready_to_submit: false,\n  missing_fields: [],\n  draft_registration: merged,\n  output: 'Thanks. Please confirm these details:\\n- First name: ' + merged.firstName + '\\n- Last name: ' + merged.lastName + '\\n- Email: ' + merged.email + '\\n- Phone: ' + merged.phone + '\\n- Password: ' + maskedPassword + '\\n- Nationality: ' + merged.nationality + '\\n- Country: ' + merged.country + '\\n- Platform: ' + platformLabel + '\\n- Lead: true\\n\\nReply yes to submit, or no if you want to change anything.'\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1216,
+        432
+      ],
+      "id": "e6c37043-a54f-4cfa-921e-717377dd1b5f",
+      "name": "Code - Registration State Manager"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.ready_to_submit}}",
+              "value2": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -1024,
+        432
+      ],
+      "id": "72829963-2483-4853-9d81-4d6f42b096e6",
+      "name": "IF - Ready to Submit?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://mycms.cmsprime.com/rest/users/new?version=1.0.0",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer 805e6648071ff54087a78d1f5e0a5508a3ed4fd92f692c704b4e3120991fcf3df3d2eab8d57ffb782d6e4d4fba12648fb04cc76c807ff684c96e5d24"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $('When Executed by Another Workflow').item.json.toJsonString() }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -816,
+        352
+      ],
+      "id": "e9fe6af1-c783-4163-8832-7a41f40cde1c",
+      "name": "HTTP - Register User",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize registration response\nconst req = $('Code - Registration State Manager').item.json || {};\nconst raw = $input.first().json || {};\n\nif (raw.error || raw.message?.includes('ECONN') || raw.name === 'NodeApiError') {\n  return [{\n    registration_ok: false,\n    collecting: true,\n    draft_registration: req.draft_registration || {},\n    missing_fields: [],\n    output: 'Sorry, I could not submit your registration right now. Please try again in a moment.',\n    registration_in_progress: true,\n    api_error: raw.message || raw.error || 'request_failed'\n  }];\n}\n\nlet data = raw;\nif (raw.success === true && raw.data) data = raw.data;\n\nif (Array.isArray(data) && data.length > 0) {\n  const first = data[0] || {};\n  return [{\n    registration_ok: true,\n    collecting: false,\n    draft_registration: req.draft_registration || {},\n    missing_fields: [],\n    registered_user_id: first.id || null,\n    registered_email: first.email || req.draft_registration?.email || null,\n    output: 'Great news, your registration is complete. I will now continue with your account setup.',\n    registration_in_progress: false\n  }];\n}\n\nif (data && typeof data === 'object' && (data.id || data.email)) {\n  return [{\n    registration_ok: true,\n    collecting: false,\n    draft_registration: req.draft_registration || {},\n    missing_fields: [],\n    registered_user_id: data.id || null,\n    registered_email: data.email || req.draft_registration?.email || null,\n    output: 'Great news, your registration is complete. I will now continue with your account setup.',\n    registration_in_progress: false\n  }];\n}\n\nconst message = data?.message || 'Registration failed. Please verify your details and try again.';\nconst errors = data?.errors || {};\nreturn [{\n  registration_ok: false,\n  collecting: true,\n  draft_registration: req.draft_registration || {},\n  missing_fields: [],\n  output: `I could not complete registration yet: ${message}`,\n  registration_in_progress: true,\n  errors\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -592,
+        352
+      ],
+      "id": "77b9459d-70e1-47b2-8252-0ba37df601c7",
+      "name": "Code - Normalize Registration Response"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "output",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -816,
+        560
+      ],
+      "id": "504bc9a2-9d64-4dc8-a71f-bce808407426",
+      "name": "Set - Ask Next Missing Field"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Code - Registration State Manager",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Registration State Manager": {
+      "main": [
+        [
+          {
+            "node": "IF - Ready to Submit?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Ready to Submit?": {
+      "main": [
+        [
+          {
+            "node": "HTTP - Register User",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set - Ask Next Missing Field",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP - Register User": {
+      "main": [
+        [
+          {
+            "node": "Code - Normalize Registration Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "36b3c73d-3a4e-4ef4-9237-c094c8e98839",
+  "meta": {
+    "instanceId": "495f6278a9dd899c69efc38f92904361f03ad646b8c63a3d991806ec829debf6"
+  },
+  "id": "hpWWwjOxa-_IJ1fHu7YYA",
+  "tags": []
+}

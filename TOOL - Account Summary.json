@@ -6,7 +6,7 @@
         "workflowInputs": {
           "values": [
             {
-              "name": "client_id",
+              "name": "user_id",
               "type": "number"
             }
           ]
@@ -20,7 +20,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Normalize and validate input\nconst input = $input.first().json || {};\n\nconst client_id = Number(\n  input.client_id ??\n  input.clientId ??\n  input.user_id ??\n  null\n);\n\nif (!client_id || !Number.isFinite(client_id)) {\n  return [{\n    ok: false,\n    error: 'Missing or invalid client_id. Please authenticate the user first.',\n    tool: 'get_account_summary'\n  }];\n}\n\nreturn [{ client_id }];\n"
+        "jsCode": "// Normalize and validate input\nconst input = $input.first().json || {};\n\nconst user_id = Number(\n  input.user?.id ??\n  input.user_id ??\n  input.userId ??\n  input.client_id ??\n  input.clientId ??\n  null\n);\n\nif (!user_id || !Number.isFinite(user_id)) {\n  return [{\n    ok: false,\n    error: 'Missing or invalid user.id. Please authenticate the user first.',\n    tool: 'get_account_summary'\n  }];\n}\n\nreturn [{ user_id }];\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -69,7 +69,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { \"userId\": $json.client_id } }}",
+        "jsonBody": "={{ { \"userId\": $json.user_id } }}",
         "options": {
           "timeout": 30000
         }
@@ -82,7 +82,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Format account summary response\nconst accounts = $input.all().map(i => i.json).filter(Boolean);\nconst clientId = $('Normalize Input').item.json.client_id;\n\nif (!accounts || accounts.length === 0) {\n  return [{\n    ok: false,\n    error: 'No trading accounts found for this user.',\n    tool: 'get_account_summary'\n  }];\n}\n\n// Process all accounts\nconst accountSummaries = accounts.map(acc => {\n  const balance = Number(acc.balance) || 0;\n  const equity = Number(acc.equity) || balance;\n  const margin = Number(acc.margin) || 0;\n  const freeMargin = Number(acc.freeMargin) || (equity - margin);\n  const marginLevel = margin > 0 ? ((equity / margin) * 100) : null;\n  const unrealizedPL = equity - balance;\n  \n  return {\n    account_id: acc.id || acc.login || acc.accountId,\n    account_type: acc.type || acc.accountType || 'Standard',\n    platform: acc.platform || 'MT5',\n    currency: acc.currency || 'USD',\n    leverage: acc.leverage || '1:100',\n    balance: balance.toFixed(2),\n    equity: equity.toFixed(2),\n    margin_used: margin.toFixed(2),\n    free_margin: freeMargin.toFixed(2),\n    margin_level: marginLevel ? `${marginLevel.toFixed(2)}%` : 'N/A',\n    unrealized_pl: unrealizedPL.toFixed(2),\n    status: acc.status || 'Active',\n    server: acc.server || acc.serverName || null\n  };\n});\n\n// Calculate totals across all accounts\nconst totalBalance = accountSummaries.reduce((sum, acc) => sum + Number(acc.balance), 0);\nconst totalEquity = accountSummaries.reduce((sum, acc) => sum + Number(acc.equity), 0);\nconst totalUnrealizedPL = accountSummaries.reduce((sum, acc) => sum + Number(acc.unrealized_pl), 0);\n\nreturn [{\n  ok: true,\n  client_id: clientId,\n  accounts_count: accountSummaries.length,\n  accounts: accountSummaries,\n  totals: {\n    total_balance: totalBalance.toFixed(2),\n    total_equity: totalEquity.toFixed(2),\n    total_unrealized_pl: totalUnrealizedPL.toFixed(2)\n  },\n  timestamp: new Date().toISOString()\n}];\n"
+        "jsCode": "// Format account summary response\nconst rows = $input.all().map(i => i.json).filter(Boolean);\nconst userId = $('Normalize Input').item.json.user_id;\n\nif (!rows || rows.length === 0) {\n  return [{\n    ok: false,\n    error: 'No trading accounts found for this user.',\n    tool: 'get_account_summary'\n  }];\n}\n\nconst serverTypeMap = {\n  5: 'MT4 Live',\n  2: 'MT5 Live',\n  1: 'Wallet',\n  4: 'MT4 Demo',\n  3: 'MT5 Demo'\n};\n\n// Keep only fields required by the assistant\nconst accounts = rows.map(acc => {\n  const sid = Number(acc.serverId ?? 0);\n  return {\n    login: String(acc.login ?? ''),\n    leverage: Number(acc.leverage ?? 0),\n    balance: Number(acc.balance ?? 0),\n    equity: Number(acc.equity ?? 0),\n    accountTypeId: acc.accountTypeId ?? null,\n    serverId: sid || null,\n    accounttype: serverTypeMap[sid] || 'Unknown'\n  };\n});\n\nreturn [{\n  ok: true,\n  user_id: userId,\n  accounts_count: accounts.length,\n  accounts\n}];\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,

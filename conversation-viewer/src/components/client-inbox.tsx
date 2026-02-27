@@ -40,9 +40,11 @@ export function ClientInbox() {
     return params.toString();
   }, [filters]);
 
-  const loadClients = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  const loadClients = useCallback(async ({ silent = false }: { silent?: boolean } = {}) => {
+    if (!silent) {
+      setLoading(true);
+      setError(null);
+    }
 
     try {
       const response = await fetch(`/api/clients?${queryString}`, { cache: "no-store" });
@@ -55,12 +57,49 @@ export function ClientInbox() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to load clients");
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   }, [queryString]);
 
   useEffect(() => {
     loadClients();
+  }, [loadClients]);
+
+  useEffect(() => {
+    let refreshTimer: ReturnType<typeof setTimeout> | null = null;
+    const source = new EventSource("/api/stream/updates");
+
+    const scheduleRefresh = () => {
+      if (refreshTimer) {
+        return;
+      }
+      refreshTimer = setTimeout(() => {
+        refreshTimer = null;
+        void loadClients({ silent: true });
+      }, 250);
+    };
+
+    source.addEventListener("audit_log_insert", scheduleRefresh);
+
+    return () => {
+      source.removeEventListener("audit_log_insert", scheduleRefresh);
+      source.close();
+      if (refreshTimer) {
+        clearTimeout(refreshTimer);
+      }
+    };
+  }, [loadClients]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      void loadClients({ silent: true });
+    }, 30000);
+
+    return () => {
+      clearInterval(timer);
+    };
   }, [loadClients]);
 
   return (
@@ -111,7 +150,13 @@ export function ClientInbox() {
           Escalated only
         </label>
         <div className="inline-actions">
-          <button onClick={loadClients}>Refresh</button>
+          <button
+            onClick={() => {
+              void loadClients();
+            }}
+          >
+            Refresh
+          </button>
           <button
             className="ghost-button"
             onClick={() => {

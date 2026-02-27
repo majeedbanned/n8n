@@ -24,6 +24,24 @@ export type SessionSummary = {
   sentimentAvg: number | null;
 };
 
+export type ClientNavItem = {
+  userPhone: string;
+  latestSessionId: string;
+  lastInteractionAt: string;
+};
+
+export type ClientStats = {
+  userPhone: string;
+  totalAuditRows: number;
+  totalSessions: number;
+  totalMessages: number;
+  escalatedCount: number;
+  avgSentiment: number | null;
+  channels: string[];
+  firstInteractionAt: string | null;
+  lastInteractionAt: string | null;
+};
+
 export type TranscriptEvent = {
   eventId: string;
   auditId: number;
@@ -38,13 +56,13 @@ export type TranscriptEvent = {
 };
 
 export type AuditRow = {
-  id: number;
+  id: number | string;
   channel: string | null;
   inbound_text: string | null;
   outbound_text: string | null;
   intent_classified: string | null;
   sentiment: string | null;
-  sentiment_score: number | null;
+  sentiment_score: number | string | null;
   escalated: boolean | null;
   created_at: string;
 };

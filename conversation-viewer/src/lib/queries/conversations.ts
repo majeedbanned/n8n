@@ -1,5 +1,13 @@
 import { pool } from "@/lib/db";
-import { AuditRow, ClientSummary, SessionSummary, TranscriptEvent, UNSCOPED_SESSION_ID } from "@/types/conversation";
+import {
+  AuditRow,
+  ClientNavItem,
+  ClientStats,
+  ClientSummary,
+  SessionSummary,
+  TranscriptEvent,
+  UNSCOPED_SESSION_ID,
+} from "@/types/conversation";
 
 export type ClientFilters = {
   q?: string;
@@ -20,38 +28,48 @@ function toNumber(value: unknown): number {
   return Number(value ?? 0);
 }
 
+function toMaybeNumber(value: unknown): number | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+  const num = Number(value);
+  return Number.isFinite(num) ? num : null;
+}
+
 export function toTranscriptEvents(rows: AuditRow[]): TranscriptEvent[] {
   const events: TranscriptEvent[] = [];
 
   for (const row of rows) {
+    const auditId = toNumber(row.id);
     const createdAt = toIso(row.created_at) ?? new Date(0).toISOString();
+    const sentimentScore = toMaybeNumber(row.sentiment_score);
 
     if (row.inbound_text && row.inbound_text.trim()) {
       events.push({
-        eventId: `${row.id}-in`,
-        auditId: row.id,
+        eventId: `${auditId}-in`,
+        auditId,
         role: "user",
         text: row.inbound_text,
         createdAt,
         channel: row.channel,
         intent: row.intent_classified,
         sentiment: row.sentiment,
-        sentimentScore: row.sentiment_score,
+        sentimentScore,
         escalated: Boolean(row.escalated),
       });
     }
 
     if (row.outbound_text && row.outbound_text.trim()) {
       events.push({
-        eventId: `${row.id}-out`,
-        auditId: row.id,
+        eventId: `${auditId}-out`,
+        auditId,
         role: "assistant",
         text: row.outbound_text,
         createdAt,
         channel: row.channel,
         intent: row.intent_classified,
         sentiment: row.sentiment,
-        sentimentScore: row.sentiment_score,
+        sentimentScore,
         escalated: Boolean(row.escalated),
       });
     }
@@ -198,6 +216,84 @@ export async function listSessionsForClient(userPhone: string): Promise<SessionS
     escalated: Boolean(row.escalated),
     sentimentAvg: row.sentiment_avg === null ? null : Number(row.sentiment_avg),
   }));
+}
+
+export async function listClientNavItems(limit = 500): Promise<ClientNavItem[]> {
+  const query = `
+    WITH latest_per_client AS (
+      SELECT DISTINCT ON (a.user_phone)
+        a.user_phone,
+        COALESCE(NULLIF(a.session_id, ''), '${UNSCOPED_SESSION_ID}') AS latest_session_id,
+        a.created_at AS last_interaction_at
+      FROM chat_audit_logs a
+      WHERE a.user_phone IS NOT NULL
+        AND a.user_phone <> ''
+      ORDER BY a.user_phone, a.created_at DESC, a.id DESC
+    )
+    SELECT
+      l.user_phone,
+      l.latest_session_id,
+      l.last_interaction_at
+    FROM latest_per_client l
+    ORDER BY l.last_interaction_at DESC
+    LIMIT $1;
+  `;
+
+  const result = await pool.query(query, [limit]);
+  return result.rows.map((row) => ({
+    userPhone: row.user_phone,
+    latestSessionId: row.latest_session_id,
+    lastInteractionAt: toIso(row.last_interaction_at) ?? new Date(0).toISOString(),
+  }));
+}
+
+export async function getClientStats(userPhone: string): Promise<ClientStats> {
+  const query = `
+    SELECT
+      a.user_phone,
+      COUNT(*)::int AS total_audit_rows,
+      COUNT(DISTINCT COALESCE(NULLIF(a.session_id, ''), '${UNSCOPED_SESSION_ID}'))::int AS total_sessions,
+      SUM(
+        (CASE WHEN COALESCE(BTRIM(a.inbound_text), '') <> '' THEN 1 ELSE 0 END) +
+        (CASE WHEN COALESCE(BTRIM(a.outbound_text), '') <> '' THEN 1 ELSE 0 END)
+      )::int AS total_messages,
+      COUNT(*) FILTER (WHERE COALESCE(a.escalated, false) = true)::int AS escalated_count,
+      AVG(a.sentiment_score) AS avg_sentiment,
+      ARRAY_REMOVE(ARRAY_AGG(DISTINCT a.channel), NULL)::text[] AS channels,
+      MIN(a.created_at) AS first_interaction_at,
+      MAX(a.created_at) AS last_interaction_at
+    FROM chat_audit_logs a
+    WHERE a.user_phone = $1
+    GROUP BY a.user_phone;
+  `;
+
+  const result = await pool.query(query, [userPhone]);
+  if (result.rows.length === 0) {
+    return {
+      userPhone,
+      totalAuditRows: 0,
+      totalSessions: 0,
+      totalMessages: 0,
+      escalatedCount: 0,
+      avgSentiment: null,
+      channels: [],
+      firstInteractionAt: null,
+      lastInteractionAt: null,
+    };
+  }
+
+  const row = result.rows[0];
+  return {
+    userPhone: row.user_phone,
+    totalAuditRows: toNumber(row.total_audit_rows),
+    totalSessions: toNumber(row.total_sessions),
+    totalMessages: toNumber(row.total_messages),
+    escalatedCount: toNumber(row.escalated_count),
+    avgSentiment: row.avg_sentiment === null ? null : Number(row.avg_sentiment),
+    channels: row.channels ?? [],
+    firstInteractionAt: toIso(row.first_interaction_at),
+    lastInteractionAt: toIso(row.last_interaction_at),
+  };
 }
 
 export async function listAuditRowsForSession(

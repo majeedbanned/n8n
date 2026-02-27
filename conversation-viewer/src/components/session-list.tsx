@@ -16,9 +16,11 @@ export function SessionList({ userPhone }: { userPhone: string }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  const load = useCallback(async ({ silent = false }: { silent?: boolean } = {}) => {
+    if (!silent) {
+      setLoading(true);
+      setError(null);
+    }
 
     try {
       const response = await fetch(`/api/clients/${encodeURIComponent(userPhone)}/sessions`, {
@@ -32,12 +34,50 @@ export function SessionList({ userPhone }: { userPhone: string }) {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to load sessions");
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   }, [userPhone]);
 
   useEffect(() => {
     load();
+  }, [load]);
+
+  useEffect(() => {
+    let refreshTimer: ReturnType<typeof setTimeout> | null = null;
+    const params = new URLSearchParams({ userPhone });
+    const source = new EventSource(`/api/stream/updates?${params.toString()}`);
+
+    const scheduleRefresh = () => {
+      if (refreshTimer) {
+        return;
+      }
+      refreshTimer = setTimeout(() => {
+        refreshTimer = null;
+        void load({ silent: true });
+      }, 250);
+    };
+
+    source.addEventListener("audit_log_insert", scheduleRefresh);
+
+    return () => {
+      source.removeEventListener("audit_log_insert", scheduleRefresh);
+      source.close();
+      if (refreshTimer) {
+        clearTimeout(refreshTimer);
+      }
+    };
+  }, [load, userPhone]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      void load({ silent: true });
+    }, 30000);
+
+    return () => {
+      clearInterval(timer);
+    };
   }, [load]);
 
   return (
@@ -48,7 +88,13 @@ export function SessionList({ userPhone }: { userPhone: string }) {
           <Link className="ghost-button" href="/clients">
             Back to clients
           </Link>
-          <button onClick={load}>Refresh</button>
+          <button
+            onClick={() => {
+              void load();
+            }}
+          >
+            Refresh
+          </button>
         </div>
       </div>
 

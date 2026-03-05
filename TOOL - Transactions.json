@@ -1,0 +1,170 @@
+{
+  "name": "TOOL - Transactions",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "client_id",
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -400,
+        300
+      ],
+      "id": "transactions-trigger",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize and validate input\nconst input = $input.first().json || {};\n\nconst client_id = Number(\n  input.client_id ??\n  input.clientId ??\n  input.user_id ??\n  input.userId ??\n  input.user?.id ??\n  null\n);\n\nif (!client_id || !Number.isFinite(client_id)) {\n  return [{\n    ok: false,\n    error: 'Missing or invalid client_id. Please authenticate the user first.',\n    tool: 'get_transactions'\n  }];\n}\n\nreturn [{ client_id }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -200,
+        300
+      ],
+      "id": "transactions-normalize-input",
+      "name": "Normalize Input"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.ok}}",
+              "value2": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        0,
+        300
+      ],
+      "id": "transactions-check-error",
+      "name": "IF - Input Error?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://mycms.cmsprime.com/rest/transactions?version=1.0.0",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer 805e6648071ff54087a78d1f5e0a5508a3ed4fd92f692c704b4e3120991fcf3df3d2eab8d57ffb782d6e4d4fba12648fb04cc76c807ff684c96e5d24"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { orders: [{ field: 'createdAt', direction: 'DESC' }], segment: { limit: 5, offset: 0 }, fromUserId: $json.client_id } }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        200,
+        200
+      ],
+      "id": "transactions-api-get",
+      "name": "API - Get Transactions"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Return only the fields needed by the assistant\nconst input = $('Normalize Input').item.json;\nconst rows = $input.all().map((item) => item.json).filter(Boolean);\n\nlet txList = [];\nif (rows.length === 1 && Array.isArray(rows[0])) {\n  txList = rows[0];\n} else if (rows.length === 1 && Array.isArray(rows[0]?.data)) {\n  txList = rows[0].data;\n} else {\n  txList = rows;\n}\n\nconst latest = txList\n  .filter((tx) => tx && typeof tx === 'object')\n  .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())\n  .slice(0, 5)\n  .map((tx) => ({\n    id: tx.id ?? null,\n    createdAt: tx.createdAt ?? null,\n    type: tx.type ?? null,\n    status: tx.status ?? null,\n    psp: tx.psp ?? null,\n    comment: tx.comment ?? null\n  }));\n\nconst summary = {\n  by_type: {},\n  by_status: {}\n};\n\nfor (const tx of latest) {\n  const typeKey = String(tx.type || 'unknown').toLowerCase();\n  const statusKey = String(tx.status || 'unknown').toLowerCase();\n  summary.by_type[typeKey] = (summary.by_type[typeKey] || 0) + 1;\n  summary.by_status[statusKey] = (summary.by_status[statusKey] || 0) + 1;\n}\n\nreturn [{\n  ok: true,\n  client_id: input.client_id,\n  transactions_count: latest.length,\n  transactions: latest,\n  summary\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        200
+      ],
+      "id": "transactions-format",
+      "name": "Format Transactions"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "IF - Input Error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Input Error?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "API - Get Transactions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API - Get Transactions": {
+      "main": [
+        [
+          {
+            "node": "Format Transactions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1.0.0",
+  "meta": {
+    "instanceId": "broker-ai-tool-transactions"
+  },
+  "id": "TOOL_TRANSACTIONS_LATEST5",
+  "tags": [
+    "tool",
+    "funding"
+  ]
+}

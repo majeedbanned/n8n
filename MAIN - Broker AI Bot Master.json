@@ -753,19 +753,16 @@
     },
     {
       "parameters": {
-        "description": "Get user's transaction history including deposits, withdrawals, and transfers. Use when user asks about funding, deposit status, withdrawal history, or account transfers.",
+        "description": "Get the latest 5 user transactions (deposit/withdrawal/transfer) for funding issues. Returns only: id, createdAt, type, status, psp, comment. Use this data to answer the client clearly and do not invent missing details.",
         "workflowId": {
           "__rl": true,
           "mode": "id",
-          "value": "={{ $workflow.id }}_TOOL_TRANSACTIONS"
+          "value": "TOOL_TRANSACTIONS_LATEST5"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "client_id": "={{ $('Smart Router & Prompt Builder').item.json.user.id }}",
-            "type": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('type', 'deposit, withdrawal, transfer, bonus, or all', 'string') }}",
-            "status": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('status', 'pending, completed, failed, or all', 'string') }}",
-            "limit": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('limit', 'Max transactions, default 20', 'number') }}"
+            "client_id": "={{ $('Smart Router & Prompt Builder').item.json.user?.id ?? $('Smart Router & Prompt Builder').item.json.user_id ?? $('Smart Router & Prompt Builder').item.json.client_id ?? null }}"
           },
           "matchingColumns": [
             "client_id"
@@ -776,26 +773,10 @@
               "displayName": "client_id",
               "required": true,
               "type": "number"
-            },
-            {
-              "id": "type",
-              "displayName": "type",
-              "required": false,
-              "type": "string"
-            },
-            {
-              "id": "status",
-              "displayName": "status",
-              "required": false,
-              "type": "string"
-            },
-            {
-              "id": "limit",
-              "displayName": "limit",
-              "required": false,
-              "type": "number"
             }
-          ]
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
         }
       },
       "type": "@n8n/n8n-nodes-langchain.toolWorkflow",

@@ -14,7 +14,10 @@
       },
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
-      "position": [-400, 300],
+      "position": [
+        -400,
+        300
+      ],
       "id": "tool-trigger",
       "name": "When Executed by Another Workflow"
     },
@@ -24,7 +27,10 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [-200, 300],
+      "position": [
+        -200,
+        300
+      ],
       "id": "normalize-input",
       "name": "Normalize Input"
     },
@@ -42,7 +48,10 @@
       },
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [0, 300],
+      "position": [
+        0,
+        300
+      ],
       "id": "check-error",
       "name": "IF - Input Error?"
     },
@@ -71,14 +80,21 @@
         "specifyBody": "json",
         "jsonBody": "={{ { \"userId\": $json.client_id } }}",
         "options": {
-          "timeout": 20000
+          "timeout": 15000
         }
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
-      "position": [200, 200],
+      "position": [
+        200,
+        200
+      ],
       "id": "api-get-risk",
-      "name": "API - Get Risk Data"
+      "name": "API - Get Risk Data",
+      "continueOnFail": true,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1000
     },
     {
       "parameters": {
@@ -86,7 +102,10 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [400, 200],
+      "position": [
+        400,
+        200
+      ],
       "id": "format-output",
       "name": "Calculate Risk Assessment"
     }
@@ -148,6 +167,8 @@
     "instanceId": "broker-ai-tool-risk-assessment"
   },
   "id": "TOOL_RISK_ASSESSMENT",
-  "tags": ["tool", "risk"]
+  "tags": [
+    "tool",
+    "risk"
+  ]
 }
-

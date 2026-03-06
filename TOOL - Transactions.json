@@ -80,7 +80,7 @@
         "specifyBody": "json",
         "jsonBody": "={{ { orders: [{ field: 'createdAt', direction: 'DESC' }], segment: { limit: 5, offset: 0 }, fromUserId: $json.client_id } }}",
         "options": {
-          "timeout": 30000
+          "timeout": 15000
         }
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -90,11 +90,15 @@
         200
       ],
       "id": "transactions-api-get",
-      "name": "API - Get Transactions"
+      "name": "API - Get Transactions",
+      "continueOnFail": true,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1000
     },
     {
       "parameters": {
-        "jsCode": "// Return only the fields needed by the assistant\nconst input = $('Normalize Input').item.json;\nconst rows = $input.all().map((item) => item.json).filter(Boolean);\n\nlet txList = [];\nif (rows.length === 1 && Array.isArray(rows[0])) {\n  txList = rows[0];\n} else if (rows.length === 1 && Array.isArray(rows[0]?.data)) {\n  txList = rows[0].data;\n} else {\n  txList = rows;\n}\n\nconst latest = txList\n  .filter((tx) => tx && typeof tx === 'object')\n  .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())\n  .slice(0, 5)\n  .map((tx) => ({\n    id: tx.id ?? null,\n    createdAt: tx.createdAt ?? null,\n    type: tx.type ?? null,\n    status: tx.status ?? null,\n    psp: tx.psp ?? null,\n    comment: tx.comment ?? null\n  }));\n\nconst summary = {\n  by_type: {},\n  by_status: {}\n};\n\nfor (const tx of latest) {\n  const typeKey = String(tx.type || 'unknown').toLowerCase();\n  const statusKey = String(tx.status || 'unknown').toLowerCase();\n  summary.by_type[typeKey] = (summary.by_type[typeKey] || 0) + 1;\n  summary.by_status[statusKey] = (summary.by_status[statusKey] || 0) + 1;\n}\n\nreturn [{\n  ok: true,\n  client_id: input.client_id,\n  transactions_count: latest.length,\n  transactions: latest,\n  summary\n}];\n"
+        "jsCode": "// __TOOL_HTTP_ERROR_GUARD__\nconst __toolHttpErr = $input.all().find((i) => i?.json?.error);\nif (__toolHttpErr) {\n  return [{\n    ok: false,\n    tool: 'TOOL - Transactions',\n    error: 'tool_unavailable',\n    message: String(__toolHttpErr.json.error?.message || __toolHttpErr.json.error || 'Tool API request failed')\n  }];\n}\n\n// Return only the fields needed by the assistant\nconst input = $('Normalize Input').item.json;\nconst rows = $input.all().map((item) => item.json).filter(Boolean);\n\nlet txList = [];\nif (rows.length === 1 && Array.isArray(rows[0])) {\n  txList = rows[0];\n} else if (rows.length === 1 && Array.isArray(rows[0]?.data)) {\n  txList = rows[0].data;\n} else {\n  txList = rows;\n}\n\nconst latest = txList\n  .filter((tx) => tx && typeof tx === 'object')\n  .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())\n  .slice(0, 5)\n  .map((tx) => ({\n    id: tx.id ?? null,\n    createdAt: tx.createdAt ?? null,\n    type: tx.type ?? null,\n    status: tx.status ?? null,\n    psp: tx.psp ?? null,\n    comment: tx.comment ?? null\n  }));\n\nconst summary = {\n  by_type: {},\n  by_status: {}\n};\n\nfor (const tx of latest) {\n  const typeKey = String(tx.type || 'unknown').toLowerCase();\n  const statusKey = String(tx.status || 'unknown').toLowerCase();\n  summary.by_type[typeKey] = (summary.by_type[typeKey] || 0) + 1;\n  summary.by_status[statusKey] = (summary.by_status[statusKey] || 0) + 1;\n}\n\nreturn [{\n  ok: true,\n  client_id: input.client_id,\n  transactions_count: latest.length,\n  transactions: latest,\n  summary\n}];\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,

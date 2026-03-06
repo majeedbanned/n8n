@@ -60,7 +60,7 @@
           ]
         },
         "options": {
-          "timeout": 20000
+          "timeout": 15000
         }
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -70,11 +70,15 @@
         300
       ],
       "id": "fetch-news",
-      "name": "Fetch TradingFactory News"
+      "name": "Fetch TradingFactory News",
+      "continueOnFail": true,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1000
     },
     {
       "parameters": {
-        "jsCode": "// Format and filter TradingFactory/ForexFactory calendar items\nconst normalized = $('Normalize Input').item.json;\nconst rawItems = $input.all().map(i => i.json).filter(Boolean);\n\nlet events = [];\nif (rawItems.length === 1 && Array.isArray(rawItems[0])) {\n  events = rawItems[0];\n} else if (Array.isArray(rawItems)) {\n  events = rawItems;\n}\n\nconst normalizeImpact = (v) => {\n  const s = String(v ?? '').toLowerCase();\n  if (s.includes('high') || s === '3') return 'high';\n  if (s.includes('med') || s === '2') return 'medium';\n  if (s.includes('low') || s === '1') return 'low';\n  return 'unknown';\n};\n\nconst toDate = (v) => {\n  const d = new Date(v);\n  return Number.isNaN(d.getTime()) ? null : d;\n};\n\nconst now = new Date();\nconst horizon = new Date(now.getTime() + normalized.hours_ahead * 60 * 60 * 1000);\n\nconst filtered = events\n  .map((e) => {\n    const date = toDate(e.date || e.datetime || e.timestamp);\n    const impact = normalizeImpact(e.impact);\n    return {\n      title: e.title || e.event || 'Economic Event',\n      currency: String(e.currency || e.ccy || '').toUpperCase(),\n      country: e.country || null,\n      impact,\n      date: date ? date.toISOString() : null,\n      actual: e.actual ?? null,\n      forecast: e.forecast ?? null,\n      previous: e.previous ?? null,\n      source: 'TradingFactory',\n      url: e.url || 'https://www.forexfactory.com/calendar'\n    };\n  })\n  .filter((e) => e.date !== null)\n  .filter((e) => !normalized.currency || e.currency === normalized.currency)\n  .filter((e) => normalized.impact === 'all' || e.impact === normalized.impact)\n  .filter((e) => {\n    const d = new Date(e.date);\n    return d >= now && d <= horizon;\n  })\n  .sort((a, b) => new Date(a.date) - new Date(b.date))\n  .slice(0, normalized.limit);\n\nreturn [{\n  ok: true,\n  source: 'TradingFactory',\n  filters: normalized,\n  news_count: filtered.length,\n  news: filtered,\n  timestamp: new Date().toISOString(),\n  disclaimer: 'Economic calendar data is informational only, not financial advice.'\n}];"
+        "jsCode": "// __TOOL_HTTP_ERROR_GUARD__\nconst __toolHttpErr = $input.all().find((i) => i?.json?.error);\nif (__toolHttpErr) {\n  return [{\n    ok: false,\n    tool: 'TOOL - TradingFactory News',\n    error: 'tool_unavailable',\n    message: String(__toolHttpErr.json.error?.message || __toolHttpErr.json.error || 'Tool API request failed')\n  }];\n}\n\n// Format and filter TradingFactory/ForexFactory calendar items\nconst normalized = $('Normalize Input').item.json;\nconst rawItems = $input.all().map(i => i.json).filter(Boolean);\n\nlet events = [];\nif (rawItems.length === 1 && Array.isArray(rawItems[0])) {\n  events = rawItems[0];\n} else if (Array.isArray(rawItems)) {\n  events = rawItems;\n}\n\nconst normalizeImpact = (v) => {\n  const s = String(v ?? '').toLowerCase();\n  if (s.includes('high') || s === '3') return 'high';\n  if (s.includes('med') || s === '2') return 'medium';\n  if (s.includes('low') || s === '1') return 'low';\n  return 'unknown';\n};\n\nconst toDate = (v) => {\n  const d = new Date(v);\n  return Number.isNaN(d.getTime()) ? null : d;\n};\n\nconst now = new Date();\nconst horizon = new Date(now.getTime() + normalized.hours_ahead * 60 * 60 * 1000);\n\nconst filtered = events\n  .map((e) => {\n    const date = toDate(e.date || e.datetime || e.timestamp);\n    const impact = normalizeImpact(e.impact);\n    return {\n      title: e.title || e.event || 'Economic Event',\n      currency: String(e.currency || e.ccy || '').toUpperCase(),\n      country: e.country || null,\n      impact,\n      date: date ? date.toISOString() : null,\n      actual: e.actual ?? null,\n      forecast: e.forecast ?? null,\n      previous: e.previous ?? null,\n      source: 'TradingFactory',\n      url: e.url || 'https://www.forexfactory.com/calendar'\n    };\n  })\n  .filter((e) => e.date !== null)\n  .filter((e) => !normalized.currency || e.currency === normalized.currency)\n  .filter((e) => normalized.impact === 'all' || e.impact === normalized.impact)\n  .filter((e) => {\n    const d = new Date(e.date);\n    return d >= now && d <= horizon;\n  })\n  .sort((a, b) => new Date(a.date) - new Date(b.date))\n  .slice(0, normalized.limit);\n\nreturn [{\n  ok: true,\n  source: 'TradingFactory',\n  filters: normalized,\n  news_count: filtered.length,\n  news: filtered,\n  timestamp: new Date().toISOString(),\n  disclaimer: 'Economic calendar data is informational only, not financial advice.'\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,

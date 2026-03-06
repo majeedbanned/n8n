@@ -18,7 +18,10 @@
       },
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
-      "position": [-400, 300],
+      "position": [
+        -400,
+        300
+      ],
       "id": "tool-trigger",
       "name": "When Executed by Another Workflow"
     },
@@ -28,7 +31,10 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [-200, 300],
+      "position": [
+        -200,
+        300
+      ],
       "id": "normalize-input",
       "name": "Normalize Input"
     },
@@ -46,7 +52,10 @@
       },
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [0, 300],
+      "position": [
+        0,
+        300
+      ],
       "id": "check-error",
       "name": "IF - Input Error?"
     },
@@ -75,22 +84,32 @@
         "specifyBody": "json",
         "jsonBody": "={{ { \"userId\": $json.client_id, \"platform\": $json.platform, \"status\": \"open\" } }}",
         "options": {
-          "timeout": 30000
+          "timeout": 15000
         }
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
-      "position": [200, 200],
+      "position": [
+        200,
+        200
+      ],
       "id": "api-get-positions",
-      "name": "API - Get Positions"
+      "name": "API - Get Positions",
+      "continueOnFail": true,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1000
     },
     {
       "parameters": {
-        "jsCode": "// Format open positions response\nconst positions = $input.all().map(i => i.json).filter(Boolean);\nconst input = $('Normalize Input').item.json;\n\n// Handle empty or array response\nlet positionList = [];\nif (Array.isArray(positions) && positions.length > 0) {\n  positionList = Array.isArray(positions[0]) ? positions[0] : positions;\n}\n\nif (positionList.length === 0) {\n  return [{\n    ok: true,\n    client_id: input.client_id,\n    platform: input.platform,\n    has_positions: false,\n    positions_count: 0,\n    positions: [],\n    summary: {\n      total_profit_loss: '0.00',\n      total_swap: '0.00',\n      total_volume: '0.00'\n    },\n    message: 'No open positions found.',\n    timestamp: new Date().toISOString()\n  }];\n}\n\n// Process positions\nconst formattedPositions = positionList.map(pos => {\n  const profit = Number(pos.profit) || 0;\n  const swap = Number(pos.swap) || 0;\n  const volume = Number(pos.volume) || Number(pos.lots) || 0;\n  const openPrice = Number(pos.openPrice) || Number(pos.priceOpen) || 0;\n  const currentPrice = Number(pos.currentPrice) || Number(pos.priceCurrent) || 0;\n  const sl = Number(pos.stopLoss) || Number(pos.sl) || null;\n  const tp = Number(pos.takeProfit) || Number(pos.tp) || null;\n  \n  return {\n    ticket: pos.ticket || pos.id || pos.positionId,\n    symbol: pos.symbol,\n    type: pos.type || pos.side || (pos.cmd === 0 ? 'BUY' : 'SELL'),\n    volume: volume.toFixed(2),\n    open_price: openPrice.toFixed(5),\n    current_price: currentPrice.toFixed(5),\n    profit: profit.toFixed(2),\n    swap: swap.toFixed(2),\n    stop_loss: sl ? sl.toFixed(5) : 'Not set',\n    take_profit: tp ? tp.toFixed(5) : 'Not set',\n    open_time: pos.openTime || pos.timeOpen || pos.created_at,\n    comment: pos.comment || null\n  };\n});\n\n// Sort by profit (worst first for attention)\nformattedPositions.sort((a, b) => Number(a.profit) - Number(b.profit));\n\n// Calculate summary\nconst totalProfit = formattedPositions.reduce((sum, p) => sum + Number(p.profit), 0);\nconst totalSwap = formattedPositions.reduce((sum, p) => sum + Number(p.swap), 0);\nconst totalVolume = formattedPositions.reduce((sum, p) => sum + Number(p.volume), 0);\nconst winningCount = formattedPositions.filter(p => Number(p.profit) > 0).length;\nconst losingCount = formattedPositions.filter(p => Number(p.profit) < 0).length;\n\nreturn [{\n  ok: true,\n  client_id: input.client_id,\n  platform: input.platform,\n  has_positions: true,\n  positions_count: formattedPositions.length,\n  positions: formattedPositions,\n  summary: {\n    total_profit_loss: totalProfit.toFixed(2),\n    total_swap: totalSwap.toFixed(2),\n    total_volume: totalVolume.toFixed(2),\n    winning_positions: winningCount,\n    losing_positions: losingCount\n  },\n  timestamp: new Date().toISOString()\n}];\n"
+        "jsCode": "// __TOOL_HTTP_ERROR_GUARD__\nconst __toolHttpErr = $input.all().find((i) => i?.json?.error);\nif (__toolHttpErr) {\n  return [{\n    ok: false,\n    tool: 'TOOL - Open Positions',\n    error: 'tool_unavailable',\n    message: String(__toolHttpErr.json.error?.message || __toolHttpErr.json.error || 'Tool API request failed')\n  }];\n}\n\n// Format open positions response\nconst positions = $input.all().map(i => i.json).filter(Boolean);\nconst input = $('Normalize Input').item.json;\n\n// Handle empty or array response\nlet positionList = [];\nif (Array.isArray(positions) && positions.length > 0) {\n  positionList = Array.isArray(positions[0]) ? positions[0] : positions;\n}\n\nif (positionList.length === 0) {\n  return [{\n    ok: true,\n    client_id: input.client_id,\n    platform: input.platform,\n    has_positions: false,\n    positions_count: 0,\n    positions: [],\n    summary: {\n      total_profit_loss: '0.00',\n      total_swap: '0.00',\n      total_volume: '0.00'\n    },\n    message: 'No open positions found.',\n    timestamp: new Date().toISOString()\n  }];\n}\n\n// Process positions\nconst formattedPositions = positionList.map(pos => {\n  const profit = Number(pos.profit) || 0;\n  const swap = Number(pos.swap) || 0;\n  const volume = Number(pos.volume) || Number(pos.lots) || 0;\n  const openPrice = Number(pos.openPrice) || Number(pos.priceOpen) || 0;\n  const currentPrice = Number(pos.currentPrice) || Number(pos.priceCurrent) || 0;\n  const sl = Number(pos.stopLoss) || Number(pos.sl) || null;\n  const tp = Number(pos.takeProfit) || Number(pos.tp) || null;\n  \n  return {\n    ticket: pos.ticket || pos.id || pos.positionId,\n    symbol: pos.symbol,\n    type: pos.type || pos.side || (pos.cmd === 0 ? 'BUY' : 'SELL'),\n    volume: volume.toFixed(2),\n    open_price: openPrice.toFixed(5),\n    current_price: currentPrice.toFixed(5),\n    profit: profit.toFixed(2),\n    swap: swap.toFixed(2),\n    stop_loss: sl ? sl.toFixed(5) : 'Not set',\n    take_profit: tp ? tp.toFixed(5) : 'Not set',\n    open_time: pos.openTime || pos.timeOpen || pos.created_at,\n    comment: pos.comment || null\n  };\n});\n\n// Sort by profit (worst first for attention)\nformattedPositions.sort((a, b) => Number(a.profit) - Number(b.profit));\n\n// Calculate summary\nconst totalProfit = formattedPositions.reduce((sum, p) => sum + Number(p.profit), 0);\nconst totalSwap = formattedPositions.reduce((sum, p) => sum + Number(p.swap), 0);\nconst totalVolume = formattedPositions.reduce((sum, p) => sum + Number(p.volume), 0);\nconst winningCount = formattedPositions.filter(p => Number(p.profit) > 0).length;\nconst losingCount = formattedPositions.filter(p => Number(p.profit) < 0).length;\n\nreturn [{\n  ok: true,\n  client_id: input.client_id,\n  platform: input.platform,\n  has_positions: true,\n  positions_count: formattedPositions.length,\n  positions: formattedPositions,\n  summary: {\n    total_profit_loss: totalProfit.toFixed(2),\n    total_swap: totalSwap.toFixed(2),\n    total_volume: totalVolume.toFixed(2),\n    winning_positions: winningCount,\n    losing_positions: losingCount\n  },\n  timestamp: new Date().toISOString()\n}];\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [400, 200],
+      "position": [
+        400,
+        200
+      ],
       "id": "format-output",
       "name": "Format Positions"
     }
@@ -152,6 +171,8 @@
     "instanceId": "broker-ai-tool-positions"
   },
   "id": "TOOL_POSITIONS",
-  "tags": ["tool", "trading"]
+  "tags": [
+    "tool",
+    "trading"
+  ]
 }
-

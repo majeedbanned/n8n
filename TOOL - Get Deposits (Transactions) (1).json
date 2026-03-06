@@ -60,7 +60,7 @@
         "specifyBody": "json",
         "jsonBody": "={{ { \"fromUserId\": $json.client_id } }}",
         "options": {
-          "timeout": 30000
+          "timeout": 15000
         }
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -70,11 +70,15 @@
         416
       ],
       "id": "4b9d4b74-e059-4e46-8e28-f5331e3a5d7c",
-      "name": "API - Get Transactions"
+      "name": "API - Get Transactions",
+      "continueOnFail": true,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1000
     },
     {
       "parameters": {
-        "jsCode": "// In \"Run Once for All Items\", each incoming item is one transaction object.\n// So build the array from all items:\nconst tx = $input.all().map(i => i.json).filter(Boolean);\n\n// Optional tool inputs (safe defaults)\nlet wanted = 'deposit';\nlet safeLimit = 20;\n\ntry {\n  const norm = $('Normalize Tool Input').item.json || {};\n // const typeRaw = String(norm.type ?? 'deposit').toLowerCase().trim();\n // wanted = typeRaw === 'deposits' ? 'deposit' : typeRaw;\n\n  const limit = Number(norm.limit ?? 20);\n  safeLimit = Number.isFinite(limit) && limit > 0 ? limit : 20;\n} catch (e) {\n  // If Normalize Tool Input isn't available during manual testing, keep defaults\n}\n\n// Filter + sort newest first + limit\nconst filtered = tx\n  .filter(t => String(t.type ?? ''))\n  .sort((a, b) =>\n    String(b.processedAt ?? b.createdAt ?? '').localeCompare(\n      String(a.processedAt ?? a.createdAt ?? '')\n    )\n  )\n  .slice(0, safeLimit);\n\n// Return only required fields\nconst transactions = filtered.map(t => ({\n  type: t.type ?? null,\n  processedAmount: t.processedAmount ?? null,\n  processedCurrency: t.processedCurrency ?? null,\n  status: t.status ?? null,\n  processedAt: t.processedAt ?? null,\n}));\n\nreturn [{\n  ok: true,\n  count: transactions.length,\n  transactions\n}];\n"
+        "jsCode": "// __TOOL_HTTP_ERROR_GUARD__\nconst __toolHttpErr = $input.all().find((i) => i?.json?.error);\nif (__toolHttpErr) {\n  return [{\n    ok: false,\n    tool: 'TOOL - Get Deposits (Transactions)',\n    error: 'tool_unavailable',\n    message: String(__toolHttpErr.json.error?.message || __toolHttpErr.json.error || 'Tool API request failed')\n  }];\n}\n\n// In \"Run Once for All Items\", each incoming item is one transaction object.\n// So build the array from all items:\nconst tx = $input.all().map(i => i.json).filter(Boolean);\n\n// Optional tool inputs (safe defaults)\nlet wanted = 'deposit';\nlet safeLimit = 20;\n\ntry {\n  const norm = $('Normalize Tool Input').item.json || {};\n // const typeRaw = String(norm.type ?? 'deposit').toLowerCase().trim();\n // wanted = typeRaw === 'deposits' ? 'deposit' : typeRaw;\n\n  const limit = Number(norm.limit ?? 20);\n  safeLimit = Number.isFinite(limit) && limit > 0 ? limit : 20;\n} catch (e) {\n  // If Normalize Tool Input isn't available during manual testing, keep defaults\n}\n\n// Filter + sort newest first + limit\nconst filtered = tx\n  .filter(t => String(t.type ?? ''))\n  .sort((a, b) =>\n    String(b.processedAt ?? b.createdAt ?? '').localeCompare(\n      String(a.processedAt ?? a.createdAt ?? '')\n    )\n  )\n  .slice(0, safeLimit);\n\n// Return only required fields\nconst transactions = filtered.map(t => ({\n  type: t.type ?? null,\n  processedAmount: t.processedAmount ?? null,\n  processedCurrency: t.processedCurrency ?? null,\n  status: t.status ?? null,\n  processedAt: t.processedAt ?? null,\n}));\n\nreturn [{\n  ok: true,\n  count: transactions.length,\n  transactions\n}];\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,

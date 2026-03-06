@@ -1,0 +1,252 @@
+{
+  "name": "WORKFLOW - Error Handler",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        -520,
+        240
+      ],
+      "id": "f7a3e9f2-8f50-4f4e-bb67-errtrigger001",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json || {};\nconst execution = input.execution || {};\nconst workflow = input.workflow || {};\nconst err = input.error || execution.error || {};\nconst failedNode = execution.lastNodeExecuted || input.lastNodeExecuted || null;\n\nlet context = {};\ntry {\n  const runData = execution.data?.resultData?.runData || {};\n  const nodeRuns = runData[failedNode] || [];\n  const first = nodeRuns[0]?.data?.main?.[0]?.[0]?.json;\n  if (first && typeof first === 'object') context = first;\n} catch (e) {}\n\nconst channel = context.channel || context.metadata?.source || null;\nconst sessionId = context.session_id || context.sessionId || context.metadata?.chat_id || null;\nconst userPhone = context.user_phone || context.user_email || context.user_identifier || null;\n\nreturn [{\n  ...context,\n  workflow_id: workflow.id || null,\n  workflow_name: workflow.name || null,\n  execution_id: execution.id || null,\n  failed_node: failedNode,\n  error_message: String(err.message || input.message || 'Unknown workflow error'),\n  error_stack: err.stack ? String(err.stack).slice(0, 4000) : null,\n  channel,\n  session_id: sessionId,\n  user_phone: userPhone,\n  fallback_message: 'Service is temporarily unavailable. Please try again in a moment.',\n  raw_payload: input\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -280,
+        240
+      ],
+      "id": "88a8f6f2-0916-4ae6-a9d6-errnormalize001",
+      "name": "Normalize Error Context"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO workflow_error_logs (\n  workflow_id,\n  workflow_name,\n  execution_id,\n  failed_node,\n  error_message,\n  error_stack,\n  channel,\n  session_id,\n  user_phone,\n  payload,\n  created_at\n)\nVALUES (\n  {{ $json.workflow_id ? (\"'\" + String($json.workflow_id).replace(/'/g, \"''\") + \"'\") : 'NULL' }},\n  {{ $json.workflow_name ? (\"'\" + String($json.workflow_name).replace(/'/g, \"''\") + \"'\") : 'NULL' }},\n  {{ $json.execution_id ? (\"'\" + String($json.execution_id).replace(/'/g, \"''\") + \"'\") : 'NULL' }},\n  {{ $json.failed_node ? (\"'\" + String($json.failed_node).replace(/'/g, \"''\") + \"'\") : 'NULL' }},\n  {{ $json.error_message ? (\"'\" + String($json.error_message).replace(/'/g, \"''\") + \"'\") : 'NULL' }},\n  {{ $json.error_stack ? (\"'\" + String($json.error_stack).replace(/'/g, \"''\") + \"'\") : 'NULL' }},\n  {{ $json.channel ? (\"'\" + String($json.channel).replace(/'/g, \"''\") + \"'\") : 'NULL' }},\n  {{ $json.session_id ? (\"'\" + String($json.session_id).replace(/'/g, \"''\") + \"'\") : 'NULL' }},\n  {{ $json.user_phone ? (\"'\" + String($json.user_phone).replace(/'/g, \"''\") + \"'\") : 'NULL' }},\n  '{{ JSON.stringify($json.raw_payload || {}) }}'::jsonb,\n  NOW()\n)\nRETURNING id;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -40,
+        80
+      ],
+      "id": "55470e38-eb31-47d8-9870-errdblog001",
+      "name": "DB - Log Workflow Error",
+      "credentials": {
+        "postgres": {
+          "id": "yNVFJmXSqNtKGgso",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "err-if-wa",
+              "leftValue": "={{ $json.channel || \"\" }}",
+              "rightValue": "whatsapp",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        240
+      ],
+      "id": "3147d92c-36ea-4d96-8a67-errifwa001",
+      "name": "IF - Error Channel WhatsApp?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v18.0/{{ $json.metadata?.wa_id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $env.WHATSAPP_ACCESS_TOKEN }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"messaging_product\":\"whatsapp\",\"to\":\"{{ ($json.user_phone || \"\").replace(\"+\", \"\") }}\",\"type\":\"text\",\"text\":{\"body\":\"{{ $json.fallback_message }}\"}}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        200,
+        180
+      ],
+      "id": "9f777d2f-b5f7-41b8-b94e-errsendwa001",
+      "name": "Send WhatsApp Error Fallback",
+      "continueOnFail": true,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1000
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "err-if-tg",
+              "leftValue": "={{ $json.channel || \"\" }}",
+              "rightValue": "telegram",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        400
+      ],
+      "id": "e3b75d34-161e-4a16-81f2-erriftg001",
+      "name": "IF - Error Channel Telegram?"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.metadata?.chat_id || $json.session_id }}",
+        "text": "={{ $json.fallback_message }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        200,
+        400
+      ],
+      "id": "8af5cdbf-a6da-46b5-a5ec-errsendtg001",
+      "name": "Send Telegram Error Fallback",
+      "continueOnFail": true,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1000,
+      "credentials": {
+        "telegramApi": {
+          "id": "txTzVvWQaqPSnMci",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalize Error Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Error Context": {
+      "main": [
+        [
+          {
+            "node": "DB - Log Workflow Error",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "IF - Error Channel WhatsApp?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "IF - Error Channel Telegram?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Error Channel WhatsApp?": {
+      "main": [
+        [
+          {
+            "node": "Send WhatsApp Error Fallback",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "IF - Error Channel Telegram?": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Error Fallback",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1.0.0",
+  "meta": {
+    "instanceId": "broker-ai-error-handler"
+  },
+  "id": "WORKFLOW_ERROR_HANDLER",
+  "tags": [
+    "ops",
+    "error-handling"
+  ]
+}

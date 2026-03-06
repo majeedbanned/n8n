@@ -34,7 +34,10 @@
       },
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
-      "position": [-400, 300],
+      "position": [
+        -400,
+        300
+      ],
       "id": "tool-trigger",
       "name": "When Executed by Another Workflow"
     },
@@ -44,7 +47,10 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [-200, 300],
+      "position": [
+        -200,
+        300
+      ],
       "id": "normalize-input",
       "name": "Normalize Input"
     },
@@ -62,7 +68,10 @@
       },
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [0, 300],
+      "position": [
+        0,
+        300
+      ],
       "id": "check-error",
       "name": "IF - Input Error?"
     },
@@ -91,22 +100,32 @@
         "specifyBody": "json",
         "jsonBody": "={{ { \"fromUserId\": $json.client_id } }}",
         "options": {
-          "timeout": 30000
+          "timeout": 15000
         }
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
-      "position": [200, 200],
+      "position": [
+        200,
+        200
+      ],
       "id": "api-get-transactions",
-      "name": "API - Get Transactions"
+      "name": "API - Get Transactions",
+      "continueOnFail": true,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1000
     },
     {
       "parameters": {
-        "jsCode": "// Format transactions response with filtering\nconst transactions = $input.all().map(i => i.json).filter(Boolean);\nconst input = $('Normalize Input').item.json;\n\n// Handle response format\nlet txList = [];\nif (Array.isArray(transactions) && transactions.length > 0) {\n  txList = Array.isArray(transactions[0]) ? transactions[0] : transactions;\n}\n\n// Apply filters\nlet filtered = txList;\n\n// Filter by type\nif (input.type !== 'all') {\n  filtered = filtered.filter(tx => {\n    const txType = String(tx.type || '').toLowerCase();\n    return txType.includes(input.type) || input.type.includes(txType);\n  });\n}\n\n// Filter by status\nif (input.status !== 'all') {\n  filtered = filtered.filter(tx => {\n    const txStatus = String(tx.status || '').toLowerCase();\n    return txStatus === input.status;\n  });\n}\n\n// Filter by date range\nfiltered = filtered.filter(tx => {\n  const txDate = new Date(tx.processedAt || tx.createdAt || tx.date);\n  const fromDate = new Date(input.date_from);\n  const toDate = new Date(input.date_to);\n  toDate.setHours(23, 59, 59, 999); // Include full day\n  return txDate >= fromDate && txDate <= toDate;\n});\n\n// Sort by date (newest first)\nfiltered.sort((a, b) => \n  new Date(b.processedAt || b.createdAt) - new Date(a.processedAt || a.createdAt)\n);\n\n// Apply limit\nfiltered = filtered.slice(0, input.limit);\n\nif (filtered.length === 0) {\n  return [{\n    ok: true,\n    client_id: input.client_id,\n    filters: {\n      type: input.type,\n      status: input.status,\n      period: { from: input.date_from, to: input.date_to }\n    },\n    transactions_count: 0,\n    transactions: [],\n    totals: {\n      total_deposits: '0.00',\n      total_withdrawals: '0.00',\n      total_bonuses: '0.00',\n      net_funding: '0.00'\n    },\n    message: 'No transactions found matching the criteria.',\n    timestamp: new Date().toISOString()\n  }];\n}\n\n// Format transactions\nconst formattedTx = filtered.map(tx => {\n  const amount = Number(tx.processedAmount || tx.amount) || 0;\n  const txType = String(tx.type || '').toLowerCase();\n  \n  return {\n    id: tx.id || tx.transactionId,\n    type: tx.type,\n    amount: amount.toFixed(2),\n    currency: tx.processedCurrency || tx.currency || 'USD',\n    status: tx.status,\n    method: tx.paymentMethod || tx.method || 'N/A',\n    account: tx.accountId || tx.login || 'N/A',\n    reference: tx.reference || tx.externalId || null,\n    processed_at: tx.processedAt || tx.createdAt,\n    notes: tx.notes || tx.comment || null\n  };\n});\n\n// Calculate totals\nconst deposits = formattedTx\n  .filter(tx => tx.type?.toLowerCase().includes('deposit'))\n  .reduce((sum, tx) => sum + Number(tx.amount), 0);\n\nconst withdrawals = formattedTx\n  .filter(tx => tx.type?.toLowerCase().includes('withdraw'))\n  .reduce((sum, tx) => sum + Number(tx.amount), 0);\n\nconst bonuses = formattedTx\n  .filter(tx => tx.type?.toLowerCase().includes('bonus'))\n  .reduce((sum, tx) => sum + Number(tx.amount), 0);\n\nconst pendingCount = formattedTx.filter(tx => tx.status?.toLowerCase() === 'pending').length;\n\nreturn [{\n  ok: true,\n  client_id: input.client_id,\n  filters: {\n    type: input.type,\n    status: input.status,\n    period: { from: input.date_from, to: input.date_to }\n  },\n  transactions_count: formattedTx.length,\n  pending_count: pendingCount,\n  transactions: formattedTx,\n  totals: {\n    total_deposits: deposits.toFixed(2),\n    total_withdrawals: withdrawals.toFixed(2),\n    total_bonuses: bonuses.toFixed(2),\n    net_funding: (deposits - withdrawals + bonuses).toFixed(2)\n  },\n  timestamp: new Date().toISOString()\n}];\n"
+        "jsCode": "// __TOOL_HTTP_ERROR_GUARD__\nconst __toolHttpErr = $input.all().find((i) => i?.json?.error);\nif (__toolHttpErr) {\n  return [{\n    ok: false,\n    tool: 'TOOL - Transactions Enhanced',\n    error: 'tool_unavailable',\n    message: String(__toolHttpErr.json.error?.message || __toolHttpErr.json.error || 'Tool API request failed')\n  }];\n}\n\n// Format transactions response with filtering\nconst transactions = $input.all().map(i => i.json).filter(Boolean);\nconst input = $('Normalize Input').item.json;\n\n// Handle response format\nlet txList = [];\nif (Array.isArray(transactions) && transactions.length > 0) {\n  txList = Array.isArray(transactions[0]) ? transactions[0] : transactions;\n}\n\n// Apply filters\nlet filtered = txList;\n\n// Filter by type\nif (input.type !== 'all') {\n  filtered = filtered.filter(tx => {\n    const txType = String(tx.type || '').toLowerCase();\n    return txType.includes(input.type) || input.type.includes(txType);\n  });\n}\n\n// Filter by status\nif (input.status !== 'all') {\n  filtered = filtered.filter(tx => {\n    const txStatus = String(tx.status || '').toLowerCase();\n    return txStatus === input.status;\n  });\n}\n\n// Filter by date range\nfiltered = filtered.filter(tx => {\n  const txDate = new Date(tx.processedAt || tx.createdAt || tx.date);\n  const fromDate = new Date(input.date_from);\n  const toDate = new Date(input.date_to);\n  toDate.setHours(23, 59, 59, 999); // Include full day\n  return txDate >= fromDate && txDate <= toDate;\n});\n\n// Sort by date (newest first)\nfiltered.sort((a, b) => \n  new Date(b.processedAt || b.createdAt) - new Date(a.processedAt || a.createdAt)\n);\n\n// Apply limit\nfiltered = filtered.slice(0, input.limit);\n\nif (filtered.length === 0) {\n  return [{\n    ok: true,\n    client_id: input.client_id,\n    filters: {\n      type: input.type,\n      status: input.status,\n      period: { from: input.date_from, to: input.date_to }\n    },\n    transactions_count: 0,\n    transactions: [],\n    totals: {\n      total_deposits: '0.00',\n      total_withdrawals: '0.00',\n      total_bonuses: '0.00',\n      net_funding: '0.00'\n    },\n    message: 'No transactions found matching the criteria.',\n    timestamp: new Date().toISOString()\n  }];\n}\n\n// Format transactions\nconst formattedTx = filtered.map(tx => {\n  const amount = Number(tx.processedAmount || tx.amount) || 0;\n  const txType = String(tx.type || '').toLowerCase();\n  \n  return {\n    id: tx.id || tx.transactionId,\n    type: tx.type,\n    amount: amount.toFixed(2),\n    currency: tx.processedCurrency || tx.currency || 'USD',\n    status: tx.status,\n    method: tx.paymentMethod || tx.method || 'N/A',\n    account: tx.accountId || tx.login || 'N/A',\n    reference: tx.reference || tx.externalId || null,\n    processed_at: tx.processedAt || tx.createdAt,\n    notes: tx.notes || tx.comment || null\n  };\n});\n\n// Calculate totals\nconst deposits = formattedTx\n  .filter(tx => tx.type?.toLowerCase().includes('deposit'))\n  .reduce((sum, tx) => sum + Number(tx.amount), 0);\n\nconst withdrawals = formattedTx\n  .filter(tx => tx.type?.toLowerCase().includes('withdraw'))\n  .reduce((sum, tx) => sum + Number(tx.amount), 0);\n\nconst bonuses = formattedTx\n  .filter(tx => tx.type?.toLowerCase().includes('bonus'))\n  .reduce((sum, tx) => sum + Number(tx.amount), 0);\n\nconst pendingCount = formattedTx.filter(tx => tx.status?.toLowerCase() === 'pending').length;\n\nreturn [{\n  ok: true,\n  client_id: input.client_id,\n  filters: {\n    type: input.type,\n    status: input.status,\n    period: { from: input.date_from, to: input.date_to }\n  },\n  transactions_count: formattedTx.length,\n  pending_count: pendingCount,\n  transactions: formattedTx,\n  totals: {\n    total_deposits: deposits.toFixed(2),\n    total_withdrawals: withdrawals.toFixed(2),\n    total_bonuses: bonuses.toFixed(2),\n    net_funding: (deposits - withdrawals + bonuses).toFixed(2)\n  },\n  timestamp: new Date().toISOString()\n}];\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [400, 200],
+      "position": [
+        400,
+        200
+      ],
       "id": "format-output",
       "name": "Format Transactions"
     }
@@ -168,6 +187,8 @@
     "instanceId": "broker-ai-tool-transactions"
   },
   "id": "TOOL_TRANSACTIONS",
-  "tags": ["tool", "funding"]
+  "tags": [
+    "tool",
+    "funding"
+  ]
 }
-

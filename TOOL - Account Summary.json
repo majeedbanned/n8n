@@ -14,7 +14,10 @@
       },
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
-      "position": [-400, 300],
+      "position": [
+        -400,
+        300
+      ],
       "id": "tool-trigger",
       "name": "When Executed by Another Workflow"
     },
@@ -24,7 +27,10 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [-200, 300],
+      "position": [
+        -200,
+        300
+      ],
       "id": "normalize-input",
       "name": "Normalize Input"
     },
@@ -42,7 +48,10 @@
       },
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [0, 300],
+      "position": [
+        0,
+        300
+      ],
       "id": "check-error",
       "name": "IF - Input Error?"
     },
@@ -71,22 +80,32 @@
         "specifyBody": "json",
         "jsonBody": "={{ { \"userId\": $json.user_id } }}",
         "options": {
-          "timeout": 30000
+          "timeout": 15000
         }
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
-      "position": [200, 200],
+      "position": [
+        200,
+        200
+      ],
       "id": "api-get-accounts",
-      "name": "API - Get Accounts"
+      "name": "API - Get Accounts",
+      "continueOnFail": true,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1000
     },
     {
       "parameters": {
-        "jsCode": "// Format account summary response\nconst rows = $input.all().map(i => i.json).filter(Boolean);\nconst userId = $('Normalize Input').item.json.user_id;\n\nif (!rows || rows.length === 0) {\n  return [{\n    ok: false,\n    error: 'No trading accounts found for this user.',\n    tool: 'get_account_summary'\n  }];\n}\n\nconst serverTypeMap = {\n  5: 'MT4 Live',\n  2: 'MT5 Live',\n  1: 'Wallet',\n  4: 'MT4 Demo',\n  3: 'MT5 Demo'\n};\n\n// Keep only fields required by the assistant\nconst accounts = rows.map(acc => {\n  const sid = Number(acc.serverId ?? 0);\n  return {\n    login: String(acc.login ?? ''),\n    leverage: Number(acc.leverage ?? 0),\n    balance: Number(acc.balance ?? 0),\n    equity: Number(acc.equity ?? 0),\n    accountTypeId: acc.accountTypeId ?? null,\n    serverId: sid || null,\n    accounttype: serverTypeMap[sid] || 'Unknown'\n  };\n});\n\nreturn [{\n  ok: true,\n  user_id: userId,\n  accounts_count: accounts.length,\n  accounts\n}];\n"
+        "jsCode": "// __TOOL_HTTP_ERROR_GUARD__\nconst __toolHttpErr = $input.all().find((i) => i?.json?.error);\nif (__toolHttpErr) {\n  return [{\n    ok: false,\n    tool: 'TOOL - Account Summary',\n    error: 'tool_unavailable',\n    message: String(__toolHttpErr.json.error?.message || __toolHttpErr.json.error || 'Tool API request failed')\n  }];\n}\n\n// Format account summary response\nconst rows = $input.all().map(i => i.json).filter(Boolean);\nconst userId = $('Normalize Input').item.json.user_id;\n\nif (!rows || rows.length === 0) {\n  return [{\n    ok: false,\n    error: 'No trading accounts found for this user.',\n    tool: 'get_account_summary'\n  }];\n}\n\nconst serverTypeMap = {\n  5: 'MT4 Live',\n  2: 'MT5 Live',\n  1: 'Wallet',\n  4: 'MT4 Demo',\n  3: 'MT5 Demo'\n};\n\n// Keep only fields required by the assistant\nconst accounts = rows.map(acc => {\n  const sid = Number(acc.serverId ?? 0);\n  return {\n    login: String(acc.login ?? ''),\n    leverage: Number(acc.leverage ?? 0),\n    balance: Number(acc.balance ?? 0),\n    equity: Number(acc.equity ?? 0),\n    accountTypeId: acc.accountTypeId ?? null,\n    serverId: sid || null,\n    accounttype: serverTypeMap[sid] || 'Unknown'\n  };\n});\n\nreturn [{\n  ok: true,\n  user_id: userId,\n  accounts_count: accounts.length,\n  accounts\n}];\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [400, 200],
+      "position": [
+        400,
+        200
+      ],
       "id": "format-output",
       "name": "Format Account Summary"
     }
@@ -148,6 +167,8 @@
     "instanceId": "broker-ai-tool-account-summary"
   },
   "id": "TOOL_ACCOUNT_SUMMARY",
-  "tags": ["tool", "account"]
+  "tags": [
+    "tool",
+    "account"
+  ]
 }
-

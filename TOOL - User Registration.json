@@ -120,7 +120,7 @@
         "specifyBody": "json",
         "jsonBody": "={{ $('When Executed by Another Workflow').item.json.toJsonString() }}",
         "options": {
-          "timeout": 30000
+          "timeout": 15000
         }
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -131,7 +131,10 @@
       ],
       "id": "e9fe6af1-c783-4163-8832-7a41f40cde1c",
       "name": "HTTP - Register User",
-      "continueOnFail": true
+      "continueOnFail": true,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1000
     },
     {
       "parameters": {

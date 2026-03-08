@@ -13,10 +13,10 @@
       "type": "@n8n/n8n-nodes-langchain.chatTrigger",
       "typeVersion": 1.4,
       "position": [
-        -16208,
-        2480
+        -16560,
+        3024
       ],
-      "id": "6db6195f-6463-42cf-a188-31039c9f7a8e",
+      "id": "728722d0-d448-4344-8940-b24d02c50b5e",
       "name": "Web Chat Trigger",
       "webhookId": "broker-ai-web-chat"
     },
@@ -29,10 +29,10 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        -16208,
-        2672
+        -16560,
+        3216
       ],
-      "id": "eb12d2fb-efbd-4a20-b7af-0ee757293d03",
+      "id": "943fcf4c-287c-40d8-b1a5-f712a364ec50",
       "name": "WhatsApp Webhook",
       "webhookId": "broker-ai-whatsapp"
     },
@@ -46,10 +46,10 @@
       "type": "n8n-nodes-base.telegramTrigger",
       "typeVersion": 1.1,
       "position": [
-        -16208,
-        2880
+        -16560,
+        3424
       ],
-      "id": "e3fd6b79-b668-4a0c-a64b-aecb707c7ec8",
+      "id": "d433f7ab-a0a1-44e8-86b1-6fef9b6a28d4",
       "name": "Telegram Trigger",
       "webhookId": "4600682b-8d05-479b-95b4-f508a2a9954d",
       "credentials": {
@@ -95,10 +95,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        -15872,
-        3120
+        -16224,
+        3664
       ],
-      "id": "cd737e37-2c99-441b-b097-d74463caf3e0",
+      "id": "1fc576a8-f5b3-445d-9cb6-624b27edbcc9",
       "name": "IF - Telegram Voice?"
     },
     {
@@ -110,10 +110,10 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        -15312,
-        3168
+        -15664,
+        3712
       ],
-      "id": "1d8acc73-e149-4e50-8fec-8d2edc467c23",
+      "id": "64a3139b-cad0-4ca3-adef-d0e0f6764d44",
       "name": "Telegram - Get Voice File",
       "webhookId": "322ca2d9-460f-4f41-93c9-9538f6ade8ff",
       "credentials": {
@@ -132,10 +132,10 @@
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 1.8,
       "position": [
-        -15104,
-        3168
+        -15456,
+        3712
       ],
-      "id": "1c0aa263-4a2f-4f0a-94fa-d528c1246af8",
+      "id": "3441719a-d72d-4463-8ce2-e46fc40c5eed",
       "name": "Telegram - Transcribe Voice",
       "credentials": {
         "openAiApi": {
@@ -151,10 +151,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -14896,
-        3168
+        -15248,
+        3712
       ],
-      "id": "0c5b46fd-6812-41fd-b58c-eed1c4fcb609",
+      "id": "1f7a37c0-734d-4f62-a4e9-bd384dd544c2",
       "name": "Telegram - Apply Transcript"
     },
     {
@@ -166,10 +166,10 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        -16208,
-        3072
+        -16560,
+        3616
       ],
-      "id": "1bdb06ea-db8b-4bd4-968b-ef1d58b59023",
+      "id": "803a73f6-b18a-404e-8442-bb77c5f50001",
       "name": "Email Webhook",
       "webhookId": "broker-ai-email"
     },
@@ -180,10 +180,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -15504,
-        2688
+        -15856,
+        3232
       ],
-      "id": "fb5a3cf1-f3a8-4a0a-b261-5c2b84ff5f4b",
+      "id": "1cdf4848-15ce-45fa-9f13-72d5c5c731d2",
       "name": "Channel Normalizer"
     },
     {
@@ -193,10 +193,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -15312,
-        2688
+        -15664,
+        3232
       ],
-      "id": "1d35f2ad-baa2-4b42-8a6b-cfbe3dbef04f",
+      "id": "7daa5e06-4ca3-4f99-8e03-682dc821d1c9",
       "name": "Extract User Identifiers"
     },
     {
@@ -214,10 +214,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        -15120,
-        2688
+        -15472,
+        3232
       ],
-      "id": "fe8b8d20-1459-4856-b540-9f0763169016",
+      "id": "0822c4e8-2b51-48a2-8934-e3ee204e234a",
       "name": "IF - Have User Identifier?"
     },
     {
@@ -236,10 +236,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -14912,
-        2896
+        -15264,
+        3440
       ],
-      "id": "5354cce7-c6ee-42a5-a37b-396e0fe00e1a",
+      "id": "a6416d9c-82e9-4595-a204-104c3014a988",
       "name": "Missing Identifier Response"
     },
     {
@@ -267,21 +267,18 @@
         "specifyBody": "json",
         "jsonBody": "={{ $json.user_email ? {\"email\": $json.user_email} : {\"phone\": $json.user_phone} }}",
         "options": {
-          "timeout": 15000
+          "timeout": 30000
         }
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        -14944,
-        2592
+        -15296,
+        3136
       ],
-      "id": "e7ff4bbc-0b92-483b-b4a6-5b879d9507bf",
+      "id": "46c172a6-e96c-40ec-bd1f-6ad16e738c45",
       "name": "Auth - Lookup User",
       "alwaysOutputData": true,
-      "retryOnFail": true,
-      "maxTries": 2,
-      "waitBetweenTries": 1000,
       "continueOnFail": true
     },
     {
@@ -291,10 +288,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -14656,
-        2592
+        -15008,
+        3136
       ],
-      "id": "f00836a6-d0e2-4445-9971-a778497b4379",
+      "id": "762393a4-83aa-4ed0-bd34-33f3a421a224",
       "name": "Auth - Extract User Fields"
     },
     {
@@ -312,10 +309,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        -14512,
-        2592
+        -14864,
+        3136
       ],
-      "id": "a62dd8a5-ce30-4800-9972-cf5407dc4318",
+      "id": "1aa58143-1ff1-4885-a3d3-fd33c1afeb62",
       "name": "IF - Auth OK?"
     },
     {
@@ -334,10 +331,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -13744,
-        3072
+        -14096,
+        3616
       ],
-      "id": "4e42e5e1-d37b-401c-b753-0b5664d02f76",
+      "id": "5692cba5-ea72-42b9-9741-51063d7d150d",
       "name": "Auth Failed Response"
     },
     {
@@ -347,10 +344,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -14288,
-        2368
+        -14640,
+        2912
       ],
-      "id": "f3b01d1d-4081-4a33-8cfa-ae7091b4be77",
+      "id": "195f72e4-da24-4e81-99f4-860ce7b8d76d",
       "name": "Language Detector"
     },
     {
@@ -361,10 +358,10 @@
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.4,
       "position": [
-        -14128,
-        2240
+        -14480,
+        2784
       ],
-      "id": "b1bcbb8a-9346-4842-a690-6e3750502a43",
+      "id": "bd91c09a-4ddb-4e27-8fde-8c8455fce67a",
       "name": "Sentiment Analyzer"
     },
     {
@@ -382,10 +379,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
       "typeVersion": 1.3,
       "position": [
-        -14128,
-        2352
+        -14480,
+        2896
       ],
-      "id": "99bb3f79-4d69-44e4-afb9-8e709c4f9ade",
+      "id": "3f63e1eb-d6d7-43ee-86af-e653fe5e265e",
       "name": "Sentiment LLM",
       "credentials": {
         "openAiApi": {
@@ -401,10 +398,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -13824,
-        2240
+        -14176,
+        2784
       ],
-      "id": "6b835c04-49b6-4cae-a870-a7af95bdbf31",
+      "id": "5d09ce70-1941-4392-94a4-a5db88a74c5e",
       "name": "Parse Sentiment"
     },
     {
@@ -415,10 +412,10 @@
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.4,
       "position": [
-        -13680,
-        2240
+        -14032,
+        2784
       ],
-      "id": "1889b9e0-c11a-4185-9c95-4ef9803db21d",
+      "id": "cca889cf-439a-495c-8235-4ad621c3c142",
       "name": "Intent Classifier"
     },
     {
@@ -436,10 +433,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
       "typeVersion": 1.3,
       "position": [
-        -13680,
-        2352
+        -14032,
+        2896
       ],
-      "id": "6bbf7395-0d39-4842-95fe-4fda9d3caa3f",
+      "id": "7bb9ad43-ebd1-46bd-979a-c53959b886cf",
       "name": "Intent LLM",
       "credentials": {
         "openAiApi": {
@@ -455,25 +452,25 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -13408,
-        2240
+        -13760,
+        2784
       ],
-      "id": "88a2cef8-811a-4b05-a9a8-9c4ff8f30e0c",
+      "id": "a23b0bf8-a60e-427b-b997-6d26a13a84de",
       "name": "Parse Intent"
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "-- Upsert user profile data (DML only; schema managed by migrations)\nINSERT INTO user_configs (\n  user_phone,\n  client_id,\n  preferred_language,\n  communication_style,\n  is_vip,\n  last_seen_at,\n  last_channel,\n  total_interactions,\n  system_prompt\n)\nVALUES (\n  '{{ ($json.user_phone || $json.user_email || $json.user_identifier || '').replace(/'/g, \"''\") }}',\n  {{ $json.user?.id ? $json.user.id : 'NULL' }},\n  '{{ ($json.detected_language || 'en').replace(/'/g, \"''\") }}',\n  'friendly_support',\n  {{ $json.user?.isVip || false }},\n  NOW(),\n  '{{ ($json.channel || $json.metadata?.source || '').replace(/'/g, \"''\") }}',\n  1,\n  NULL\n)\nON CONFLICT (user_phone)\nDO UPDATE SET\n  last_seen_at = NOW(),\n  last_channel = EXCLUDED.last_channel,\n  total_interactions = user_configs.total_interactions + 1,\n  preferred_language = CASE\n    WHEN EXCLUDED.preferred_language <> 'en' AND {{ Number($json.language_confidence || 0) }} >= 0.85\n      THEN EXCLUDED.preferred_language\n    ELSE user_configs.preferred_language\n  END,\n  client_id = COALESCE(EXCLUDED.client_id, user_configs.client_id),\n  is_vip = COALESCE(EXCLUDED.is_vip, user_configs.is_vip);",
+        "query": "-- Ensure table exists with all required columns\nDO $$\nBEGIN\n  -- Create table if it doesn't exist\n  IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'user_configs') THEN\n    CREATE TABLE user_configs (\n      id SERIAL PRIMARY KEY,\n      user_phone VARCHAR(30) UNIQUE NOT NULL,\n      client_id INTEGER,\n      system_prompt TEXT,\n      preferred_language VARCHAR(10) DEFAULT 'en',\n      communication_style VARCHAR(30) DEFAULT 'friendly_support',\n      is_vip BOOLEAN DEFAULT FALSE,\n      is_ib BOOLEAN DEFAULT FALSE,\n      verification_status VARCHAR(20) DEFAULT 'pending',\n      last_seen_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n      last_channel VARCHAR(20),\n      total_interactions INTEGER DEFAULT 0,\n      notification_enabled BOOLEAN DEFAULT TRUE,\n      proactive_alerts_enabled BOOLEAN DEFAULT TRUE,\n      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n      updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()\n    );\n  ELSE\n    -- Table exists, add missing columns\n    IF NOT EXISTS (\n      SELECT 1 FROM information_schema.columns \n      WHERE table_name = 'user_configs' AND column_name = 'client_id'\n    ) THEN\n      ALTER TABLE user_configs ADD COLUMN client_id INTEGER;\n    END IF;\n    \n    IF NOT EXISTS (\n      SELECT 1 FROM information_schema.columns \n      WHERE table_name = 'user_configs' AND column_name = 'preferred_language'\n    ) THEN\n      ALTER TABLE user_configs ADD COLUMN preferred_language VARCHAR(10) DEFAULT 'en';\n    END IF;\n    \n    IF NOT EXISTS (\n      SELECT 1 FROM information_schema.columns \n      WHERE table_name = 'user_configs' AND column_name = 'communication_style'\n    ) THEN\n      ALTER TABLE user_configs ADD COLUMN communication_style VARCHAR(30) DEFAULT 'friendly_support';\n    END IF;\n    \n    IF NOT EXISTS (\n      SELECT 1 FROM information_schema.columns \n      WHERE table_name = 'user_configs' AND column_name = 'is_vip'\n    ) THEN\n      ALTER TABLE user_configs ADD COLUMN is_vip BOOLEAN DEFAULT FALSE;\n    END IF;\n    \n    IF NOT EXISTS (\n      SELECT 1 FROM information_schema.columns \n      WHERE table_name = 'user_configs' AND column_name = 'last_channel'\n    ) THEN\n      ALTER TABLE user_configs ADD COLUMN last_channel VARCHAR(20);\n    END IF;\n    \n    IF NOT EXISTS (\n      SELECT 1 FROM information_schema.columns \n      WHERE table_name = 'user_configs' AND column_name = 'total_interactions'\n    ) THEN\n      ALTER TABLE user_configs ADD COLUMN total_interactions INTEGER DEFAULT 0;\n    END IF;\n    \n    IF NOT EXISTS (\n      SELECT 1 FROM information_schema.columns \n      WHERE table_name = 'user_configs' AND column_name = 'system_prompt'\n    ) THEN\n      ALTER TABLE user_configs ADD COLUMN system_prompt TEXT;\n    END IF;\n    \n    IF NOT EXISTS (\n      SELECT 1 FROM information_schema.columns \n      WHERE table_name = 'user_configs' AND column_name = 'is_ib'\n    ) THEN\n      ALTER TABLE user_configs ADD COLUMN is_ib BOOLEAN DEFAULT FALSE;\n    END IF;\n    \n    IF NOT EXISTS (\n      SELECT 1 FROM information_schema.columns \n      WHERE table_name = 'user_configs' AND column_name = 'verification_status'\n    ) THEN\n      ALTER TABLE user_configs ADD COLUMN verification_status VARCHAR(20) DEFAULT 'pending';\n    END IF;\n    \n    IF NOT EXISTS (\n      SELECT 1 FROM information_schema.columns \n      WHERE table_name = 'user_configs' AND column_name = 'notification_enabled'\n    ) THEN\n      ALTER TABLE user_configs ADD COLUMN notification_enabled BOOLEAN DEFAULT TRUE;\n    END IF;\n    \n    IF NOT EXISTS (\n      SELECT 1 FROM information_schema.columns \n      WHERE table_name = 'user_configs' AND column_name = 'proactive_alerts_enabled'\n    ) THEN\n      ALTER TABLE user_configs ADD COLUMN proactive_alerts_enabled BOOLEAN DEFAULT TRUE;\n    END IF;\n    \n    IF NOT EXISTS (\n      SELECT 1 FROM information_schema.columns \n      WHERE table_name = 'user_configs' AND column_name = 'created_at'\n    ) THEN\n      ALTER TABLE user_configs ADD COLUMN created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();\n    END IF;\n    \n    IF NOT EXISTS (\n      SELECT 1 FROM information_schema.columns \n      WHERE table_name = 'user_configs' AND column_name = 'updated_at'\n    ) THEN\n      ALTER TABLE user_configs ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();\n    END IF;\n  END IF;\n  \n  -- Ensure system_prompt is nullable (drop NOT NULL constraint if it exists)\n  BEGIN\n    IF EXISTS (\n      SELECT 1 FROM information_schema.columns \n      WHERE table_name = 'user_configs' \n      AND column_name = 'system_prompt'\n      AND is_nullable = 'NO'\n    ) THEN\n      ALTER TABLE user_configs ALTER COLUMN system_prompt DROP NOT NULL;\n    END IF;\n  EXCEPTION WHEN OTHERS THEN\n    -- Ignore errors\n    NULL;\n  END;\nEND $$;\n\n-- Now upsert user config\nINSERT INTO user_configs (\n  user_phone, \n  client_id,\n  preferred_language, \n  communication_style,\n  is_vip,\n  last_seen_at,\n  last_channel,\n  total_interactions,\n  system_prompt\n)\nVALUES (\n  '{{ $json.user_phone }}',\n  {{ $json.user?.id ? $json.user.id : 'NULL' }},\n  '{{ $json.detected_language }}',\n  'friendly_support',\n  {{ $json.user?.isVip || false }},\n  NOW(),\n  '{{ $json.channel }}',\n  1,\n  NULL\n)\nON CONFLICT (user_phone)\nDO UPDATE SET \n  last_seen_at = NOW(),\n  last_channel = EXCLUDED.last_channel,\n  total_interactions = user_configs.total_interactions + 1,\n  preferred_language = COALESCE(NULLIF(EXCLUDED.preferred_language, 'en'), user_configs.preferred_language),\n  client_id = COALESCE(EXCLUDED.client_id, user_configs.client_id),\n  is_vip = COALESCE(EXCLUDED.is_vip, user_configs.is_vip);",
         "options": {}
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        -13280,
-        2240
+        -13632,
+        2784
       ],
-      "id": "93fbf0a9-45d4-44b2-b956-e64a79765746",
+      "id": "68013805-1ee9-4def-84d9-3c6d7a1c0cb4",
       "name": "DB - Upsert User Config",
       "credentials": {
         "postgres": {
@@ -485,16 +482,16 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "-- Load user context (DML only; schema managed by migrations)\nSELECT\n  uc.system_prompt,\n  uc.preferred_language,\n  uc.communication_style,\n  uc.is_vip,\n  uc.total_interactions,\n  COALESCE(up.persona_override, uc.communication_style) AS active_persona,\n  up.topics_of_interest,\n  up.notification_preferences,\n  (\n    SELECT COUNT(*)\n    FROM chat_sessions cs\n    WHERE cs.user_phone = '{{ (($json.user_phone || $json.user_email || '') + '').replace(/'/g, \"''\") }}'\n      AND cs.escalated = true\n      AND cs.session_start > NOW() - INTERVAL '30 days'\n  ) AS recent_escalations,\n  (\n    SELECT cs.sentiment_avg\n    FROM chat_sessions cs\n    WHERE cs.user_phone = '{{ (($json.user_phone || $json.user_email || '') + '').replace(/'/g, \"''\") }}'\n    ORDER BY cs.session_start DESC\n    LIMIT 1\n  ) AS last_session_sentiment\nFROM user_configs uc\nLEFT JOIN user_preferences up ON uc.user_phone = up.user_phone\nWHERE uc.user_phone = '{{ (($json.user_phone || $json.user_email || '') + '').replace(/'/g, \"''\") }}'\nLIMIT 1;",
+        "query": "-- Ensure required tables exist\nDO $$\nBEGIN\n  -- Create user_preferences table if it doesn't exist\n  IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'user_preferences') THEN\n    CREATE TABLE user_preferences (\n      id SERIAL PRIMARY KEY,\n      user_phone VARCHAR(30) UNIQUE NOT NULL,\n      persona_override VARCHAR(30),\n      response_verbosity VARCHAR(20) DEFAULT 'normal',\n      preferred_greeting VARCHAR(100),\n      topics_of_interest TEXT[] DEFAULT ARRAY[]::TEXT[],\n      favorite_instruments TEXT[] DEFAULT ARRAY[]::TEXT[],\n      notification_preferences JSONB DEFAULT '{\"price_alerts\": true, \"margin_warnings\": true, \"deposit_confirmations\": true, \"promotion_updates\": true, \"news_alerts\": false}'::JSONB,\n      last_trading_activity TIMESTAMP WITH TIME ZONE,\n      typical_trading_hours JSONB,\n      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n      updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()\n    );\n  END IF;\n  \n  -- Create chat_sessions table if it doesn't exist\n  IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'chat_sessions') THEN\n    CREATE TABLE chat_sessions (\n      id SERIAL PRIMARY KEY,\n      session_id VARCHAR(100) UNIQUE NOT NULL,\n      user_phone VARCHAR(30) NOT NULL,\n      client_id INTEGER,\n      channel VARCHAR(20) NOT NULL,\n      session_start TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n      session_end TIMESTAMP WITH TIME ZONE,\n      messages_count INTEGER DEFAULT 0,\n      sentiment_avg DECIMAL(3,2) DEFAULT 0,\n      intents_detected TEXT[] DEFAULT ARRAY[]::TEXT[],\n      tools_used TEXT[] DEFAULT ARRAY[]::TEXT[],\n      escalated BOOLEAN DEFAULT FALSE,\n      escalation_reason VARCHAR(50),\n      escalation_time TIMESTAMP WITH TIME ZONE,\n      resolved BOOLEAN DEFAULT FALSE,\n      resolution_notes TEXT,\n      user_rating INTEGER CHECK (user_rating >= 1 AND user_rating <= 5),\n      user_feedback TEXT,\n      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()\n    );\n  END IF;\nEND $$;\n\n-- Now query user context\nSELECT \n  uc.system_prompt,\n  uc.preferred_language,\n  uc.communication_style,\n  uc.is_vip,\n  uc.total_interactions,\n  COALESCE(up.persona_override, uc.communication_style) as active_persona,\n  up.topics_of_interest,\n  up.notification_preferences,\n  (\n    SELECT COUNT(*) FROM chat_sessions \n    WHERE user_phone = '{{ $('Parse Intent').item.json.user_phone }}' \n    AND escalated = true \n    AND session_start > NOW() - INTERVAL '30 days'\n  ) as recent_escalations,\n  (\n    SELECT sentiment_avg FROM chat_sessions \n    WHERE user_phone = '{{ $('Parse Intent').item.json.user_phone }}' \n    ORDER BY session_start DESC LIMIT 1\n  ) as last_session_sentiment\nFROM user_configs uc\nLEFT JOIN user_preferences up ON uc.user_phone = up.user_phone\nWHERE uc.user_phone = '{{ $('Parse Intent').item.json.user_phone }}'\nLIMIT 1;",
         "options": {}
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        -13168,
-        2240
+        -13520,
+        2784
       ],
-      "id": "bb42526a-8925-4ca1-8786-5a44ea28c3d3",
+      "id": "c92767a1-9d68-4a6c-9ee9-17b87c739ec6",
       "name": "DB - Load User Context",
       "credentials": {
         "postgres": {
@@ -505,15 +502,15 @@
     },
     {
       "parameters": {
-        "jsCode": "// Smart Router & Prompt Builder v2 - context-aware domain routing\nfunction pickNodeItem(nodeName) {\n  try {\n    const items = $(nodeName).all();\n    if (!items || items.length === 0) return {};\n\n    const pairedItem = $input.first().pairedItem;\n    if (pairedItem && pairedItem.item && pairedItem.item.length > 0) {\n      const sourceIndex = pairedItem.item[0].index || 0;\n      return items[sourceIndex]?.json || items[0].json || {};\n    }\n\n    return items[0].json || {};\n  } catch (e) {\n    return {};\n  }\n}\n\nconst context = (() => {\n  const contextual = pickNodeItem('Contextual Intent Resolver');\n  if (Object.keys(contextual).length > 0) return contextual;\n  const parseIntent = pickNodeItem('Parse Intent');\n  if (Object.keys(parseIntent).length > 0) return parseIntent;\n  return $input.first().json || {};\n})();\n\nconst dbConfig = $input.first().json || {};\nconst userText = String(context.user_text || context.message_text || '').trim();\nconst effectiveIntent = String(context.effective_intent || context.intent || 'general_chat');\nconst intentConfidence = Number(context.intent_confidence || 0);\nconst clarificationNeeded = Boolean(context.clarification_needed);\n\nconst routeByIntent = {\n  account_inquiry: 'account',\n  trading_question: 'trading',\n  deposit_withdrawal: 'funding',\n  market_analysis: 'market',\n  technical_support: 'support',\n  document_verification: 'support',\n  promotions: 'support',\n  complaint: 'support',\n  escalation_request: 'support',\n  general_chat: 'support'\n};\n\nconst toolMapByRoute = {\n  account: ['get_account_summary'],\n  trading: ['get_open_positions', 'get_trade_history', 'calculate_trading_scenarios'],\n  funding: ['get_transactions'],\n  market: ['get_market_prices', 'get_market_news', 'get_economic_calendar'],\n  support: ['get_platform_status', 'get_document_status', 'get_promotions', 'search_faq', 'submit_support_ticket', 'schedule_callback', 'perform_risk_assessment'],\n  clarification: []\n};\n\nlet routeGroup = String(context.route_group || routeByIntent[effectiveIntent] || 'support');\nif (clarificationNeeded) routeGroup = 'clarification';\n\nconst scopePatterns = [\n  /\\b(balance|equity|margin|account|wallet|login|account type|account status)\\b/i,\n  /\\b(trade|trading|position|order|lot|pip|open position|history)\\b/i,\n  /\\b(deposit|withdraw|withdrawal|transfer|payment|funding)\\b/i,\n  /\\b(mt4|mt5|platform|server|connection|terminal|password)\\b/i,\n  /\\b(kyc|verify|verification|document|passport|id|proof)\\b/i,\n  /\\b(promotion|bonus|offer|referral|campaign)\\b/i,\n  /\\b(price|market|news|calendar|nfp|fomc|rates|eurusd|xauusd|gold|bitcoin|btc|eth|forex)\\b/i,\n  /\\b(agent|human|manager|supervisor|support|ticket|callback)\\b/i,\n  /\\b(cms prime|broker|spread|commission|leverage)\\b/i\n];\n\nconst inScopeByIntent = new Set([\n  'account_inquiry',\n  'trading_question',\n  'technical_support',\n  'complaint',\n  'deposit_withdrawal',\n  'market_analysis',\n  'document_verification',\n  'promotions',\n  'escalation_request',\n  'general_chat'\n]);\n\nlet in_scope = true;\nif (clarificationNeeded) {\n  in_scope = true;\n} else if (!userText) {\n  in_scope = false;\n} else if (!scopePatterns.some((r) => r.test(userText))) {\n  in_scope = inScopeByIntent.has(effectiveIntent) && intentConfidence >= 0.55;\n}\n\nconst allowed_tools = Array.isArray(context.allowed_tools) && context.allowed_tools.length > 0\n  ? context.allowed_tools\n  : (toolMapByRoute[routeGroup] || []);\n\nconst requires_tools = in_scope && !clarificationNeeded && allowed_tools.length > 0;\n\nconst refusal_message = \"I don't have enough knowledge about that. I can only help with CMS Prime account, trading, platform, funding, verification, promotions, and market tools.\";\nconst safe_fallback_message = \"I couldn't retrieve reliable data right now. Please try again or contact support.\";\nconst router_status = userText ? 'ok' : 'degraded';\n\nconst shouldEscalate = (() => {\n  if (!in_scope || clarificationNeeded) return { escalate: false, reason: null };\n  if (effectiveIntent === 'escalation_request') return { escalate: true, reason: 'user_requested' };\n  if (context.sentiment_score < -0.6 && context.sentiment === 'angry') return { escalate: true, reason: 'negative_sentiment' };\n  if (context.user?.isVip && effectiveIntent === 'complaint') return { escalate: true, reason: 'vip_complaint' };\n  if ((dbConfig.recent_escalations || 0) >= 3) return { escalate: true, reason: 'recurring_issues' };\n  return { escalate: false, reason: null };\n})();\n\nconst routeGuidance = {\n  account: 'Use only account tools. If question is ambiguous, ask a focused account clarification.',\n  trading: 'Use only trading tools. Do not use funding or market tools unless the user switches topic.',\n  funding: 'Use only transactions tool for deposit/withdrawal/transfer requests.',\n  market: 'Use only market tools and include uncertainty-safe language.',\n  support: 'Use only support tools and offer escalation when needed.',\n  clarification: 'Ask one short clarification question and do not call tools.'\n};\n\nconst user = context.user || {};\nconst profile = {\n  firstName: user.firstName || '',\n  lastName: user.lastName || '',\n  fullName: user.fullName || [user.firstName, user.lastName].filter(Boolean).join(' ').trim(),\n  vip: Boolean(user.isVip || dbConfig.is_vip),\n  preferredLanguage: String(dbConfig.preferred_language || user.language || context.detected_language || 'en'),\n  accountStatus: String(user.status || user.tradingStatus || 'unknown'),\n  verified: user.verified ?? null,\n  country: user.country || null,\n  clientId: user.id || null\n};\n\nconst allowedToolsLabel = allowed_tools.length > 0 ? allowed_tools.join(', ') : 'none';\nconst personalization = [\n  'User profile:',\n  'name=' + (profile.fullName || 'Valued Client') + ',',\n  'vip=' + (profile.vip ? 'true' : 'false') + ',',\n  'preferred_language=' + profile.preferredLanguage + ',',\n  'account_status=' + profile.accountStatus + ',',\n  'verified=' + String(profile.verified)\n].join(' ');\n\nconst basePrompt = [\n  'You are Alex from CMS Prime Support.',\n  'Only use tools allowed for this turn.',\n  'Never guess, infer, or fabricate facts.',\n  'If tool data is missing, reply exactly: \"' + safe_fallback_message + '\".',\n  'If request is out of scope, reply exactly: \"' + refusal_message + '\".',\n  personalization\n].join(' ');\n\nconst greetingInstruction = context.greeting_reset_required\n  ? 'Session timed out. Start this turn with one short fresh greeting, then continue with the answer.'\n  : 'Do not repeat greeting in every turn.';\n\nconst system_prompt = [\n  basePrompt,\n  'Route: ' + routeGroup + '.',\n  'Effective intent: ' + effectiveIntent + '.',\n  'Allowed tools: ' + allowedToolsLabel + '.',\n  routeGuidance[routeGroup] || routeGuidance.support,\n  greetingInstruction,\n  clarificationNeeded ? 'Clarification is required for this turn.' : ''\n].filter(Boolean).join(' ');\n\nreturn [{\n  ...context,\n  user_text: userText,\n  intent: context.intent || effectiveIntent,\n  effective_intent: effectiveIntent,\n  intent_confidence: intentConfidence,\n  system_prompt,\n  user_profile: profile,\n  selected_persona: dbConfig.active_persona || 'friendly_support',\n  should_escalate: shouldEscalate.escalate,\n  escalation_reason: shouldEscalate.reason,\n  db_config: dbConfig,\n  in_scope,\n  requires_tools,\n  route_group: routeGroup,\n  allowed_tools,\n  primary_tool: allowed_tools[0] || null,\n  follow_up_inherited: Boolean(context.follow_up_inherited),\n  clarification_needed: clarificationNeeded,\n  clarification_question: context.clarification_question || 'Do you mean account details, trading positions, or recent transactions?',\n  routing_reason: context.routing_reason || (clarificationNeeded ? 'clarification_required' : 'classified_route'),\n  session_expired: Boolean(context.session_expired),\n  greeting_reset_required: Boolean(context.greeting_reset_required),\n  refusal_message,\n  safe_fallback_message,\n  router_status\n}];"
+        "jsCode": "// Smart Router & Prompt Builder (restricted tools + natural out-of-scope replies)\nlet context = {};\ntry {\n  const parseIntentItems = $('Parse Intent').all();\n  if (parseIntentItems?.length) {\n    const pairedItem = $input.first().pairedItem;\n    if (pairedItem?.item?.length) {\n      const sourceIndex = pairedItem.item[0].index || 0;\n      context = parseIntentItems[sourceIndex]?.json || parseIntentItems[0].json || {};\n    } else {\n      context = parseIntentItems[0].json || {};\n    }\n  } else {\n    context = $('Parse Intent').item.json || {};\n  }\n} catch (e) {\n  context = $input.first().json || {};\n}\n\nconst dbConfig = $input.first().json || {};\nconst userText = String(context.user_text || context.message_text || '').trim();\nconst intent = String(context.intent || 'general_chat');\nconst intentConfidence = Number(context.intent_confidence || 0);\n\n// Tool scope remains narrow, but conversation can stay natural for other topics.\nconst patterns = [\n  { c: 'account', r: /\\b(balance|equity|margin|account|wallet|account type|account status)\\b/i },\n  { c: 'funding', r: /\\b(deposit|withdraw|withdrawal|transfer|payment|funding|transaction)\\b/i },\n  { c: 'general_chat', r: /\\b(hi|hello|hey|good morning|good afternoon|good evening|thanks|thank you|how are you)\\b/i }\n];\n\nlet scopeCategory = 'out_of_scope';\nfor (const p of patterns) {\n  if (p.r.test(userText)) {\n    scopeCategory = p.c;\n    break;\n  }\n}\n\n// Intent fallback is only for the two tool-backed domains.\nif (scopeCategory === 'out_of_scope' && intentConfidence >= 0.55) {\n  if (intent === 'account_inquiry') scopeCategory = 'account';\n  if (intent === 'deposit_withdrawal') scopeCategory = 'funding';\n}\n\nconst in_scope = scopeCategory !== 'out_of_scope' && userText.length > 0;\n\n// Metadata allow-list for audit/compliance. Hard tool limit is from connected tools.\nlet allowed_tools = [];\nif (scopeCategory === 'account') allowed_tools = ['get_account_summary'];\nif (scopeCategory === 'funding') allowed_tools = ['get_transactions'];\nconst requires_tools = scopeCategory === 'account' || scopeCategory === 'funding';\n\nconst refusal_message = \"I can still help with that at a general level. For direct account actions, I can currently check only your account summary and your deposit/withdrawal transactions.\";\nconst safe_fallback_message = \"I couldn't retrieve reliable data right now. Please try again or contact support.\";\nconst router_status = userText ? 'ok' : 'degraded';\n\nconst shouldEscalate = (() => {\n  if (!in_scope) return { escalate: false, reason: null };\n  if (intent === 'escalation_request') return { escalate: true, reason: 'user_requested' };\n  if (context.sentiment_score < -0.6 && context.sentiment === 'angry') return { escalate: true, reason: 'negative_sentiment' };\n  if (context.user?.isVip && intent === 'complaint') return { escalate: true, reason: 'vip_complaint' };\n  if ((dbConfig.recent_escalations || 0) >= 3) return { escalate: true, reason: 'recurring_issues' };\n  return { escalate: false, reason: null };\n})();\n\nconst basePrompt = `You are Alex from CMS Prime Support.\n\nSTRICT POLICY:\n\n1. Never guess, infer, or fabricate any broker, account, trading, or client information.\n\n2. For account-related requests (account summary, deposits, withdrawals, balances, trading accounts, credentials, etc.), you MUST call the appropriate tool before answering. Never answer these from memory.\n\n3. For greetings or small talk (hello, hi, how are you), respond briefly and naturally without using tools.\n\n4. If tool data is missing, incomplete, or unreliable, respond exactly with:\n\"${safe_fallback_message}\"\n\n5. Scope restriction (MANDATORY):\nYou are ONLY allowed to answer questions related to CMS Prime support operations that are covered by your available tools.\n\nIf the user asks anything unrelated (general knowledge, politics, coding, math, personal advice, etc.), DO NOT answer the question.\n\nInstead respond politely with something like:\n\"I’m part of CMS Prime Support and can only assist with broker-related requests that are supported by our system tools.\"\n\n6. If the user requests a broker-related action that is not supported by your available tools, explain the limitation and offer the closest supported option.\n\nUser context:\nname:${$('IF - Auth OK?').first().json.user.firstName}\nlname:${$('IF - Auth OK?').first().json.user.lastName}\nlanguage:${$('IF - Auth OK?').first().json.user.language}\nlastLoginDate:${$('IF - Auth OK?').first().json.user.lastLoginDate}\nstatus:${$('IF - Auth OK?').first().json.user.status}\nverified:${$('IF - Auth OK?').first().json.user.verified}`;\n\nconst scopeGuidance = scopeCategory === 'account'\n  ? 'Call get_account_summary first.'\n  : scopeCategory === 'funding'\n    ? 'Call get_transactions first.'\n    : scopeCategory === 'general_chat'\n      ? 'Reply naturally. No tool call unless user asks account summary or transactions.'\n      : 'Reply naturally and helpfully. If broker action is requested beyond supported tools, explain limits and suggest supported options.';\n\nconst system_prompt = `${basePrompt} ${scopeGuidance}`;\n\nreturn [{\n  ...context,\n  user_text: userText,\n  system_prompt,\n  selected_persona: dbConfig.active_persona || 'friendly_support',\n  should_escalate: shouldEscalate.escalate,\n  escalation_reason: shouldEscalate.reason,\n  db_config: dbConfig,\n  in_scope,\n  scope_category: scopeCategory,\n  requires_tools,\n  allowed_tools,\n  refusal_message,\n  safe_fallback_message,\n  router_status\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -13056,
-        2240
+        -13408,
+        2784
       ],
-      "id": "15cb9bc8-aa9e-489d-ab29-8dce6d028d65",
+      "id": "14c76d2d-fc68-4b15-81c8-6198908c57b8",
       "name": "Smart Router & Prompt Builder"
     },
     {
@@ -543,10 +540,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        -12576,
-        2304
+        -12928,
+        2848
       ],
-      "id": "6da2a528-1ec2-4d51-800e-d76012671ee5",
+      "id": "8d155bbd-5e19-4732-a4d4-ad00c6bdf402",
       "name": "IF - Should Escalate?"
     },
     {
@@ -560,24 +557,21 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        -11712,
-        2576
+        -12064,
+        3120
       ],
-      "id": "1b198a02-cdb2-47a1-b1e6-458b40615e73",
+      "id": "8ddeb6b9-0353-4569-b3c7-e443592581b7",
       "name": "AI Agent"
     },
     {
-      "parameters": {
-        "sessionKey": "={{ $json.session_id || $json.sessionId || $json.metadata?.chat_id || $json.user_phone || 'default_session' }}",
-        "contextWindowLength": 30
-      },
+      "parameters": {},
       "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
       "typeVersion": 1.3,
       "position": [
-        -11744,
-        2784
+        -12096,
+        3328
       ],
-      "id": "4467f073-434e-41f7-8f9c-5906a089ae92",
+      "id": "e455f737-4134-4a1e-b6a9-2d7985686b3a",
       "name": "Postgres Chat Memory",
       "alwaysOutputData": false,
       "executeOnce": false,
@@ -592,9 +586,9 @@
       "parameters": {
         "model": {
           "__rl": true,
-          "value": "gpt-4.1-mini",
+          "value": "gpt-5.2",
           "mode": "list",
-          "cachedResultName": "gpt-4.1-mini"
+          "cachedResultName": "gpt-5.2"
         },
         "builtInTools": {},
         "options": {
@@ -604,10 +598,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
       "typeVersion": 1.3,
       "position": [
-        -11872,
-        2768
+        -12224,
+        3312
       ],
-      "id": "bb2ea7fa-580e-43f6-98ae-38628c433252",
+      "id": "27784822-1f2c-4548-9292-961f06453805",
       "name": "OpenAI GPT-4.1 Mini",
       "credentials": {
         "openAiApi": {
@@ -629,7 +623,7 @@
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "user_id": 80733
+            "user_id": "={{ $(\"Smart Router & Prompt Builder\").item.json.user?.id || $(\"Smart Router & Prompt Builder\").item.json.db_config?.client_id || null }}"
           },
           "matchingColumns": [
             "user_id"
@@ -653,113 +647,15 @@
       "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
       "typeVersion": 2.2,
       "position": [
-        -12000,
-        3424
+        -12272,
+        3824
       ],
-      "id": "0dd26123-1058-4eca-a9f8-b0fc225e8e3a",
+      "id": "c791a059-ab7b-4cc9-8e8d-119e69890e9a",
       "name": "Tool - Account Summary"
     },
     {
       "parameters": {
-        "description": "Get user's current open trading positions with profit/loss. Use when user asks about their open trades, current positions, or running P&L.",
-        "workflowId": {
-          "__rl": true,
-          "mode": "id",
-          "value": "={{ $workflow.id }}_TOOL_POSITIONS"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "client_id": "={{ $('Smart Router & Prompt Builder').item.json.user.id }}",
-            "platform": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('platform', 'mt4 or mt5, default mt5', 'string') }}"
-          },
-          "matchingColumns": [
-            "client_id"
-          ],
-          "schema": [
-            {
-              "id": "client_id",
-              "displayName": "client_id",
-              "required": true,
-              "type": "number"
-            },
-            {
-              "id": "platform",
-              "displayName": "platform",
-              "required": false,
-              "type": "string"
-            }
-          ]
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-      "typeVersion": 2.2,
-      "position": [
-        -11856,
-        3504
-      ],
-      "id": "608ab78c-191d-454d-bca0-4c2a8277998c",
-      "name": "Tool - Open Positions"
-    },
-    {
-      "parameters": {
-        "description": "Get user's closed trade history with performance summary. Use when user asks about past trades, trading history, or performance statistics.",
-        "workflowId": {
-          "__rl": true,
-          "mode": "id",
-          "value": "={{ $workflow.id }}_TOOL_TRADE_HISTORY"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "client_id": "={{ $('Smart Router & Prompt Builder').item.json.user.id }}",
-            "date_from": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('date_from', 'Start date YYYY-MM-DD, default 30 days ago', 'string') }}",
-            "date_to": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('date_to', 'End date YYYY-MM-DD, default today', 'string') }}",
-            "limit": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('limit', 'Max trades to return, default 20', 'number') }}"
-          },
-          "matchingColumns": [
-            "client_id"
-          ],
-          "schema": [
-            {
-              "id": "client_id",
-              "displayName": "client_id",
-              "required": true,
-              "type": "number"
-            },
-            {
-              "id": "date_from",
-              "displayName": "date_from",
-              "required": false,
-              "type": "string"
-            },
-            {
-              "id": "date_to",
-              "displayName": "date_to",
-              "required": false,
-              "type": "string"
-            },
-            {
-              "id": "limit",
-              "displayName": "limit",
-              "required": false,
-              "type": "number"
-            }
-          ]
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-      "typeVersion": 2.2,
-      "position": [
-        -11856,
-        3600
-      ],
-      "id": "edcea8e6-b348-4a83-8405-f7c332f371ef",
-      "name": "Tool - Trade History"
-    },
-    {
-      "parameters": {
-        "description": "Get the latest 5 user transactions (deposit/withdrawal/transfer) for funding issues. Returns only: id, createdAt, type, status, psp, comment. Use this data to answer the client clearly and do not invent missing details.",
+        "description": "You are a CMS Prime Support Assistant responsible for answering user questions about deposits, withdrawals, and transfers.\n\nCore Rule\n\nFor any question related to funding activities (deposit, withdrawal, transfer, payment, bank wire, crypto payment, processing status, delays, missing funds, etc.), you MUST first call the transactions API to retrieve the user's latest data.\n\nAPI Action\n\nCall the API to retrieve the latest 5 transactions for the user.\n\nThe API returns only these fields:\n\nid – transaction ID\n\ncreatedAt – date/time of transaction\n\ntype – deposit / withdrawal / transfer\n\nstatus – current processing status\n\npsp – payment method or provider\n\ncomment – additional note related to the transaction . this comment has been submited by back office for reasoin of rejection or other reosons. dont just write it to client but  you must consider it  to answer.\n\nData Usage Rules\n\nAlways use fresh API data before answering.\n\nNever guess, infer, or fabricate transaction details.\n\nOnly use the information returned by the API.\n\nIf required information is missing from the API response, say that it is not available in the system data.\n\nResponse Guidelines\n\nWhen responding to the client:\n\nIdentify the relevant transaction(s) based on the user’s question.\n\nClearly explain:\n\ntransaction type\n\ndate\n\ncurrent status\n\npayment method\n\nKeep the answer short, clear, and client-friendly.\n\nIf multiple transactions exist, highlight the most recent or relevant one.\n\nIf no transactions are found, politely inform the client.\n\nExample Style\n\nExample response structure:\n\nConfirmation of the transaction\n\nKey details (date, type, payment method, status)\n\nShort explanation of the status if applicable\n\nStrict Policy\n\nAlways call the API before answering funding questions.\n\nNever invent transaction information.\n\nNever provide assumptions about processing unless supported by the returned data.",
         "workflowId": {
           "__rl": true,
           "value": "oIxfXtbUOWzTfyH3L_lzW",
@@ -770,7 +666,7 @@
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "client_id": 80733
+            "client_id": "={{ $(\"Smart Router & Prompt Builder\").item.json.user?.id || $(\"Smart Router & Prompt Builder\").item.json.db_config?.client_id || null }}"
           },
           "matchingColumns": [
             "client_id"
@@ -794,522 +690,23 @@
       "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
       "typeVersion": 2.2,
       "position": [
-        -11856,
-        3696
+        -12000,
+        3968
       ],
-      "id": "64986992-3f61-4457-83be-509cd91b54f6",
+      "id": "5b9c286e-706e-4f43-9491-fd23cf7d0046",
       "name": "Tool - Transactions"
     },
     {
       "parameters": {
-        "description": "Get real-time market prices for trading instruments. Use when user asks about current prices, quotes, spreads, or market rates for forex pairs, commodities, indices, or crypto.",
-        "workflowId": {
-          "__rl": true,
-          "mode": "id",
-          "value": "={{ $workflow.id }}_TOOL_MARKET_PRICES"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "symbols": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('symbols', 'Comma-separated symbols like EURUSD,XAUUSD,BTCUSD', 'string') }}"
-          },
-          "matchingColumns": [],
-          "schema": [
-            {
-              "id": "symbols",
-              "displayName": "symbols",
-              "required": true,
-              "type": "string"
-            }
-          ]
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-      "typeVersion": 2.2,
-      "position": [
-        -11648,
-        3376
-      ],
-      "id": "7de057a7-db86-4ad3-86e1-6330db3566a1",
-      "name": "Tool - Market Prices"
-    },
-    {
-      "parameters": {
-        "description": "Get latest financial market news. Use when user asks about market news, what's happening in the markets, or news affecting specific assets.",
-        "workflowId": {
-          "__rl": true,
-          "mode": "id",
-          "value": "TOOL_TRADINGFACTORY_NEWS"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "currency": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('currency', 'Currency code like USD, EUR, GBP, JPY. Leave empty for all.', 'string') }}",
-            "impact": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('impact', 'high, medium, low, or all', 'string') }}",
-            "limit": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('limit', 'Number of events to return, default 8', 'number') }}",
-            "hours_ahead": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('hours_ahead', 'How many hours ahead to scan, default 168', 'number') }}"
-          },
-          "matchingColumns": [],
-          "schema": [
-            {
-              "id": "currency",
-              "displayName": "currency",
-              "required": false,
-              "type": "string"
-            },
-            {
-              "id": "impact",
-              "displayName": "impact",
-              "required": false,
-              "type": "string"
-            },
-            {
-              "id": "limit",
-              "displayName": "limit",
-              "required": false,
-              "type": "number"
-            },
-            {
-              "id": "hours_ahead",
-              "displayName": "hours_ahead",
-              "required": false,
-              "type": "number"
-            }
-          ]
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-      "typeVersion": 2.2,
-      "position": [
-        -11648,
-        3504
-      ],
-      "id": "1a52cd04-e2ce-446a-adfc-9278b4182955",
-      "name": "Tool - Market News"
-    },
-    {
-      "parameters": {
-        "description": "Get upcoming economic calendar events. Use when user asks about economic events, news releases, NFP, FOMC, interest rate decisions, or what's coming up that might affect markets.",
-        "workflowId": {
-          "__rl": true,
-          "mode": "id",
-          "value": "={{ $workflow.id }}_TOOL_ECONOMIC_CALENDAR"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "importance": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('importance', 'low, medium, high, or all', 'string') }}",
-            "currencies": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('currencies', 'Currency codes like USD,EUR,GBP or all', 'string') }}",
-            "days_ahead": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('days_ahead', 'Days to look ahead, default 7', 'number') }}"
-          },
-          "matchingColumns": [],
-          "schema": [
-            {
-              "id": "importance",
-              "displayName": "importance",
-              "required": false,
-              "type": "string"
-            },
-            {
-              "id": "currencies",
-              "displayName": "currencies",
-              "required": false,
-              "type": "string"
-            },
-            {
-              "id": "days_ahead",
-              "displayName": "days_ahead",
-              "required": false,
-              "type": "number"
-            }
-          ]
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-      "typeVersion": 2.2,
-      "position": [
-        -11648,
-        3600
-      ],
-      "id": "e68432f7-f9cd-4bf9-b0da-3b37adeda701",
-      "name": "Tool - Economic Calendar"
-    },
-    {
-      "parameters": {
-        "description": "Trading calculator for pip value, margin requirements, and profit/loss scenarios. Use when user wants to calculate potential profit, required margin, pip value, or risk/reward.",
-        "workflowId": {
-          "__rl": true,
-          "mode": "id",
-          "value": "={{ $workflow.id }}_TOOL_CALCULATOR"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "symbol": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('symbol', 'Trading symbol like EURUSD', 'string') }}",
-            "lot_size": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('lot_size', 'Position size in lots', 'number') }}",
-            "operation": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('operation', 'pip_value, margin, or profit_calc', 'string') }}",
-            "entry_price": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('entry_price', 'Entry price for profit calculation', 'number') }}",
-            "exit_price": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('exit_price', 'Exit price for profit calculation', 'number') }}",
-            "leverage": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('leverage', 'Account leverage like 100 or 500', 'number') }}"
-          },
-          "matchingColumns": [],
-          "schema": [
-            {
-              "id": "symbol",
-              "displayName": "symbol",
-              "required": true,
-              "type": "string"
-            },
-            {
-              "id": "lot_size",
-              "displayName": "lot_size",
-              "required": true,
-              "type": "number"
-            },
-            {
-              "id": "operation",
-              "displayName": "operation",
-              "required": true,
-              "type": "string"
-            },
-            {
-              "id": "entry_price",
-              "displayName": "entry_price",
-              "required": false,
-              "type": "number"
-            },
-            {
-              "id": "exit_price",
-              "displayName": "exit_price",
-              "required": false,
-              "type": "number"
-            },
-            {
-              "id": "leverage",
-              "displayName": "leverage",
-              "required": false,
-              "type": "number"
-            }
-          ]
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-      "typeVersion": 2.2,
-      "position": [
-        -11648,
-        3696
-      ],
-      "id": "1055a603-6888-4d88-8e67-e8302bff38f3",
-      "name": "Tool - Trading Calculator"
-    },
-    {
-      "parameters": {
-        "description": "Check MT4/MT5 platform server status. Use when user reports connection issues or asks if the platform is working.",
-        "workflowId": {
-          "__rl": true,
-          "mode": "id",
-          "value": "={{ $workflow.id }}_TOOL_PLATFORM_STATUS"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "platform": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('platform', 'mt4 or mt5', 'string') }}"
-          },
-          "matchingColumns": [],
-          "schema": [
-            {
-              "id": "platform",
-              "displayName": "platform",
-              "required": false,
-              "type": "string"
-            }
-          ]
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-      "typeVersion": 2.2,
-      "position": [
-        -11456,
-        3376
-      ],
-      "id": "635f69c2-95f2-4ec3-8949-0c7720bb4f66",
-      "name": "Tool - Platform Status"
-    },
-    {
-      "parameters": {
-        "description": "Check user's KYC and document verification status. Use when user asks about verification, documents, KYC status, or what documents are needed.",
-        "workflowId": {
-          "__rl": true,
-          "mode": "id",
-          "value": "={{ $workflow.id }}_TOOL_DOCUMENT_STATUS"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "client_id": "={{ $('Smart Router & Prompt Builder').item.json.user.id }}"
-          },
-          "matchingColumns": [
-            "client_id"
-          ],
-          "schema": [
-            {
-              "id": "client_id",
-              "displayName": "client_id",
-              "required": true,
-              "type": "number"
-            }
-          ]
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-      "typeVersion": 2.2,
-      "position": [
-        -11456,
-        3504
-      ],
-      "id": "08ae203a-e621-4530-9349-762a4743a5bc",
-      "name": "Tool - Document Status"
-    },
-    {
-      "parameters": {
-        "description": "Create a support ticket for human follow-up. Use when issue needs human attention, user requests escalation, or problem is complex.",
-        "workflowId": {
-          "__rl": true,
-          "mode": "id",
-          "value": "={{ $workflow.id }}_TOOL_SUPPORT_TICKET"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "client_id": "={{ $('Smart Router & Prompt Builder').item.json.user.id }}",
-            "category": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('category', 'technical, account, trading, complaint, other', 'string') }}",
-            "priority": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('priority', 'low, medium, high, urgent', 'string') }}",
-            "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('subject', 'Brief ticket subject', 'string') }}",
-            "description": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('description', 'Detailed description of the issue', 'string') }}"
-          },
-          "matchingColumns": [
-            "client_id"
-          ],
-          "schema": [
-            {
-              "id": "client_id",
-              "displayName": "client_id",
-              "required": true,
-              "type": "number"
-            },
-            {
-              "id": "category",
-              "displayName": "category",
-              "required": true,
-              "type": "string"
-            },
-            {
-              "id": "priority",
-              "displayName": "priority",
-              "required": true,
-              "type": "string"
-            },
-            {
-              "id": "subject",
-              "displayName": "subject",
-              "required": true,
-              "type": "string"
-            },
-            {
-              "id": "description",
-              "displayName": "description",
-              "required": true,
-              "type": "string"
-            }
-          ]
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-      "typeVersion": 2.2,
-      "position": [
-        -11440,
-        3648
-      ],
-      "id": "ef069a9b-72fb-4c16-9360-2aa3cb744257",
-      "name": "Tool - Support Ticket"
-    },
-    {
-      "parameters": {
-        "description": "Schedule a callback with the user's Relationship Manager. Use when user wants to speak with someone or needs a consultation.",
-        "workflowId": {
-          "__rl": true,
-          "mode": "id",
-          "value": "={{ $workflow.id }}_TOOL_SCHEDULE_CALLBACK"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "client_id": "={{ $('Smart Router & Prompt Builder').item.json.user.id }}",
-            "preferred_datetime": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('preferred_datetime', 'Preferred date and time for callback', 'string') }}",
-            "timezone": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('timezone', 'User timezone like UTC+4 or Asia/Dubai', 'string') }}",
-            "topic": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('topic', 'What they want to discuss', 'string') }}"
-          },
-          "matchingColumns": [
-            "client_id"
-          ],
-          "schema": [
-            {
-              "id": "client_id",
-              "displayName": "client_id",
-              "required": true,
-              "type": "number"
-            },
-            {
-              "id": "preferred_datetime",
-              "displayName": "preferred_datetime",
-              "required": false,
-              "type": "string"
-            },
-            {
-              "id": "timezone",
-              "displayName": "timezone",
-              "required": false,
-              "type": "string"
-            },
-            {
-              "id": "topic",
-              "displayName": "topic",
-              "required": false,
-              "type": "string"
-            }
-          ]
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-      "typeVersion": 2.2,
-      "position": [
-        -11440,
-        3776
-      ],
-      "id": "6c243e38-5e4d-462a-bdfc-2305ab37994e",
-      "name": "Tool - Schedule Callback"
-    },
-    {
-      "parameters": {
-        "description": "Get current promotions and bonus offers available to the user. Use when user asks about bonuses, promotions, or special offers.",
-        "workflowId": {
-          "__rl": true,
-          "mode": "id",
-          "value": "={{ $workflow.id }}_TOOL_PROMOTIONS"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "client_id": "={{ $('Smart Router & Prompt Builder').item.json.user.id }}"
-          },
-          "matchingColumns": [
-            "client_id"
-          ],
-          "schema": [
-            {
-              "id": "client_id",
-              "displayName": "client_id",
-              "required": true,
-              "type": "number"
-            }
-          ]
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-      "typeVersion": 2.2,
-      "position": [
-        -11216,
-        3424
-      ],
-      "id": "eba4ac6e-369d-425b-b33f-e4f6633c0b6d",
-      "name": "Tool - Promotions"
-    },
-    {
-      "parameters": {
-        "description": "Get portfolio risk assessment including exposure analysis and recommendations. Use when user asks about risk, exposure, or wants portfolio analysis.",
-        "workflowId": {
-          "__rl": true,
-          "mode": "id",
-          "value": "={{ $workflow.id }}_TOOL_RISK_ASSESSMENT"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "client_id": "={{ $('Smart Router & Prompt Builder').item.json.user.id }}"
-          },
-          "matchingColumns": [
-            "client_id"
-          ],
-          "schema": [
-            {
-              "id": "client_id",
-              "displayName": "client_id",
-              "required": true,
-              "type": "number"
-            }
-          ]
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-      "typeVersion": 2.2,
-      "position": [
-        -11232,
-        3568
-      ],
-      "id": "c806c425-8236-464b-9f0a-4b608d18f8d3",
-      "name": "Tool - Risk Assessment"
-    },
-    {
-      "parameters": {
-        "description": "Search FAQ and knowledge base for answers. Use for general questions about how things work, processes, or common issues.",
-        "workflowId": {
-          "__rl": true,
-          "mode": "id",
-          "value": "={{ $workflow.id }}_TOOL_FAQ_SEARCH"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('query', 'Search query for FAQ', 'string') }}",
-            "category": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('category', 'Category: account, trading, platform, deposit, withdrawal, verification, general', 'string') }}"
-          },
-          "matchingColumns": [],
-          "schema": [
-            {
-              "id": "query",
-              "displayName": "query",
-              "required": true,
-              "type": "string"
-            },
-            {
-              "id": "category",
-              "displayName": "category",
-              "required": false,
-              "type": "string"
-            }
-          ]
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-      "typeVersion": 2.2,
-      "position": [
-        -11152,
-        3760
-      ],
-      "id": "8c805d1e-3392-4476-a6af-66ff91aaad18",
-      "name": "Tool - FAQ Search"
-    },
-    {
-      "parameters": {
-        "jsCode": "function pickNodeItem(nodeName) {\n  try {\n    const items = $(nodeName).all();\n    if (!items || items.length === 0) return {};\n\n    const pairedItem = $input.first().pairedItem;\n    if (pairedItem && pairedItem.item && pairedItem.item.length > 0) {\n      const sourceIndex = pairedItem.item[0].index || 0;\n      return items[sourceIndex]?.json || items[0].json || {};\n    }\n\n    return items[0].json || {};\n  } catch (e) {\n    return {};\n  }\n}\n\nconst inputItem = $input.first().json || {};\nconst smartRouterContext = pickNodeItem('Smart Router & Prompt Builder');\nconst registrationContext = pickNodeItem('Registration Context Builder');\nconst extracted = pickNodeItem('Extract User Identifiers');\nconst normalized = pickNodeItem('Channel Normalizer');\n\nconst selectedContext = Object.keys(smartRouterContext).length > 0\n  ? smartRouterContext\n  : Object.keys(registrationContext).length > 0\n    ? registrationContext\n    : inputItem;\n\nconst context = { ...normalized, ...extracted, ...selectedContext, ...inputItem };\n\nlet response = String(inputItem.output || inputItem.text || context.output || context.text || '').trim();\nconst complianceFlags = [];\n\nif (context.in_scope === false) {\n  response = String(context.refusal_message || \"I don't have enough knowledge about that. I can only help with CMS Prime account, trading, platform, funding, verification, promotions, and market tools.\");\n  complianceFlags.push('Forced out-of-scope refusal');\n}\n\nif (context.clarification_needed === true) {\n  response = String(context.clarification_question || 'Could you clarify what you need: account details, trading positions, or transactions?');\n  complianceFlags.push('Clarification enforced before factual answer');\n}\n\nif (!response) {\n  response = String(context.safe_fallback_message || \"I couldn't retrieve reliable data right now. Please try again or contact support.\");\n  complianceFlags.push('Applied empty-response fallback');\n}\n\nconst uncertainPattern = /\\b(i think|probably|likely|maybe|generally|typically|usually|it seems)\\b/i;\nif (context.requires_tools === true && uncertainPattern.test(response) && context.clarification_needed !== true) {\n  response = String(context.safe_fallback_message || \"I couldn't retrieve reliable data right now. Please try again or contact support.\");\n  complianceFlags.push('Replaced uncertain factual response with fallback');\n}\n\nconst prohibited = [\n  { pattern: /guaranteed.*profit/gi, replacement: 'potential returns (not guaranteed)' },\n  { pattern: /you will.*make money/gi, replacement: 'you may see returns' },\n  { pattern: /risk.?free/gi, replacement: 'with managed risk' },\n  { pattern: /100%.*safe/gi, replacement: 'with appropriate risk management' },\n  { pattern: /can'?t lose/gi, replacement: 'with proper risk management' },\n  { pattern: /easy money/gi, replacement: 'trading opportunities' },\n  { pattern: /get rich/gi, replacement: 'build wealth over time' }\n];\nfor (const rule of prohibited) {\n  if (rule.pattern.test(response)) {\n    complianceFlags.push('Replaced: ' + rule.pattern.toString());\n    response = response.replace(rule.pattern, rule.replacement);\n  }\n}\n\nconst tradingKeywords = /\\b(trade|trading|position|buy|sell|invest|profit|loss|market|forex|cfd|leverage)\\b/i;\nconst hasDisclaimer = /risk|disclaimer|not.*advice|past performance/i.test(response);\nif (tradingKeywords.test(response) && !hasDisclaimer && response.length > 100 && context.in_scope !== false && context.clarification_needed !== true) {\n  response += '\\n\\n_Trading involves risk. Past performance is not indicative of future results. This is not financial advice._';\n  complianceFlags.push('Added risk disclaimer');\n}\n\nconst aiClaimPattern = /I('m| am) (an? )?(AI|artificial intelligence|bot|chatbot|language model|machine)/gi;\nif (aiClaimPattern.test(response)) {\n  response = response.replace(aiClaimPattern, \"I'm Alex from CMS Prime Support\");\n  complianceFlags.push('Replaced AI claim');\n}\n\nconst normalizedSessionId = String(\n  context.session_id ||\n  context.sessionId ||\n  context.metadata?.chat_id ||\n  ''\n).trim();\n\nconst normalizedChannel = String(\n  context.channel ||\n  context.metadata?.source ||\n  ''\n).trim();\n\nlet normalizedUserPhone = String(\n  context.user_phone ||\n  context.user_email ||\n  ''\n).trim();\n\nif (!normalizedUserPhone && normalizedChannel === 'telegram') {\n  const tgId = context.metadata?.user_id || context.metadata?.chat_id || normalizedSessionId;\n  if (tgId) normalizedUserPhone = 'telegram:' + tgId;\n}\n\nconst normalizedUserText = String(\n  context.user_text ||\n  context.message_text ||\n  ''\n).trim();\n\nreturn [{\n  ...context,\n  user_phone: normalizedUserPhone,\n  channel: normalizedChannel,\n  session_id: normalizedSessionId,\n  sessionId: normalizedSessionId,\n  user_text: normalizedUserText,\n  message_text: normalizedUserText,\n  original_response: inputItem.output || inputItem.text || context.output || context.text || '',\n  filtered_response: response,\n  compliance_flags: complianceFlags\n}];"
+        "jsCode": "function pickNodeItem(nodeName) {\n  try {\n    const items = $(nodeName).all();\n    if (!items || items.length === 0) return {};\n\n    const pairedItem = $input.first().pairedItem;\n    if (pairedItem && pairedItem.item && pairedItem.item.length > 0) {\n      const sourceIndex = pairedItem.item[0].index || 0;\n      return items[sourceIndex]?.json || items[0].json || {};\n    }\n\n    return items[0].json || {};\n  } catch (e) {\n    return {};\n  }\n}\n\nconst inputItem = $input.first().json || {};\nconst smartRouterContext = pickNodeItem('Smart Router & Prompt Builder');\nconst registrationContext = pickNodeItem('Registration Context Builder');\nconst extracted = pickNodeItem('Extract User Identifiers');\nconst normalized = pickNodeItem('Channel Normalizer');\n\nconst selectedContext = Object.keys(smartRouterContext).length > 0\n  ? smartRouterContext\n  : Object.keys(registrationContext).length > 0\n    ? registrationContext\n    : inputItem;\n\nconst context = { ...normalized, ...extracted, ...selectedContext, ...inputItem };\n\nlet response = String(inputItem.output || inputItem.text || context.output || context.text || '').trim();\nconst complianceFlags = [];\n\n// Do not force out-of-scope override. Let the LLM craft natural replies.\nif (!response) {\n  response = String(context.safe_fallback_message || \"I couldn't retrieve reliable data right now. Please try again or contact support.\");\n  complianceFlags.push('Applied empty-response fallback');\n}\nconst uncertainPattern = /\\b(i think|probably|likely|maybe|generally|typically|usually|it seems)\\b/i;\nif (context.requires_tools === true && uncertainPattern.test(response)) {\n  response = String(context.safe_fallback_message || \"I couldn't retrieve reliable data right now. Please try again or contact support.\");\n  complianceFlags.push('Replaced uncertain factual response with fallback');\n}\n\nconst prohibited = [\n  { pattern: /guaranteed.*profit/gi, replacement: 'potential returns (not guaranteed)' },\n  { pattern: /you will.*make money/gi, replacement: 'you may see returns' },\n  { pattern: /risk.?free/gi, replacement: 'with managed risk' },\n  { pattern: /100%.*safe/gi, replacement: 'with appropriate risk management' },\n  { pattern: /can'?t lose/gi, replacement: 'with proper risk management' },\n  { pattern: /easy money/gi, replacement: 'trading opportunities' },\n  { pattern: /get rich/gi, replacement: 'build wealth over time' }\n];\nfor (const rule of prohibited) {\n  if (rule.pattern.test(response)) {\n    complianceFlags.push(`Replaced: ${rule.pattern.toString()}`);\n    response = response.replace(rule.pattern, rule.replacement);\n  }\n}\n\nconst tradingKeywords = /\\b(trade|trading|position|buy|sell|invest|profit|loss|market|forex|cfd|leverage)\\b/i;\nconst hasDisclaimer = /risk|disclaimer|not.*advice|past performance/i.test(response);\nif (tradingKeywords.test(response) && !hasDisclaimer && response.length > 100 && context.in_scope !== false) {\n  response += '\\n\\n_Trading involves risk. Past performance is not indicative of future results. This is not financial advice._';\n  complianceFlags.push('Added risk disclaimer');\n}\n\nconst aiClaimPattern = /I('m| am) (an? )?(AI|artificial intelligence|bot|chatbot|language model|machine)/gi;\nif (aiClaimPattern.test(response)) {\n  response = response.replace(aiClaimPattern, \"I'm Alex from CMS Prime Support\");\n  complianceFlags.push('Replaced AI claim');\n}\n\nconst normalizedSessionId = String(\n  context.session_id ||\n  context.sessionId ||\n  context.metadata?.chat_id ||\n  ''\n).trim();\n\nconst normalizedChannel = String(\n  context.channel ||\n  context.metadata?.source ||\n  ''\n).trim();\n\nlet normalizedUserPhone = String(\n  context.user_phone ||\n  context.user_email ||\n  ''\n).trim();\n\nif (!normalizedUserPhone && normalizedChannel === 'telegram') {\n  const tgId = context.metadata?.user_id || context.metadata?.chat_id || normalizedSessionId;\n  if (tgId) normalizedUserPhone = `telegram:${tgId}`;\n}\n\nconst normalizedUserText = String(\n  context.user_text ||\n  context.message_text ||\n  ''\n).trim();\n\nreturn [{\n  ...context,\n  user_phone: normalizedUserPhone,\n  channel: normalizedChannel,\n  session_id: normalizedSessionId,\n  sessionId: normalizedSessionId,\n  user_text: normalizedUserText,\n  message_text: normalizedUserText,\n  original_response: inputItem.output || inputItem.text || context.output || context.text || '',\n  filtered_response: response,\n  compliance_flags: complianceFlags\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -10992,
-        2304
+        -11344,
+        2848
       ],
-      "id": "a6804b7d-b807-4052-94b2-7bb617577bb6",
+      "id": "df0af88e-f649-4ed6-be46-1609382c1895",
       "name": "Compliance Filter"
     },
     {
@@ -1319,25 +716,25 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -12224,
-        2224
+        -12576,
+        2768
       ],
-      "id": "fdaf6e69-65fe-44e7-8a5b-8ac6aba11d5a",
+      "id": "6bf5da2c-3fdd-4dcf-b3fc-e29dc4e3c8cd",
       "name": "Escalation Handler"
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "-- Log comprehensive audit record\nINSERT INTO chat_audit_logs (\n  user_phone,\n  client_id,\n  channel,\n  session_id,\n  inbound_text,\n  detected_language,\n  sentiment,\n  sentiment_score,\n  intent_classified,\n  outbound_text,\n  response_time_ms,\n  escalated,\n  escalation_reason,\n  compliance_flags,\n  persona_used,\n  intent_confidence,\n  effective_intent,\n  route_group,\n  follow_up_inherited,\n  allowed_tools,\n  tool_invoked,\n  created_at\n)\nVALUES (\n  '{{ ($json.user_phone || $json.user_email || $json.user_identifier || '').replace(/'/g, \"''\") }}',\n  {{ $json.user?.id || 'NULL' }},\n  '{{ ($json.channel || $json.metadata?.source || '').replace(/'/g, \"''\") }}',\n  '{{ (($json.session_id || $json.sessionId || $json.metadata?.chat_id || '') + '').replace(/'/g, \"''\") }}',\n  '{{ ($json.user_text || '').replace(/'/g, \"''\") }}',\n  '{{ $json.detected_language || '' }}',\n  '{{ $json.sentiment || '' }}',\n  {{ $json.sentiment_score || 0 }},\n  '{{ ($json.intent || '').replace(/'/g, \"''\") }}',\n  '{{ (($json.filtered_response || $json.output || '')).replace(/'/g, \"''\") }}',\n  {{ $json.response_time_ms || 0 }},\n  {{ $json.should_escalate || $json.escalation_initiated || false }},\n  {{ $json.escalation_reason ? (\"'\" + String($json.escalation_reason).replace(/'/g, \"''\") + \"'\") : 'NULL' }},\n  '{{ JSON.stringify($json.compliance_flags || []) }}'::JSONB,\n  '{{ String($json.selected_persona || 'friendly_support').replace(/'/g, \"''\") }}',\n  {{ Number($json.intent_confidence || 0) }},\n  {{ $json.effective_intent ? (\"'\" + String($json.effective_intent).replace(/'/g, \"''\") + \"'\") : 'NULL' }},\n  {{ $json.route_group ? (\"'\" + String($json.route_group).replace(/'/g, \"''\") + \"'\") : 'NULL' }},\n  {{ $json.follow_up_inherited || false }},\n  '{{ JSON.stringify($json.allowed_tools || []) }}'::JSONB,\n  {{ ($json.tool_invoked || $json.primary_tool) ? (\"'\" + String($json.tool_invoked || $json.primary_tool).replace(/'/g, \"''\") + \"'\") : 'NULL' }},\n  NOW()\n)\nRETURNING id, user_phone, channel, session_id;",
+        "query": "-- Log comprehensive audit record\nINSERT INTO chat_audit_logs (\n  user_phone,\n  client_id,\n  channel,\n  session_id,\n  inbound_text,\n  detected_language,\n  sentiment,\n  sentiment_score,\n  intent_classified,\n  outbound_text,\n  response_time_ms,\n  escalated,\n  escalation_reason,\n  compliance_flags,\n  persona_used,\n  created_at\n)\nVALUES (\n  '{{ ($json.user_phone || $json.user_email || $json.user_identifier || '').replace(/'/g, \"''\") }}',\n  {{ $json.user?.id || 'NULL' }},\n  '{{ ($json.channel || $json.metadata?.source || '').replace(/'/g, \"''\") }}',\n  '{{ (($json.session_id || $json.sessionId || $json.metadata?.chat_id || '') + '').replace(/'/g, \"''\") }}',\n  '{{ ($json.user_text || '').replace(/'/g, \"''\") }}',\n  '{{ $json.detected_language || '' }}',\n  '{{ $json.sentiment || '' }}',\n  {{ $json.sentiment_score || 0 }},\n  '{{ $json.intent || '' }}',\n  '{{ (($json.filtered_response || $json.output || '')).replace(/'/g, \"''\") }}',\n  {{ $json.response_time_ms || 0 }},\n  {{ $json.should_escalate || $json.escalation_initiated || false }},\n  {{ $json.escalation_reason ? (\"'\" + $json.escalation_reason.replace(/'/g, \"''\") + \"'\") : 'NULL' }},\n  '{{ JSON.stringify($json.compliance_flags || []) }}'::JSONB,\n  '{{ $json.selected_persona || 'friendly_support' }}',\n  NOW()\n)\nRETURNING id, user_phone, channel, session_id;",
         "options": {}
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        -10848,
-        2304
+        -11200,
+        2848
       ],
-      "id": "32181c6c-154c-4f0f-9a93-3d636bb7d5fb",
+      "id": "b8ab85ab-2dc4-42e2-a2ee-4f72ffd4980c",
       "name": "DB - Comprehensive Audit Log",
       "credentials": {
         "postgres": {
@@ -1349,16 +746,16 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "-- Update or create session record with routing metadata\nINSERT INTO chat_sessions (\n  user_phone,\n  session_id,\n  client_id,\n  session_start,\n  channel,\n  messages_count,\n  sentiment_avg,\n  intents_detected,\n  tools_used,\n  latest_effective_intent,\n  escalated,\n  escalation_reason\n)\nVALUES (\n  '{{ (($json.user_phone || $json.user_email || $json.user_identifier || '') + '').replace(/'/g, \"''\") }}',\n  '{{ (($json.session_id || $json.sessionId || $json.user_phone || $json.user_email || ('authfail_' + Date.now())) + '').replace(/'/g, \"''\") }}',\n  {{ $json.user?.id || 'NULL' }},\n  NOW(),\n  '{{ (($json.channel || $json.metadata?.source || '') + '').replace(/'/g, \"''\") }}',\n  1,\n  {{ $json.sentiment_score || 0 }},\n  CASE\n    WHEN '{{ String($json.effective_intent || '').replace(/'/g, \"''\") }}' = '' THEN ARRAY[]::TEXT[]\n    ELSE ARRAY['{{ String($json.effective_intent || '').replace(/'/g, \"''\") }}']\n  END,\n  ARRAY(SELECT jsonb_array_elements_text('{{ JSON.stringify($json.allowed_tools || []) }}'::jsonb)),\n  {{ $json.effective_intent ? (\"'\" + String($json.effective_intent).replace(/'/g, \"''\") + \"'\") : 'NULL' }},\n  {{ $json.should_escalate || $json.escalation_initiated || false }},\n  {{ $json.escalation_reason ? (\"'\" + String($json.escalation_reason).replace(/'/g, \"''\") + \"'\") : 'NULL' }}\n)\nON CONFLICT (session_id)\nDO UPDATE SET\n  messages_count = chat_sessions.messages_count + 1,\n  sentiment_avg = (chat_sessions.sentiment_avg * chat_sessions.messages_count + {{ $json.sentiment_score || 0 }}) / (chat_sessions.messages_count + 1),\n  escalated = chat_sessions.escalated OR {{ $json.should_escalate || $json.escalation_initiated || false }},\n  escalation_reason = COALESCE(chat_sessions.escalation_reason, {{ $json.escalation_reason ? (\"'\" + String($json.escalation_reason).replace(/'/g, \"''\") + \"'\") : 'NULL' }}),\n  intents_detected = ARRAY(\n    SELECT DISTINCT x FROM unnest(\n      COALESCE(chat_sessions.intents_detected, ARRAY[]::TEXT[]) ||\n      CASE\n        WHEN '{{ String($json.effective_intent || '').replace(/'/g, \"''\") }}' = '' THEN ARRAY[]::TEXT[]\n        ELSE ARRAY['{{ String($json.effective_intent || '').replace(/'/g, \"''\") }}']\n      END\n    ) AS x\n  ),\n  tools_used = ARRAY(\n    SELECT DISTINCT x FROM unnest(\n      COALESCE(chat_sessions.tools_used, ARRAY[]::TEXT[]) ||\n      ARRAY(SELECT jsonb_array_elements_text('{{ JSON.stringify($json.allowed_tools || []) }}'::jsonb))\n    ) AS x\n  ),\n  latest_effective_intent = COALESCE({{ $json.effective_intent ? (\"'\" + String($json.effective_intent).replace(/'/g, \"''\") + \"'\") : 'NULL' }}, chat_sessions.latest_effective_intent),\n  session_end = NOW()\nRETURNING id, user_phone, session_id, channel, messages_count, intents_detected, tools_used, latest_effective_intent;",
+        "query": "-- Update or create session record\nINSERT INTO chat_sessions (\n  user_phone,\n  session_id,\n  session_start,\n  channel,\n  messages_count,\n  sentiment_avg,\n  escalated\n)\nVALUES (\n  '{{ (($json.user_phone || $json.user_email || $json.user_identifier || '') + '').replace(/'/g, \"''\") }}',\n  '{{ (($json.session_id || $json.sessionId || $json.user_phone || $json.user_email || ('authfail_' + Date.now())) + '').replace(/'/g, \"''\") }}',\n  NOW(),\n  '{{ (($json.channel || $json.metadata?.source || '') + '').replace(/'/g, \"''\") }}',\n  1,\n  {{ $json.sentiment_score || 0 }},\n  {{ $json.should_escalate || $json.escalation_initiated || false }}\n)\nON CONFLICT (session_id)\nDO UPDATE SET\n  messages_count = chat_sessions.messages_count + 1,\n  sentiment_avg = (chat_sessions.sentiment_avg * chat_sessions.messages_count + {{ $json.sentiment_score || 0 }}) / (chat_sessions.messages_count + 1),\n  escalated = chat_sessions.escalated OR {{ $json.should_escalate || $json.escalation_initiated || false }},\n  session_end = NOW()\nRETURNING id, user_phone, session_id, channel, messages_count;",
         "options": {}
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        -10704,
-        2096
+        -11056,
+        2640
       ],
-      "id": "9c7cb481-cc8f-4636-a02b-7f1c0cd6920b",
+      "id": "42720e28-4f83-4b75-8ce3-dd1cbfb4f17c",
       "name": "DB - Update Session",
       "credentials": {
         "postgres": {
@@ -1374,23 +771,23 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -10560,
-        2288
+        -10912,
+        2832
       ],
-      "id": "c59bdb34-cc58-4e79-94ea-73b1a0c9278c",
+      "id": "559d4e20-7577-40d9-a75a-5c8fea5da409",
       "name": "Preserve Context After Session"
     },
     {
       "parameters": {
-        "jsCode": "// Format final response based on channel\nconst context = $input.first().json;\nconst channel = context.channel;\nlet response = context.filtered_response || context.output || 'I apologize, but I encountered an issue. Please try again or contact support.';\n\n// Channel-specific formatting\nif (channel === 'whatsapp') {\n  // WhatsApp formatting (limited markdown)\n  response = response\n    .replace(/\\*\\*([^*]+)\\*\\*/g, '*$1*')  // Bold\n    .replace(/^- /gm, '• ');               // Bullet points\n}\nelse if (channel === 'telegram') {\n  // Telegram supports HTML\n  response = response\n    .replace(/\\*\\*([^*]+)\\*\\*/g, '<b>$1</b>')\n    .replace(/\\*([^*]+)\\*/g, '<i>$1</i>')\n    .replace(/_([^_]+)_/g, '<i>$1</i>');\n}\nelse if (channel === 'email') {\n  // Email - add signature\n  response += `\\n\\n---\\nBest regards,\\nAlex\\nCMS Prime Support Team\\n\\nThis is an automated response. For urgent matters, please call +971 4 xxx xxxx.`;\n}\n\nreturn [{\n  output: response,\n  channel: channel,\n  session_id: context.session_id,\n  user_phone: context.user_phone,\n  metadata: context.metadata,\n  message_type: context.message_type || 'text'\n}];\n"
+        "jsCode": "// Format final response based on channel\nconst context = $input.first().json;\nconst channel = context.channel;\nlet response = context.filtered_response || context.output || $input.first().json.output ||'I apologize, but I encountered an issue. Please try again or contact support.';\n\n// Channel-specific formatting\nif (channel === 'whatsapp') {\n  // WhatsApp formatting (limited markdown)\n  response = response\n    .replace(/\\*\\*([^*]+)\\*\\*/g, '*$1*')  // Bold\n    .replace(/^- /gm, '• ');               // Bullet points\n}\nelse if (channel === 'telegram') {\n  // Telegram supports HTML\n  response = response\n    .replace(/\\*\\*([^*]+)\\*\\*/g, '<b>$1</b>')\n    .replace(/\\*([^*]+)\\*/g, '<i>$1</i>')\n    .replace(/_([^_]+)_/g, '<i>$1</i>');\n}\nelse if (channel === 'email') {\n  // Email - add signature\n  response += `\\n\\n---\\nBest regards,\\nAlex\\nCMS Prime Support Team\\n\\nThis is an automated response. For urgent matters, please call +971 4 xxx xxxx.`;\n}\n\nreturn [{\n  output: response,\n  channel: channel,\n  session_id: context.session_id,\n  user_phone: context.user_phone,\n  metadata: context.metadata,\n  message_type: context.message_type || 'text'\n}];\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -10416,
-        2288
+        -10768,
+        2736
       ],
-      "id": "94fbb015-90ca-4e0f-8ddd-0d387fbbf99c",
+      "id": "f7ca8e16-0368-4230-ae70-ce03930bd28d",
       "name": "Format Response"
     },
     {
@@ -1420,10 +817,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        -10240,
-        2336
+        -10592,
+        2880
       ],
-      "id": "4e8ac464-1bff-4053-8415-15b50df82c88",
+      "id": "4fdb3fb8-6153-4e5d-99c8-555fb3702c58",
       "name": "IF - WhatsApp?"
     },
     {
@@ -1446,22 +843,16 @@
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"messaging_product\": \"whatsapp\",\n  \"to\": \"{{ $json.user_phone.replace('+', '') }}\",\n  \"type\": \"text\",\n  \"text\": {\n    \"body\": \"{{ $json.output.replace(/\"/g, '\\\\\"').replace(/\\n/g, '\\\\n') }}\"\n  }\n}",
-        "options": {
-          "timeout": 15000
-        }
+        "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        -9248,
-        1888
+        -9600,
+        2432
       ],
-      "id": "99e17d42-a5fc-4084-bfde-42102176f7f4",
-      "name": "Send WhatsApp Response",
-      "retryOnFail": true,
-      "maxTries": 2,
-      "waitBetweenTries": 1000,
-      "continueOnFail": true
+      "id": "d968d260-97a0-4d39-9c42-45344c2cab77",
+      "name": "Send WhatsApp Response"
     },
     {
       "parameters": {
@@ -1490,10 +881,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        -10048,
-        2448
+        -10400,
+        2992
       ],
-      "id": "d404540f-8a0e-4a1d-8130-0dd8f4653384",
+      "id": "3b8b1fd6-c984-4734-a868-aa100f257f0a",
       "name": "IF - Telegram?"
     },
     {
@@ -1508,22 +899,18 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        -9248,
-        2592
+        -9600,
+        3136
       ],
-      "id": "b5145090-0cb4-4468-b365-60ada2385052",
+      "id": "09e404b9-2808-4d65-a579-e7fdc736b382",
       "name": "Send Telegram Response",
       "webhookId": "52cdca7a-bb17-40e4-a24e-f6852315927f",
-      "retryOnFail": true,
-      "maxTries": 2,
-      "waitBetweenTries": 1000,
       "credentials": {
         "telegramApi": {
           "id": "txTzVvWQaqPSnMci",
           "name": "Telegram account"
         }
-      },
-      "continueOnFail": true
+      }
     },
     {
       "parameters": {
@@ -1541,10 +928,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -9248,
-        2944
+        -9600,
+        3488
       ],
-      "id": "8123713a-3e5a-416c-af2c-71f1b738e7d0",
+      "id": "47179137-f904-4827-ae8d-5e74cd1a4e17",
       "name": "Return Web/Default Response"
     },
     {
@@ -1556,10 +943,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        -13392,
-        3072
+        -13744,
+        3616
       ],
-      "id": "e39bbd12-8b63-4159-a95b-ec73d32e9b30",
+      "id": "8c6e5860-a97b-45eb-9a18-c6bcbae71a03",
       "name": "DB - Audit (Auth Fail)",
       "credentials": {
         "postgres": {
@@ -1595,10 +982,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        -9744,
-        2416
+        -10096,
+        2960
       ],
-      "id": "23169590-223a-4706-b22c-4ae41603e662",
+      "id": "da8dc887-7eec-4399-8fb1-a34a89b7201c",
       "name": "IF - Telegram Voice Reply?"
     },
     {
@@ -1610,10 +997,10 @@
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 1.8,
       "position": [
-        -9456,
-        2272
+        -9808,
+        2816
       ],
-      "id": "62a71905-a285-427a-bb98-2c386758fba2",
+      "id": "c23d752f-b248-4498-a71a-464fb5b6ef16",
       "name": "Telegram - Generate Voice Response",
       "credentials": {
         "openAiApi": {
@@ -1632,22 +1019,18 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        -9232,
-        2320
+        -9584,
+        2864
       ],
-      "id": "125effee-bd80-4d8d-ad29-7610cae0a284",
+      "id": "3f16c540-1bd9-4c92-af12-1dedc6a8dab5",
       "name": "Send Telegram Voice Response",
       "webhookId": "cb0bf5fc-69c1-41d4-9f8f-b8265a41f000",
-      "retryOnFail": true,
-      "maxTries": 2,
-      "waitBetweenTries": 1000,
       "credentials": {
         "telegramApi": {
           "id": "txTzVvWQaqPSnMci",
           "name": "Telegram account"
         }
-      },
-      "continueOnFail": true
+      }
     },
     {
       "parameters": {
@@ -1676,10 +1059,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        -12912,
-        2240
+        -13264,
+        2784
       ],
-      "id": "018da241-8681-47cb-b65b-d7375ae3f5fb",
+      "id": "9d8926bf-7fdb-420e-834d-2993dca5599b",
       "name": "IF - In Scope?"
     },
     {
@@ -1699,10 +1082,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -12336,
-        2048
+        -12688,
+        2592
       ],
-      "id": "46398489-513b-4fb6-9844-e41353f58952",
+      "id": "74941e41-5a36-4d00-a09a-821b952778f4",
       "name": "Set - Out of Scope Response"
     },
     {
@@ -1741,10 +1124,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        -12496,
-        2544
+        -12848,
+        3088
       ],
-      "id": "8da41cdc-6358-4266-a1cf-08a5ac01f632",
+      "id": "fe674e05-3b03-4e63-bf20-f4462207041f",
       "name": "IF - Missing Critical Context?"
     },
     {
@@ -1764,10 +1147,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -12064,
-        2384
+        -12416,
+        2928
       ],
-      "id": "bfdc1f8c-cf53-4994-baef-65dbef334cf8",
+      "id": "9e47d6ce-aeb5-4d84-9835-3f6f3249353d",
       "name": "Set - Safe Fallback Response"
     },
     {
@@ -1797,10 +1180,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        -13904,
-        2768
+        -14256,
+        3312
       ],
-      "id": "79553401-53bd-4adc-9952-4367d296f62e",
+      "id": "c3053249-4a85-47f8-9910-e4380230efd1",
       "name": "IF - Registration Intent or Ongoing?"
     },
     {
@@ -1810,10 +1193,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -13584,
-        2688
+        -13936,
+        3232
       ],
-      "id": "c24c3848-ee43-49d3-9d3c-2f6f16420fb0",
+      "id": "1a3947f2-ddbd-4285-81e7-01aaad245907",
       "name": "Registration Context Builder"
     },
     {
@@ -1827,10 +1210,10 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        -12832,
-        3104
+        -13184,
+        3648
       ],
-      "id": "006a6993-6a94-49ed-9356-153be3746219",
+      "id": "9e3c7f0b-e80f-49f3-bd8d-956eb5b59e40",
       "name": "Registration AI Agent"
     },
     {
@@ -1997,10 +1380,10 @@
       "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
       "typeVersion": 2.2,
       "position": [
-        -12640,
-        3424
+        -12992,
+        3968
       ],
-      "id": "b16beaf7-5196-421a-9db9-bc3099f7eefd",
+      "id": "d20161d6-209c-4251-bd15-190c8d58d028",
       "name": "Tool - User Registration"
     },
     {
@@ -2030,10 +1413,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        -14816,
-        2320
+        -15168,
+        2864
       ],
-      "id": "843d4754-8bcd-4ffa-bed2-b5631b4e6a1a",
+      "id": "6595bd84-0b31-4da2-8f5f-2b6a3fd20475",
       "name": "IF - Auth Lookup Failed?"
     },
     {
@@ -2043,10 +1426,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -13872,
-        2528
+        -14224,
+        3072
       ],
-      "id": "d5894077-db50-4cf4-ae68-e0a97c245000",
+      "id": "63eb957a-de0c-461b-b4b5-64a5240764c3",
       "name": "Registration - Restore Input Context"
     },
     {
@@ -2062,10 +1445,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
       "typeVersion": 1.3,
       "position": [
-        -12944,
-        3456
+        -13296,
+        4000
       ],
-      "id": "821f570d-8c68-41fd-a340-d5728d0e088c",
+      "id": "61fd373f-8213-4e3c-9931-9e78c953d6c7",
       "name": "OpenAI Chat Model",
       "credentials": {
         "openAiApi": {
@@ -2075,17 +1458,14 @@
       }
     },
     {
-      "parameters": {
-        "sessionKey": "={{ $json.session_id || $json.sessionId || $json.metadata?.chat_id || $json.user_phone || 'default_session' }}",
-        "contextWindowLength": 30
-      },
+      "parameters": {},
       "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
       "typeVersion": 1.3,
       "position": [
-        -12768,
-        3440
+        -13120,
+        3984
       ],
-      "id": "af70b918-be7d-4510-8a9c-c76818265f04",
+      "id": "2c754a6e-4a2c-4665-af3a-77db8376f7a8",
       "name": "Postgres Chat Memory1",
       "credentials": {
         "postgres": {
@@ -2121,10 +1501,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -12096,
-        2560
+        -12448,
+        3104
       ],
-      "id": "46ecd56b-b9d1-4219-bd0a-909bcac8ffbc",
+      "id": "13efd229-e614-4429-902c-ebb46ef2daf7",
       "name": "If"
     },
     {
@@ -2134,10 +1514,10 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        -10720,
-        2560
+        -11072,
+        3104
       ],
-      "id": "ce5ff105-b4e2-4c57-8fd2-e84266e4dd75",
+      "id": "3d1da227-4c38-4201-a6da-ae21263da4c7",
       "name": "admin agent"
     },
     {
@@ -2153,10 +1533,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
       "typeVersion": 1.3,
       "position": [
-        -10912,
-        2736
+        -11264,
+        3280
       ],
-      "id": "160a470f-7479-475e-9cb5-d09f08a09d0f",
+      "id": "04c70672-a14a-4180-8c51-a34eaa8907f5",
       "name": "OpenAI Chat Model1",
       "credentials": {
         "openAiApi": {
@@ -2166,413 +1546,15 @@
       }
     },
     {
-      "parameters": {
-        "sessionKey": "={{ $json.session_id || $json.sessionId || $json.metadata?.chat_id || $json.user_phone || 'default_session' }}",
-        "contextWindowLength": 30
-      },
+      "parameters": {},
       "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
       "typeVersion": 1.3,
       "position": [
-        -10784,
-        2720
+        -11136,
+        3264
       ],
-      "id": "82eaf740-6e8f-4c44-8c9a-6b2aa86b7e90",
+      "id": "6f53585a-1ba9-4ef0-a753-921bc6dcf2f8",
       "name": "Postgres Chat Memory2",
-      "credentials": {
-        "postgres": {
-          "id": "yNVFJmXSqNtKGgso",
-          "name": "Postgres account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "-- Load latest routing state for this session (single-row result)\nWITH input_ctx AS (\n  SELECT\n    '{{ (($json.session_id || $json.sessionId || $json.metadata?.chat_id || '') + '').replace(/'/g, \"''\") }}'::text AS session_id,\n    '{{ (($json.user_phone || $json.user_email || $json.user_identifier || '') + '').replace(/'/g, \"''\") }}'::text AS user_phone\n)\nSELECT\n  i.session_id AS input_session_id,\n  i.user_phone AS input_user_phone,\n  rs.last_intent,\n  rs.last_sub_intent,\n  rs.last_route_group,\n  rs.last_tools,\n  rs.last_entities,\n  rs.last_turn_at,\n  rs.pending_clarification,\n  rs.clarification_context,\n  rs.clarification_expires_at\nFROM input_ctx i\nLEFT JOIN chat_routing_state rs\n  ON rs.session_id = i.session_id\nLIMIT 1;",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.6,
-      "position": [
-        -13312,
-        2112
-      ],
-      "id": "2288e21f-1d94-44e5-a0c3-c0ad050a0cd5",
-      "name": "DB - Load Routing State",
-      "credentials": {
-        "postgres": {
-          "id": "yNVFJmXSqNtKGgso",
-          "name": "Postgres account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "jsCode": "// Contextual Intent Resolver (with pending clarification support + session timeout reset)\nfunction parseIsoDate(value) {\n  if (!value) return null;\n  const d = new Date(value);\n  return Number.isNaN(d.getTime()) ? null : d;\n}\n\nfunction mapClarificationToIntent(text) {\n  const t = String(text || '').toLowerCase();\n  if (/\\b(account|balance|wallet|equity|margin)\\b/.test(t)) return 'account_inquiry';\n  if (/\\b(position|positions|trade|trading|order|history)\\b/.test(t)) return 'trading_question';\n  if (/\\b(transaction|transactions|deposit|withdraw|withdrawal|fund|funding|pending|approved|transfer)\\b/.test(t)) return 'deposit_withdrawal';\n  if (/\\b(price|market|news|calendar|gold|eurusd|btc|bitcoin)\\b/.test(t)) return 'market_analysis';\n  if (/\\b(document|kyc|verify|verification|promo|promotion|ticket|support|callback)\\b/.test(t)) return 'technical_support';\n  return null;\n}\n\nlet parsed = {};\ntry {\n  parsed = $('Parse Intent').item.json || {};\n} catch (e) {\n  parsed = $input.first().json || {};\n}\n\nconst state = $input.first().json || {};\nconst userText = String(parsed.user_text || parsed.message_text || '').trim();\nconst words = userText ? userText.split(/\\s+/).length : 0;\nconst rawIntent = String(parsed.intent || 'general_chat');\nconst rawSubIntent = parsed.sub_intent || null;\nconst intentConfidence = Number(parsed.intent_confidence || 0);\n\nconst followUpPattern = /\\b(and|also|what about|last one|pending|approved|this one|that one|same|again|status)\\b/i;\nconst follow_up_detected = words > 0 && words <= 8 && followUpPattern.test(userText);\n\nconst lastTurnAt = parseIsoDate(state.last_turn_at);\nconst minutesSinceLastTurn = lastTurnAt ? ((Date.now() - lastTurnAt.getTime()) / (1000 * 60)) : null;\n\nconst SESSION_TIMEOUT_MINUTES = 240; // 4h\nconst session_expired = Boolean(\n  minutesSinceLastTurn !== null &&\n  minutesSinceLastTurn > SESSION_TIMEOUT_MINUTES\n);\n\nconst canInherit = Boolean(\n  !session_expired &&\n  follow_up_detected &&\n  state.last_intent &&\n  minutesSinceLastTurn !== null &&\n  minutesSinceLastTurn <= 30\n);\n\nconst pendingClarification = Boolean(state.pending_clarification);\nconst clarificationExpiresAt = parseIsoDate(state.clarification_expires_at);\nconst pendingClarificationActive = Boolean(\n  !session_expired &&\n  pendingClarification &&\n  (!clarificationExpiresAt || clarificationExpiresAt.getTime() > Date.now())\n);\n\nlet effective_intent = rawIntent;\nlet follow_up_inherited = false;\nlet clarification_needed = false;\nlet routing_reason = session_expired ? 'session_timeout_reset' : 'classifier_confident';\nlet clarification_question = 'Could you clarify what you mean? For example: account details, open positions, or recent transactions.';\nlet pending_clarification = false;\nlet clarification_context = {};\nlet greeting_reset_required = session_expired;\n\nif (pendingClarificationActive) {\n  const mappedIntent = mapClarificationToIntent(userText);\n  if (mappedIntent) {\n    effective_intent = mappedIntent;\n    follow_up_inherited = true;\n    clarification_needed = false;\n    pending_clarification = false;\n    clarification_context = {};\n    routing_reason = 'resolved_pending_clarification';\n  } else {\n    clarification_needed = true;\n    pending_clarification = true;\n    clarification_context = {\n      ...(state.clarification_context || {}),\n      attempts: Number(state.clarification_context?.attempts || 0) + 1\n    };\n    routing_reason = 'pending_clarification_unresolved';\n  }\n} else if (intentConfidence >= 0.72) {\n  effective_intent = rawIntent;\n  routing_reason = session_expired ? 'session_timeout_reset' : 'classifier_confident';\n} else if (canInherit) {\n  effective_intent = String(state.last_intent);\n  follow_up_inherited = true;\n  routing_reason = 'follow_up_inherited';\n} else {\n  clarification_needed = true;\n  pending_clarification = true;\n  clarification_context = {\n    source_intent: rawIntent,\n    source_confidence: intentConfidence,\n    asked_at: new Date().toISOString()\n  };\n  routing_reason = session_expired ? 'session_timeout_reset_needs_clarification' : 'low_confidence_needs_clarification';\n}\n\nconst routeByIntent = {\n  account_inquiry: 'account',\n  trading_question: 'trading',\n  deposit_withdrawal: 'funding',\n  market_analysis: 'market',\n  technical_support: 'support',\n  document_verification: 'support',\n  promotions: 'support',\n  complaint: 'support',\n  escalation_request: 'support',\n  general_chat: 'support'\n};\n\nconst toolMapByRoute = {\n  account: ['get_account_summary'],\n  trading: ['get_open_positions', 'get_trade_history', 'calculate_trading_scenarios'],\n  funding: ['get_transactions'],\n  market: ['get_market_prices', 'get_market_news', 'get_economic_calendar'],\n  support: ['get_platform_status', 'get_document_status', 'get_promotions', 'search_faq', 'submit_support_ticket', 'schedule_callback', 'perform_risk_assessment'],\n  clarification: []\n};\n\nconst route_group = clarification_needed\n  ? 'clarification'\n  : (routeByIntent[effective_intent] || 'support');\n\nconst allowed_tools = toolMapByRoute[route_group] || [];\n\nreturn [{\n  ...parsed,\n  routing_state: {\n    last_intent: state.last_intent || null,\n    last_route_group: state.last_route_group || null,\n    last_turn_at: state.last_turn_at || null,\n    pending_clarification: pendingClarification,\n    clarification_context: state.clarification_context || null,\n    clarification_expires_at: state.clarification_expires_at || null\n  },\n  intent_confidence: intentConfidence,\n  effective_intent,\n  follow_up_detected,\n  follow_up_inherited,\n  route_group,\n  allowed_tools,\n  clarification_needed,\n  clarification_question,\n  pending_clarification,\n  clarification_context,\n  clarification_ttl_minutes: 10,\n  routing_reason,\n  session_expired,\n  session_timeout_minutes: SESSION_TIMEOUT_MINUTES,\n  greeting_reset_required,\n  sub_intent: rawSubIntent,\n  session_id: parsed.session_id || parsed.sessionId || state.input_session_id || '',\n  sessionId: parsed.sessionId || parsed.session_id || state.input_session_id || ''\n}];"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -13200,
-        2112
-      ],
-      "id": "0b000f0b-ad61-4db5-9ffd-9b29c996b881",
-      "name": "Contextual Intent Resolver"
-    },
-    {
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "-- Persist routing decisions for follow-up continuity\nINSERT INTO chat_routing_state (\n  session_id,\n  user_phone,\n  last_intent,\n  last_sub_intent,\n  last_route_group,\n  last_tools,\n  last_entities,\n  last_turn_at,\n  pending_clarification,\n  clarification_context,\n  clarification_expires_at,\n  updated_at\n)\nVALUES (\n  '{{ (($json.session_id || $json.sessionId || $json.metadata?.chat_id || '') + '').replace(/'/g, \"''\") }}',\n  '{{ (($json.user_phone || $json.user_email || $json.user_identifier || '') + '').replace(/'/g, \"''\") }}',\n  {{ $json.effective_intent ? (\"'\" + String($json.effective_intent).replace(/'/g, \"''\") + \"'\") : 'NULL' }},\n  {{ $json.sub_intent ? (\"'\" + String($json.sub_intent).replace(/'/g, \"''\") + \"'\") : 'NULL' }},\n  {{ $json.route_group ? (\"'\" + String($json.route_group).replace(/'/g, \"''\") + \"'\") : 'NULL' }},\n  ARRAY(SELECT jsonb_array_elements_text('{{ JSON.stringify($json.allowed_tools || []) }}'::jsonb)),\n  '{{ JSON.stringify({ routing_reason: $json.routing_reason || null }) }}'::jsonb,\n  NOW(),\n  {{ $json.pending_clarification || false }},\n  '{{ JSON.stringify($json.clarification_context || {}) }}'::jsonb,\n  CASE\n    WHEN {{ $json.pending_clarification || false }} THEN NOW() + INTERVAL '10 minutes'\n    ELSE NULL\n  END,\n  NOW()\n)\nON CONFLICT (session_id)\nDO UPDATE SET\n  user_phone = EXCLUDED.user_phone,\n  last_intent = EXCLUDED.last_intent,\n  last_sub_intent = EXCLUDED.last_sub_intent,\n  last_route_group = EXCLUDED.last_route_group,\n  last_tools = EXCLUDED.last_tools,\n  last_entities = EXCLUDED.last_entities,\n  last_turn_at = EXCLUDED.last_turn_at,\n  pending_clarification = EXCLUDED.pending_clarification,\n  clarification_context = EXCLUDED.clarification_context,\n  clarification_expires_at = EXCLUDED.clarification_expires_at,\n  updated_at = NOW()\nRETURNING session_id, user_phone, last_intent, last_route_group, pending_clarification, clarification_expires_at, last_turn_at;",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.6,
-      "position": [
-        -12864,
-        2032
-      ],
-      "id": "512416d9-e845-4e27-98f8-a286fb732e29",
-      "name": "DB - Upsert Routing State",
-      "credentials": {
-        "postgres": {
-          "id": "yNVFJmXSqNtKGgso",
-          "name": "Postgres account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "={{$json.user_text || $json.message_text || ''}}",
-        "options": {
-          "systemMessage": "={{$json.system_prompt || ''}}"
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 3.1,
-      "position": [
-        -11728,
-        2192
-      ],
-      "id": "8375c7c0-81db-4b0c-b714-a491fd2bbbea",
-      "name": "AI Agent - Account"
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "={{$json.user_text || $json.message_text || ''}}",
-        "options": {
-          "systemMessage": "={{$json.system_prompt || ''}}"
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 3.1,
-      "position": [
-        -11728,
-        2432
-      ],
-      "id": "3e136fa6-7292-4de1-93dd-d44f05a63184",
-      "name": "AI Agent - Trading"
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "={{$json.user_text || $json.message_text || ''}}",
-        "options": {
-          "systemMessage": "={{$json.system_prompt || ''}}"
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 3.1,
-      "position": [
-        -11728,
-        2656
-      ],
-      "id": "30f48de2-426b-4a30-9975-52511779a5bc",
-      "name": "AI Agent - Funding"
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "={{$json.user_text || $json.message_text || ''}}",
-        "options": {
-          "systemMessage": "={{$json.system_prompt || ''}}"
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 3.1,
-      "position": [
-        -11728,
-        2880
-      ],
-      "id": "f1955135-4a7d-42c1-b9af-4f7558b52722",
-      "name": "AI Agent - Market"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 1
-          },
-          "conditions": [
-            {
-              "id": "e2e60ab5-f676-4dd5-a39b-c0c95050b301",
-              "leftValue": "={{ String($json.route_group || '') }}",
-              "rightValue": "account",
-              "operator": {
-                "type": "string",
-                "operation": "equals"
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2,
-      "position": [
-        -12208,
-        2448
-      ],
-      "id": "aff1da6c-dd38-4ac0-8819-284e184726d3",
-      "name": "IF - Route Account?"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 1
-          },
-          "conditions": [
-            {
-              "id": "bad4c2ea-fcd2-4fb3-91cb-4caabf7a3b01",
-              "leftValue": "={{ String($json.route_group || '') }}",
-              "rightValue": "trading",
-              "operator": {
-                "type": "string",
-                "operation": "equals"
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2,
-      "position": [
-        -12208,
-        2624
-      ],
-      "id": "ce4f83b5-1c90-499c-9446-ef53fa41a31e",
-      "name": "IF - Route Trading?"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 1
-          },
-          "conditions": [
-            {
-              "id": "4e8ce4db-e899-4f5f-8d3d-f8f96d071b01",
-              "leftValue": "={{ String($json.route_group || '') }}",
-              "rightValue": "funding",
-              "operator": {
-                "type": "string",
-                "operation": "equals"
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2,
-      "position": [
-        -12208,
-        2800
-      ],
-      "id": "44230201-dedb-4c71-a304-61a571d8095a",
-      "name": "IF - Route Funding?"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 1
-          },
-          "conditions": [
-            {
-              "id": "bfa89cbf-5c3f-4311-90c2-46db5bd10d01",
-              "leftValue": "={{ String($json.route_group || '') }}",
-              "rightValue": "market",
-              "operator": {
-                "type": "string",
-                "operation": "equals"
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2,
-      "position": [
-        -12208,
-        2976
-      ],
-      "id": "493e1078-0dae-4c6f-b640-2c139a7dd4c9",
-      "name": "IF - Route Market?"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 1
-          },
-          "conditions": [
-            {
-              "id": "709634d2-6fe4-46ef-9cb9-ab1f14f90c01",
-              "leftValue": "={{ String($json.route_group || '') }}",
-              "rightValue": "clarification",
-              "operator": {
-                "type": "string",
-                "operation": "equals"
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2,
-      "position": [
-        -12208,
-        3152
-      ],
-      "id": "4d92acf8-89ed-4fc6-941c-88a34dd4ca6f",
-      "name": "IF - Route Clarification?"
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "name": "output",
-              "value": "={{ $json.clarification_question || 'Could you clarify what you need: account details, open positions, or recent transactions?' }}",
-              "type": "string"
-            }
-          ]
-        },
-        "includeOtherFields": true,
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        -12000,
-        3296
-      ],
-      "id": "f183f41a-62ce-4f3a-b0f9-fc15db3a0bd2",
-      "name": "Set - Clarification Response"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "boolean": [
-            {
-              "value1": "={{ !!$json.error }}",
-              "value2": true
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2,
-      "position": [
-        -9040,
-        1872
-      ],
-      "id": "62b3efa1-9a22-44fc-bc50-b0b4108549b1",
-      "name": "IF - WhatsApp Delivery Failed?"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "boolean": [
-            {
-              "value1": "={{ !!$json.error }}",
-              "value2": true
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2,
-      "position": [
-        -9040,
-        2592
-      ],
-      "id": "8c1a96f5-d0e2-44ca-b97a-55c64b9786a8",
-      "name": "IF - Telegram Delivery Failed?"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "boolean": [
-            {
-              "value1": "={{ !!$json.error }}",
-              "value2": true
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2,
-      "position": [
-        -9024,
-        2320
-      ],
-      "id": "d74802f1-4b3d-4a97-a562-e9c35cb59d1a",
-      "name": "IF - Telegram Voice Delivery Failed?"
-    },
-    {
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "INSERT INTO failed_deliveries (\n  channel,\n  session_id,\n  user_phone,\n  payload,\n  error_message,\n  retry_count,\n  status,\n  created_at\n)\nVALUES (\n  '{{ (($json.channel || $json.metadata?.source || '') + '').replace(/'/g, \"''\") }}',\n  '{{ (($json.session_id || $json.sessionId || $json.metadata?.chat_id || '') + '').replace(/'/g, \"''\") }}',\n  '{{ (($json.user_phone || $json.user_email || $json.user_identifier || '') + '').replace(/'/g, \"''\") }}',\n  '{{ JSON.stringify({ output: $json.output || null, metadata: $json.metadata || null, channel: $json.channel || null }) }}'::jsonb,\n  '{{ String($json.error?.message || $json.error || \"Unknown delivery error\").replace(/'/g, \"''\") }}',\n  {{ Number($json.retryCount || 0) }},\n  'pending',\n  NOW()\n)\nRETURNING id, channel, session_id, user_phone;",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.6,
-      "position": [
-        -8816,
-        2208
-      ],
-      "id": "71dafb02-e3bd-42ad-bab5-7f98cb0859e0",
-      "name": "DB - Log Failed Delivery",
       "credentials": {
         "postgres": {
           "id": "yNVFJmXSqNtKGgso",
@@ -2892,7 +1874,7 @@
       "main": [
         [
           {
-            "node": "DB - Load Routing State",
+            "node": "DB - Upsert User Config",
             "type": "main",
             "index": 0
           }
@@ -2915,11 +1897,6 @@
         [
           {
             "node": "IF - In Scope?",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "DB - Upsert Routing State",
             "type": "main",
             "index": 0
           }
@@ -2973,26 +1950,6 @@
             "node": "AI Agent",
             "type": "ai_languageModel",
             "index": 0
-          },
-          {
-            "node": "AI Agent - Account",
-            "type": "ai_languageModel",
-            "index": 0
-          },
-          {
-            "node": "AI Agent - Trading",
-            "type": "ai_languageModel",
-            "index": 0
-          },
-          {
-            "node": "AI Agent - Funding",
-            "type": "ai_languageModel",
-            "index": 0
-          },
-          {
-            "node": "AI Agent - Market",
-            "type": "ai_languageModel",
-            "index": 0
           }
         ]
       ]
@@ -3004,26 +1961,6 @@
             "node": "AI Agent",
             "type": "ai_memory",
             "index": 0
-          },
-          {
-            "node": "AI Agent - Account",
-            "type": "ai_memory",
-            "index": 0
-          },
-          {
-            "node": "AI Agent - Trading",
-            "type": "ai_memory",
-            "index": 0
-          },
-          {
-            "node": "AI Agent - Funding",
-            "type": "ai_memory",
-            "index": 0
-          },
-          {
-            "node": "AI Agent - Market",
-            "type": "ai_memory",
-            "index": 0
           }
         ]
       ]
@@ -3032,29 +1969,7 @@
       "ai_tool": [
         [
           {
-            "node": "AI Agent - Account",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Tool - Open Positions": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent - Trading",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Tool - Trade History": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent - Trading",
+            "node": "AI Agent",
             "type": "ai_tool",
             "index": 0
           }
@@ -3062,127 +1977,6 @@
       ]
     },
     "Tool - Transactions": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent - Funding",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Tool - Market Prices": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent - Market",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Tool - Market News": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent - Market",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Tool - Economic Calendar": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent - Market",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Tool - Trading Calculator": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent - Trading",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Tool - Platform Status": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Tool - Document Status": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Tool - Support Ticket": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Tool - Schedule Callback": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Tool - Promotions": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Tool - Risk Assessment": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Tool - FAQ Search": {
       "ai_tool": [
         [
           {
@@ -3335,7 +2129,7 @@
         ],
         [
           {
-            "node": "Set - Out of Scope Response",
+            "node": "IF - Missing Critical Context?",
             "type": "main",
             "index": 0
           }
@@ -3495,7 +2289,7 @@
         ],
         [
           {
-            "node": "IF - Route Account?",
+            "node": "AI Agent",
             "type": "main",
             "index": 0
           }
@@ -3534,250 +2328,17 @@
           }
         ]
       ]
-    },
-    "DB - Load Routing State": {
-      "main": [
-        [
-          {
-            "node": "Contextual Intent Resolver",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Contextual Intent Resolver": {
-      "main": [
-        [
-          {
-            "node": "DB - Upsert User Config",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "IF - Route Account?": {
-      "main": [
-        [
-          {
-            "node": "AI Agent - Account",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "IF - Route Trading?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "IF - Route Trading?": {
-      "main": [
-        [
-          {
-            "node": "AI Agent - Trading",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "IF - Route Funding?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "IF - Route Funding?": {
-      "main": [
-        [
-          {
-            "node": "AI Agent - Funding",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "IF - Route Market?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "IF - Route Market?": {
-      "main": [
-        [
-          {
-            "node": "AI Agent - Market",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "IF - Route Clarification?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "IF - Route Clarification?": {
-      "main": [
-        [
-          {
-            "node": "Set - Clarification Response",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "AI Agent",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Set - Clarification Response": {
-      "main": [
-        [
-          {
-            "node": "Compliance Filter",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "AI Agent - Account": {
-      "main": [
-        [
-          {
-            "node": "Compliance Filter",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "AI Agent - Trading": {
-      "main": [
-        [
-          {
-            "node": "Compliance Filter",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "AI Agent - Funding": {
-      "main": [
-        [
-          {
-            "node": "Compliance Filter",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "AI Agent - Market": {
-      "main": [
-        [
-          {
-            "node": "Compliance Filter",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Send WhatsApp Response": {
-      "main": [
-        [
-          {
-            "node": "IF - WhatsApp Delivery Failed?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "IF - WhatsApp Delivery Failed?": {
-      "main": [
-        [
-          {
-            "node": "DB - Log Failed Delivery",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Send Telegram Response": {
-      "main": [
-        [
-          {
-            "node": "IF - Telegram Delivery Failed?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "IF - Telegram Delivery Failed?": {
-      "main": [
-        [
-          {
-            "node": "DB - Log Failed Delivery",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Send Telegram Voice Response": {
-      "main": [
-        [
-          {
-            "node": "IF - Telegram Voice Delivery Failed?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "IF - Telegram Voice Delivery Failed?": {
-      "main": [
-        [
-          {
-            "node": "DB - Log Failed Delivery",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
     }
   },
   "active": true,
   "settings": {
     "executionOrder": "v1",
-    "availableInMCP": false
+    "availableInMCP": true
   },
-  "versionId": "befb1e2b-c553-4d4a-ab3e-decd13036709",
+  "versionId": "e32bb18b-bd20-43d3-9a3d-6931955b8646",
   "meta": {
     "instanceId": "495f6278a9dd899c69efc38f92904361f03ad646b8c63a3d991806ec829debf6"
   },
-  "id": "AUsYb8gkh20N2JBS5hfRr",
+  "id": "dxwvRXRVVSzAueY6SKbs_",
   "tags": []
 }

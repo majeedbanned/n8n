@@ -407,7 +407,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Classify the intent of this customer message for a forex/trading broker.\n\nMessage: \"{{$json.user_text}}\"\n\nCategories:\n- account_inquiry: Questions about account balance, equity, margin, account status\n- trading_question: Questions about trading, positions, orders, strategies\n- technical_support: Platform issues, login problems, MT4/MT5 help\n- complaint: Expressing dissatisfaction, reporting problems\n- deposit_withdrawal: Questions about funding, deposits, withdrawals, transfers\n- market_analysis: Asking about prices, market conditions, forecasts\n- document_verification: KYC, documents, verification status\n- promotions: Bonuses, offers, promotions, referrals\n- general_chat: Greetings, small talk, thanks\n- escalation_request: Wants human agent, supervisor, manager\n\nReturn ONLY a valid JSON object with:\n- intent: the category name\n- confidence: number 0 to 1\n- sub_intent: more specific intent if applicable (optional)\n\nJSON: "
+        "text": "=Classify the intent of this customer message for a forex/trading broker.\n\nMessage: \"{{$json.user_text}}\"\n\nCategories:\n- account_inquiry: Questions about account balance, equity, margin, account status\n- trading_question: Questions about trading, positions, orders, strategies\n- technical_support: Platform issues, login problems, MT4/MT5 help, credential/password recovery\n- complaint: Expressing dissatisfaction, reporting problems\n- deposit_withdrawal: Questions about funding, deposits, withdrawals, transfers\n- market_analysis: Asking about prices, market conditions, forecasts\n- document_verification: KYC, documents, verification status\n- promotions: Bonuses, offers, promotions, referrals\n- general_chat: Greetings, small talk, thanks\n- escalation_request: Wants human agent, supervisor, manager\n\nFor technical_support messages that are about login/credential/password issues, set sub_intent to exactly one of:\n- forgot_password_client_crm\n- forgot_password_trading_account\n- forgot_password_trading_app\n\nReturn ONLY a valid JSON object with:\n- intent: the category name\n- confidence: number 0 to 1\n- sub_intent: required for credential/login/password technical_support messages; otherwise null\n\nJSON: "
       },
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.4,
@@ -447,7 +447,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Parse intent classification result\nlet input = {};\ntry {\n  input = $('Parse Sentiment').item.json || {};\n} catch (e) {\n  input = $input.first().json || {};\n}\nconst intentRaw = $input.first().json.text || $input.first().json.response || '{}';\n\nlet intent = { intent: 'general_chat', confidence: 0.5, sub_intent: null };\n\ntry {\n  let jsonStr = intentRaw;\n  const jsonMatch = intentRaw.match(/```json?\\s*([\\s\\S]*?)```/) || intentRaw.match(/\\{[\\s\\S]*\\}/);\n  if (jsonMatch) {\n    jsonStr = jsonMatch[1] || jsonMatch[0];\n  }\n  intent = JSON.parse(jsonStr.trim());\n} catch (e) {\n  // Fallback keyword-based intent\n  const text = input.user_text.toLowerCase();\n  if (/balance|equity|margin|account.*status|my account/i.test(text)) {\n    intent = { intent: 'account_inquiry', confidence: 0.8 };\n  } else if (/position|trade|order|buy|sell|lot|pip/i.test(text)) {\n    intent = { intent: 'trading_question', confidence: 0.8 };\n  } else if (/deposit|withdraw|transfer|fund|payment/i.test(text)) {\n    intent = { intent: 'deposit_withdrawal', confidence: 0.85 };\n  } else if (/price|market|eurusd|gold|bitcoin|forecast/i.test(text)) {\n    intent = { intent: 'market_analysis', confidence: 0.8 };\n  } else if (/human|agent|person|manager|supervisor|speak.*someone/i.test(text)) {\n    intent = { intent: 'escalation_request', confidence: 0.95 };\n  } else if (/document|kyc|verify|passport|id|proof/i.test(text)) {\n    intent = { intent: 'document_verification', confidence: 0.85 };\n  } else if (/bonus|promotion|offer|referral/i.test(text)) {\n    intent = { intent: 'promotions', confidence: 0.8 };\n  } else if (/login|password|platform|mt4|mt5|not working|error|crash/i.test(text)) {\n    intent = { intent: 'technical_support', confidence: 0.8 };\n  } else if (/complaint|unhappy|problem|issue|terrible|disappointed/i.test(text)) {\n    intent = { intent: 'complaint', confidence: 0.75 };\n  }\n}\n\nreturn [{\n  ...input,\n  intent: intent.intent,\n  intent_confidence: intent.confidence,\n  sub_intent: intent.sub_intent || null\n}];\n"
+        "jsCode": "// Parse intent classification result\nlet input = {};\ntry {\n  input = $('Parse Sentiment').item.json || {};\n} catch (e) {\n  input = $input.first().json || {};\n}\nconst intentRaw = $input.first().json.text || $input.first().json.response || '{}';\n\nlet intent = { intent: 'general_chat', confidence: 0.5, sub_intent: null };\n\nconst allowedTechnicalSubIntents = new Set(['forgot_password_client_crm', 'forgot_password_trading_account', 'forgot_password_trading_app']);\n\nfunction detectTechnicalSubIntent(textValue) {\n  const text = String(textValue || '').toLowerCase();\n  const hasCredentialSignal = /(login|log in|sign in|password|passcode|pass\\b|pwd|credential|can't access|cannot access|forgot|forget|fogot|forgt|frgot|reset)/i.test(text);\n  if (!hasCredentialSignal) return null;\n  if (/\\b(client\\s*crm|crm|client\\s*portal|client\\s*area|cabinet|portal)\\b/i.test(text)) return 'forgot_password_client_crm';\n  if (/\\b(mt4|mt5|trading\\s*account|investor\\s*password|master\\s*password|account\\s*login|account\\s*number|trading\\s+login)\\b/i.test(text)) return 'forgot_password_trading_account';\n  if (/\\b(app|mobile|desktop|webtrader|platform|application)\\b/i.test(text)) return 'forgot_password_trading_app';\n  return 'forgot_password_trading_app';\n}\n\ntry {\n  let jsonStr = intentRaw;\n  const jsonMatch = intentRaw.match(/```json?\\s*([\\s\\S]*?)```/) || intentRaw.match(/\\{[\\s\\S]*\\}/);\n  if (jsonMatch) {\n    jsonStr = jsonMatch[1] || jsonMatch[0];\n  }\n  intent = JSON.parse(jsonStr.trim());\n  const normalizedSubIntent = String(intent.sub_intent || '').trim();\n  if (String(intent.intent || '') === 'technical_support') {\n    if (!allowedTechnicalSubIntents.has(normalizedSubIntent)) {\n      intent.sub_intent = detectTechnicalSubIntent(input.user_text || input.message_text || '');\n    }\n  } else {\n    intent.sub_intent = null;\n  }\n} catch (e) {\n  // Fallback keyword-based intent\n  const text = String(input.user_text || input.message_text || '').toLowerCase();\n  const technicalSubIntent = detectTechnicalSubIntent(text);\n\n  if (/human|agent|person|manager|supervisor|speak.*someone/i.test(text)) {\n    intent = { intent: 'escalation_request', confidence: 0.95, sub_intent: null };\n  } else if (technicalSubIntent) {\n    intent = { intent: 'technical_support', confidence: 0.88, sub_intent: technicalSubIntent };\n  } else if (/balance|equity|margin|account.*status|my account/i.test(text)) {\n    intent = { intent: 'account_inquiry', confidence: 0.8, sub_intent: null };\n  } else if (/deposit|withdraw|transfer|fund|payment/i.test(text)) {\n    intent = { intent: 'deposit_withdrawal', confidence: 0.85, sub_intent: null };\n  } else if (/position|trade|order|buy|sell|lot|pip/i.test(text)) {\n    intent = { intent: 'trading_question', confidence: 0.8, sub_intent: null };\n  } else if (/price|market|eurusd|gold|bitcoin|forecast/i.test(text)) {\n    intent = { intent: 'market_analysis', confidence: 0.8, sub_intent: null };\n  } else if (/document|kyc|verify|passport|id|proof/i.test(text)) {\n    intent = { intent: 'document_verification', confidence: 0.85, sub_intent: null };\n  } else if (/bonus|promotion|offer|referral/i.test(text)) {\n    intent = { intent: 'promotions', confidence: 0.8, sub_intent: null };\n  } else if (/complaint|unhappy|problem|issue|terrible|disappointed/i.test(text)) {\n    intent = { intent: 'complaint', confidence: 0.75, sub_intent: null };\n  }\n}\n\nreturn [{\n  ...input,\n  intent: intent.intent,\n  intent_confidence: intent.confidence,\n  sub_intent: intent.sub_intent || null\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -502,7 +502,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Smart Router & Prompt Builder (restricted tools + natural out-of-scope replies)\nlet context = {};\ntry {\n  const parseIntentItems = $('Parse Intent').all();\n  if (parseIntentItems?.length) {\n    const pairedItem = $input.first().pairedItem;\n    if (pairedItem?.item?.length) {\n      const sourceIndex = pairedItem.item[0].index || 0;\n      context = parseIntentItems[sourceIndex]?.json || parseIntentItems[0].json || {};\n    } else {\n      context = parseIntentItems[0].json || {};\n    }\n  } else {\n    context = $('Parse Intent').item.json || {};\n  }\n} catch (e) {\n  context = $input.first().json || {};\n}\n\nconst dbConfig = $input.first().json || {};\nconst userText = String(context.user_text || context.message_text || '').trim();\nconst intent = String(context.intent || 'general_chat');\nconst intentConfidence = Number(context.intent_confidence || 0);\n\n// Tool scope remains narrow, but conversation can stay natural for other topics.\nconst patterns = [\n  { c: 'account', r: /\\b(balance|equity|margin|account|wallet|account type|account status)\\b/i },\n  { c: 'funding', r: /\\b(deposit|withdraw|withdrawal|transfer|payment|funding|transaction)\\b/i },\n  { c: 'general_chat', r: /\\b(hi|hello|hey|good morning|good afternoon|good evening|thanks|thank you|how are you)\\b/i }\n];\n\nlet scopeCategory = 'out_of_scope';\nfor (const p of patterns) {\n  if (p.r.test(userText)) {\n    scopeCategory = p.c;\n    break;\n  }\n}\n\n// Intent fallback is only for the two tool-backed domains.\nif (scopeCategory === 'out_of_scope' && intentConfidence >= 0.55) {\n  if (intent === 'account_inquiry') scopeCategory = 'account';\n  if (intent === 'deposit_withdrawal') scopeCategory = 'funding';\n}\n\nconst in_scope = scopeCategory !== 'out_of_scope' && userText.length > 0;\n\n// Metadata allow-list for audit/compliance. Hard tool limit is from connected tools.\nlet allowed_tools = [];\nif (scopeCategory === 'account') allowed_tools = ['get_account_summary'];\nif (scopeCategory === 'funding') allowed_tools = ['get_transactions'];\nconst requires_tools = scopeCategory === 'account' || scopeCategory === 'funding';\n\nconst refusal_message = \"I can still help with that at a general level. For direct account actions, I can currently check only your account summary and your deposit/withdrawal transactions.\";\nconst safe_fallback_message = \"I couldn't retrieve reliable data right now. Please try again or contact support.\";\nconst router_status = userText ? 'ok' : 'degraded';\n\nconst shouldEscalate = (() => {\n  if (!in_scope) return { escalate: false, reason: null };\n  if (intent === 'escalation_request') return { escalate: true, reason: 'user_requested' };\n  if (context.sentiment_score < -0.6 && context.sentiment === 'angry') return { escalate: true, reason: 'negative_sentiment' };\n  if (context.user?.isVip && intent === 'complaint') return { escalate: true, reason: 'vip_complaint' };\n  if ((dbConfig.recent_escalations || 0) >= 3) return { escalate: true, reason: 'recurring_issues' };\n  return { escalate: false, reason: null };\n})();\n\nconst basePrompt = `You are Alex from CMS Prime Support.\n\nSTRICT POLICY:\n\n1. Never guess, infer, or fabricate any broker, account, trading, or client information.\n\n2. For account-related requests (account summary, deposits, withdrawals, balances, trading accounts, credentials, etc.), you MUST call the appropriate tool before answering. Never answer these from memory.\n\n3. For greetings or small talk (hello, hi, how are you), respond briefly and naturally without using tools.\n\n4. If tool data is missing, incomplete, or unreliable, respond exactly with:\n\"${safe_fallback_message}\"\n\n5. Scope restriction (MANDATORY):\nYou are ONLY allowed to answer questions related to CMS Prime support operations that are covered by your available tools.\n\nIf the user asks anything unrelated (general knowledge, politics, coding, math, personal advice, etc.), DO NOT answer the question.\n\nInstead respond politely with something like:\n\"I’m part of CMS Prime Support and can only assist with broker-related requests that are supported by our system tools.\"\n\n6. If the user requests a broker-related action that is not supported by your available tools, explain the limitation and offer the closest supported option.\n\nUser context:\nname:${$('IF - Auth OK?').first().json.user.firstName}\nlname:${$('IF - Auth OK?').first().json.user.lastName}\nlanguage:${$('IF - Auth OK?').first().json.user.language}\nlastLoginDate:${$('IF - Auth OK?').first().json.user.lastLoginDate}\nstatus:${$('IF - Auth OK?').first().json.user.status}\nverified:${$('IF - Auth OK?').first().json.user.verified}`;\n\nconst scopeGuidance = scopeCategory === 'account'\n  ? 'Call get_account_summary first.'\n  : scopeCategory === 'funding'\n    ? 'Call get_transactions first.'\n    : scopeCategory === 'general_chat'\n      ? 'Reply naturally. No tool call unless user asks account summary or transactions.'\n      : 'Reply naturally and helpfully. If broker action is requested beyond supported tools, explain limits and suggest supported options.';\n\nconst system_prompt = `${basePrompt} ${scopeGuidance}`;\n\nreturn [{\n  ...context,\n  user_text: userText,\n  system_prompt,\n  selected_persona: dbConfig.active_persona || 'friendly_support',\n  should_escalate: shouldEscalate.escalate,\n  escalation_reason: shouldEscalate.reason,\n  db_config: dbConfig,\n  in_scope,\n  scope_category: scopeCategory,\n  requires_tools,\n  allowed_tools,\n  refusal_message,\n  safe_fallback_message,\n  router_status\n}];"
+        "jsCode": "// Smart Router & Prompt Builder (restricted tools + natural out-of-scope replies)\nlet context = {};\ntry {\n  const parseIntentItems = $('Parse Intent').all();\n  if (parseIntentItems?.length) {\n    const pairedItem = $input.first().pairedItem;\n    if (pairedItem?.item?.length) {\n      const sourceIndex = pairedItem.item[0].index || 0;\n      context = parseIntentItems[sourceIndex]?.json || parseIntentItems[0].json || {};\n    } else {\n      context = parseIntentItems[0].json || {};\n    }\n  } else {\n    context = $('Parse Intent').item.json || {};\n  }\n} catch (e) {\n  context = $input.first().json || {};\n}\n\nconst dbConfig = $input.first().json || {};\nconst userText = String(context.user_text || context.message_text || '').trim();\nconst intent = String(context.intent || 'general_chat');\nconst subIntent = String(context.sub_intent || '');\nconst intentConfidence = Number(context.intent_confidence || 0);\n\nfunction detectCredentialScope(textValue) {\n  const text = String(textValue || '').toLowerCase();\n  const hasCredentialSignal = /(login|log in|sign in|password|passcode|pass\\b|pwd|credential|can't access|cannot access|forgot|forget|fogot|forgt|frgot|reset)/i.test(text);\n  if (!hasCredentialSignal) return null;\n  if (/\\b(client\\s*crm|crm|client\\s*portal|client\\s*area|cabinet|portal)\\b/i.test(text)) return 'credential_client_crm';\n  if (/\\b(mt4|mt5|trading\\s*account|investor\\s*password|master\\s*password|account\\s*login|account\\s*number|trading\\s+login)\\b/i.test(text)) return 'credential_trading_account';\n  if (/\\b(app|mobile|desktop|webtrader|platform|application)\\b/i.test(text)) return 'credential_trading_app';\n  return 'credential_trading_app';\n}\n\nlet scopeCategory = detectCredentialScope(userText) || \"out_of_scope\";\nif (scopeCategory === 'out_of_scope') {\n  if (/\\b(balance|equity|margin|account|wallet|account type|account status)\\b/i.test(userText)) {\n    scopeCategory = 'account';\n  } else if (/\\b(deposit|withdraw|withdrawal|transfer|payment|funding|transaction)\\b/i.test(userText)) {\n    scopeCategory = 'funding';\n  } else if (/\\b(hi|hello|hey|good morning|good afternoon|good evening|thanks|thank you|how are you)\\b/i.test(userText)) {\n    scopeCategory = 'general_chat';\n  }\n}\n\nif (scopeCategory === 'out_of_scope' && intentConfidence >= 0.55) {\n  if (intent === 'account_inquiry') scopeCategory = 'account';\n  if (intent === 'deposit_withdrawal') scopeCategory = 'funding';\n  if (intent === 'technical_support') {\n    const subIntentMap = {\n      forgot_password_client_crm: 'credential_client_crm',\n      forgot_password_trading_account: 'credential_trading_account',\n      forgot_password_trading_app: 'credential_trading_app'\n    };\n    scopeCategory = subIntentMap[subIntent] || detectCredentialScope(userText) || scopeCategory;\n  }\n}\n\nconst in_scope = scopeCategory !== 'out_of_scope' && userText.length > 0;\nconst isCredentialScope = scopeCategory.startsWith('credential_');\nconst ticketConsentPattern = /\\b(?:create|open|submit|raise)\\s+(?:a\\s+)?(?:support\\s+)?(?:ticket|case)\\b/i;\nconst explicitYesTicketPattern = /\\b(?:yes|yeah|yep|ok|okay|sure|please do)\\b.*\\b(ticket|case)\\b/i;\nconst wantsSupportTicket = isCredentialScope && (ticketConsentPattern.test(userText) || explicitYesTicketPattern.test(userText));\n\n// Metadata allow-list for audit/compliance. Hard tool limit is from connected tools.\nlet allowed_tools = [];\nif (scopeCategory === 'account') allowed_tools = ['get_account_summary'];\nif (scopeCategory === 'funding') allowed_tools = ['get_transactions'];\nif (isCredentialScope && wantsSupportTicket) {\n  allowed_tools = ['create_support_ticket_api'];\n}\nconst requires_tools = ['account', 'funding'].includes(scopeCategory);\n\nconst refusal_message = \"I can still help with that at a general level. For direct account actions, I can currently check your account summary, your deposit/withdrawal transactions, and credential/login recovery for Client CRM or trading platforms.\";\nconst safe_fallback_message = \"I couldn't retrieve reliable data right now. Please try again or contact support.\";\nconst router_status = userText ? 'ok' : 'degraded';\n\nconst shouldEscalate = (() => {\n  if (!in_scope) return { escalate: false, reason: null };\n  if (intent === 'escalation_request') return { escalate: true, reason: 'user_requested' };\n  if (context.sentiment_score < -0.6 && context.sentiment === 'angry') return { escalate: true, reason: 'negative_sentiment' };\n  if (context.user?.isVip && intent === 'complaint') return { escalate: true, reason: 'vip_complaint' };\n  if ((dbConfig.recent_escalations || 0) >= 3) return { escalate: true, reason: 'recurring_issues' };\n  return { escalate: false, reason: null };\n})();\n\nconst basePrompt = `You are Alex from CMS Prime Support.\n\nSTRICT POLICY:\n\n1. Never guess, infer, or fabricate any broker, account, trading, or client information.\n\n2. For tool-backed factual requests (account summary and funding transactions), you MUST call the appropriate tool before answering. Never answer these from memory.\n\n3. For greetings or small talk (hello, hi, how are you), respond briefly and naturally without using tools.\n\n4. If tool data is missing, incomplete, or unreliable, respond exactly with:\n\"${safe_fallback_message}\"\n\n5. Scope restriction (MANDATORY):\nYou are ONLY allowed to answer questions related to CMS Prime support operations that are covered by your available tools.\n\nIf the user asks anything unrelated (general knowledge, politics, coding, math, personal advice, etc.), DO NOT answer the question.\n\nInstead respond politely with something like:\n\"I'm part of CMS Prime Support and can only assist with broker-related requests that are supported by our system tools.\"\n\n6. If the user requests a broker-related action that is not supported by your available tools, explain the limitation and offer the closest supported option.\n\n7. For credential issues, provide direct step-by-step guidance from policy and ask follow-up questions. Do NOT call credential_recovery. Only call create_support_ticket_api when the user explicitly asks or confirms ticket creation.\n\nUser context:\nname:${$('IF - Auth OK?').first().json.user.firstName}\nlname:${$('IF - Auth OK?').first().json.user.lastName}\nlanguage:${$('IF - Auth OK?').first().json.user.language}\nlastLoginDate:${$('IF - Auth OK?').first().json.user.lastLoginDate}\nstatus:${$('IF - Auth OK?').first().json.user.status}\nverified:${$('IF - Auth OK?').first().json.user.verified}`;\n\nconst credentialIssueTypeMap = {\n  credential_client_crm: 'client_crm',\n  credential_trading_account: 'trading_account',\n  credential_trading_app: 'trading_app'\n};\nconst credentialIssueType = credentialIssueTypeMap[scopeCategory] || null;\n\nconst scopeGuidance = scopeCategory === 'account'\n  ? 'Call get_account_summary first.'\n  : scopeCategory === 'funding'\n    ? 'Call get_transactions first.'\n    : scopeCategory === 'credential_client_crm'\n      ? 'Handle directly with hardcoded guidance: ask whether user wants email or SMS reset path, then provide Client CRM reset steps and link. Do not call credential_recovery. Only call create_support_ticket_api if user explicitly asks.'\n      : scopeCategory === 'credential_trading_account'\n        ? 'Handle directly with hardcoded guidance: ask for platform (MT4/MT5) and login number, then provide trading-account password reset steps. Do not call credential_recovery. Only call create_support_ticket_api if user explicitly asks.'\n        : scopeCategory === 'credential_trading_app'\n          ? 'Handle directly with hardcoded guidance: ask for platform/app and exact error, then provide troubleshooting steps. Do not call credential_recovery. Only call create_support_ticket_api if user explicitly asks.'\n          : scopeCategory === 'general_chat'\n            ? 'Reply naturally. No tool call unless user asks account summary, transactions, or explicit support-ticket creation.'\n            : 'Reply naturally and helpfully. If broker action is requested beyond supported tools, explain limits and suggest supported options.';\n\nconst system_prompt = `${basePrompt} ${scopeGuidance}`;\n\nreturn [{\n  ...context,\n  user_text: userText,\n  system_prompt,\n  selected_persona: dbConfig.active_persona || 'friendly_support',\n  should_escalate: shouldEscalate.escalate,\n  escalation_reason: shouldEscalate.reason,\n  db_config: dbConfig,\n  in_scope,\n  scope_category: scopeCategory,\n  credential_issue_type: credentialIssueType,\n  requires_tools,\n  allowed_tools,\n  wants_support_ticket: wantsSupportTicket,\n  refusal_message,\n  safe_fallback_message,\n  router_status\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -698,7 +698,7 @@
     },
     {
       "parameters": {
-        "jsCode": "function pickNodeItem(nodeName) {\n  try {\n    const items = $(nodeName).all();\n    if (!items || items.length === 0) return {};\n\n    const pairedItem = $input.first().pairedItem;\n    if (pairedItem && pairedItem.item && pairedItem.item.length > 0) {\n      const sourceIndex = pairedItem.item[0].index || 0;\n      return items[sourceIndex]?.json || items[0].json || {};\n    }\n\n    return items[0].json || {};\n  } catch (e) {\n    return {};\n  }\n}\n\nconst inputItem = $input.first().json || {};\nconst smartRouterContext = pickNodeItem('Smart Router & Prompt Builder');\nconst registrationContext = pickNodeItem('Registration Context Builder');\nconst extracted = pickNodeItem('Extract User Identifiers');\nconst normalized = pickNodeItem('Channel Normalizer');\n\nconst selectedContext = Object.keys(smartRouterContext).length > 0\n  ? smartRouterContext\n  : Object.keys(registrationContext).length > 0\n    ? registrationContext\n    : inputItem;\n\nconst context = { ...normalized, ...extracted, ...selectedContext, ...inputItem };\n\nlet response = String(inputItem.output || inputItem.text || context.output || context.text || '').trim();\nconst complianceFlags = [];\n\n// Do not force out-of-scope override. Let the LLM craft natural replies.\nif (!response) {\n  response = String(context.safe_fallback_message || \"I couldn't retrieve reliable data right now. Please try again or contact support.\");\n  complianceFlags.push('Applied empty-response fallback');\n}\nconst uncertainPattern = /\\b(i think|probably|likely|maybe|generally|typically|usually|it seems)\\b/i;\nif (context.requires_tools === true && uncertainPattern.test(response)) {\n  response = String(context.safe_fallback_message || \"I couldn't retrieve reliable data right now. Please try again or contact support.\");\n  complianceFlags.push('Replaced uncertain factual response with fallback');\n}\n\nconst prohibited = [\n  { pattern: /guaranteed.*profit/gi, replacement: 'potential returns (not guaranteed)' },\n  { pattern: /you will.*make money/gi, replacement: 'you may see returns' },\n  { pattern: /risk.?free/gi, replacement: 'with managed risk' },\n  { pattern: /100%.*safe/gi, replacement: 'with appropriate risk management' },\n  { pattern: /can'?t lose/gi, replacement: 'with proper risk management' },\n  { pattern: /easy money/gi, replacement: 'trading opportunities' },\n  { pattern: /get rich/gi, replacement: 'build wealth over time' }\n];\nfor (const rule of prohibited) {\n  if (rule.pattern.test(response)) {\n    complianceFlags.push(`Replaced: ${rule.pattern.toString()}`);\n    response = response.replace(rule.pattern, rule.replacement);\n  }\n}\n\nconst tradingKeywords = /\\b(trade|trading|position|buy|sell|invest|profit|loss|market|forex|cfd|leverage)\\b/i;\nconst hasDisclaimer = /risk|disclaimer|not.*advice|past performance/i.test(response);\nif (tradingKeywords.test(response) && !hasDisclaimer && response.length > 100 && context.in_scope !== false) {\n  response += '\\n\\n_Trading involves risk. Past performance is not indicative of future results. This is not financial advice._';\n  complianceFlags.push('Added risk disclaimer');\n}\n\nconst aiClaimPattern = /I('m| am) (an? )?(AI|artificial intelligence|bot|chatbot|language model|machine)/gi;\nif (aiClaimPattern.test(response)) {\n  response = response.replace(aiClaimPattern, \"I'm Alex from CMS Prime Support\");\n  complianceFlags.push('Replaced AI claim');\n}\n\nconst normalizedSessionId = String(\n  context.session_id ||\n  context.sessionId ||\n  context.metadata?.chat_id ||\n  ''\n).trim();\n\nconst normalizedChannel = String(\n  context.channel ||\n  context.metadata?.source ||\n  ''\n).trim();\n\nlet normalizedUserPhone = String(\n  context.user_phone ||\n  context.user_email ||\n  ''\n).trim();\n\nif (!normalizedUserPhone && normalizedChannel === 'telegram') {\n  const tgId = context.metadata?.user_id || context.metadata?.chat_id || normalizedSessionId;\n  if (tgId) normalizedUserPhone = `telegram:${tgId}`;\n}\n\nconst normalizedUserText = String(\n  context.user_text ||\n  context.message_text ||\n  ''\n).trim();\n\nreturn [{\n  ...context,\n  user_phone: normalizedUserPhone,\n  channel: normalizedChannel,\n  session_id: normalizedSessionId,\n  sessionId: normalizedSessionId,\n  user_text: normalizedUserText,\n  message_text: normalizedUserText,\n  original_response: inputItem.output || inputItem.text || context.output || context.text || '',\n  filtered_response: response,\n  compliance_flags: complianceFlags\n}];"
+        "jsCode": "function pickNodeItem(nodeName) {\n  try {\n    const items = $(nodeName).all();\n    if (!items || items.length === 0) return {};\n\n    const pairedItem = $input.first().pairedItem;\n    if (pairedItem && pairedItem.item && pairedItem.item.length > 0) {\n      const sourceIndex = pairedItem.item[0].index || 0;\n      return items[sourceIndex]?.json || items[0].json || {};\n    }\n\n    return items[0].json || {};\n  } catch (e) {\n    return {};\n  }\n}\n\nconst inputItem = $input.first().json || {};\nconst smartRouterContext = pickNodeItem('Smart Router & Prompt Builder');\nconst registrationContext = pickNodeItem('Registration Context Builder');\nconst extracted = pickNodeItem('Extract User Identifiers');\nconst normalized = pickNodeItem('Channel Normalizer');\n\nconst selectedContext = Object.keys(smartRouterContext).length > 0\n  ? smartRouterContext\n  : Object.keys(registrationContext).length > 0\n    ? registrationContext\n    : inputItem;\n\nconst context = { ...normalized, ...extracted, ...selectedContext, ...inputItem };\n\nlet response = String(inputItem.output || inputItem.text || context.output || context.text || '').trim();\nconst complianceFlags = [];\n\n// Do not force out-of-scope override. Let the LLM craft natural replies.\nif (!response) {\n  if (String(context.scope_category || '').startsWith('credential_')) {\n    response = 'I can help with that. Is this password/login issue for Client CRM, Trading Account (MT4/MT5), or Trading App?';\n    complianceFlags.push('Applied credential empty-response guidance');\n  } else {\n    response = String(context.safe_fallback_message || \"I couldn't retrieve reliable data right now. Please try again or contact support.\");\n    complianceFlags.push('Applied empty-response fallback');\n  }\n}\nconst uncertainPattern = /\\b(i think|probably|likely|maybe|generally|typically|usually|it seems)\\b/i;\nconst strictFactScopes = new Set(['account', 'funding']);\nif (context.requires_tools === true && strictFactScopes.has(String(context.scope_category || '')) && uncertainPattern.test(response)) {\n  response = String(context.safe_fallback_message || \"I couldn't retrieve reliable data right now. Please try again or contact support.\");\n  complianceFlags.push('Replaced uncertain factual response with fallback');\n}\n\nconst prohibited = [\n  { pattern: /guaranteed.*profit/gi, replacement: 'potential returns (not guaranteed)' },\n  { pattern: /you will.*make money/gi, replacement: 'you may see returns' },\n  { pattern: /risk.?free/gi, replacement: 'with managed risk' },\n  { pattern: /100%.*safe/gi, replacement: 'with appropriate risk management' },\n  { pattern: /can'?t lose/gi, replacement: 'with proper risk management' },\n  { pattern: /easy money/gi, replacement: 'trading opportunities' },\n  { pattern: /get rich/gi, replacement: 'build wealth over time' }\n];\nfor (const rule of prohibited) {\n  if (rule.pattern.test(response)) {\n    complianceFlags.push(`Replaced: ${rule.pattern.toString()}`);\n    response = response.replace(rule.pattern, rule.replacement);\n  }\n}\n\nconst tradingKeywords = /\\b(trade|trading|position|buy|sell|invest|profit|loss|market|forex|cfd|leverage)\\b/i;\nconst hasDisclaimer = /risk|disclaimer|not.*advice|past performance/i.test(response);\nif (tradingKeywords.test(response) && !hasDisclaimer && response.length > 100 && context.in_scope !== false) {\n  response += '\\n\\n_Trading involves risk. Past performance is not indicative of future results. This is not financial advice._';\n  complianceFlags.push('Added risk disclaimer');\n}\n\nconst aiClaimPattern = /I('m| am) (an? )?(AI|artificial intelligence|bot|chatbot|language model|machine)/gi;\nif (aiClaimPattern.test(response)) {\n  response = response.replace(aiClaimPattern, \"I'm Alex from CMS Prime Support\");\n  complianceFlags.push('Replaced AI claim');\n}\n\nconst normalizedSessionId = String(\n  context.session_id ||\n  context.sessionId ||\n  context.metadata?.chat_id ||\n  ''\n).trim();\n\nconst normalizedChannel = String(\n  context.channel ||\n  context.metadata?.source ||\n  ''\n).trim();\n\nlet normalizedUserPhone = String(\n  context.user_phone ||\n  context.user_email ||\n  ''\n).trim();\n\nif (!normalizedUserPhone && normalizedChannel === 'telegram') {\n  const tgId = context.metadata?.user_id || context.metadata?.chat_id || normalizedSessionId;\n  if (tgId) normalizedUserPhone = `telegram:${tgId}`;\n}\n\nconst normalizedUserText = String(\n  context.user_text ||\n  context.message_text ||\n  ''\n).trim();\n\nreturn [{\n  ...context,\n  user_phone: normalizedUserPhone,\n  channel: normalizedChannel,\n  session_id: normalizedSessionId,\n  sessionId: normalizedSessionId,\n  user_text: normalizedUserText,\n  message_text: normalizedUserText,\n  original_response: inputItem.output || inputItem.text || context.output || context.text || '',\n  filtered_response: response,\n  compliance_flags: complianceFlags\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1486,7 +1486,7 @@
           "conditions": [
             {
               "id": "b44a34ce-6a95-4599-b3d2-11705009ed1a",
-              "leftValue": "={{ $json.is_admin }}",
+              "leftValue": "={{ ($json.is_admin === true && $json.requires_tools !== true) }}",
               "rightValue": true,
               "operator": {
                 "type": "boolean",
@@ -1509,7 +1509,11 @@
     },
     {
       "parameters": {
-        "options": {}
+        "promptType": "define",
+        "text": "={{$json.user_text || $json.message_text || \"\"}}",
+        "options": {
+          "systemMessage": "={{$json.system_prompt || \"\"}}"
+        }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
@@ -1561,6 +1565,220 @@
           "name": "Postgres account"
         }
       }
+    },
+    {
+      "parameters": {
+        "description": "Credential/login recovery tool for CMS Prime support.\n\nIMPORTANT: This tool is guidance-only and MUST NOT call any external API.\n\nUse this tool for ANY login/password/credential issue related to:\n- Client CRM\n- Trading account credentials (MT4/MT5 login/password)\n- Trading app access issues\n\nRules:\n1) Always call this tool first for credential issues.\n2) The tool handles multi-turn collection and returns missing fields, next question, and hardcoded guide steps/link.\n3) This tool only asks questions and gives instructions. It never creates tickets and never calls APIs.\n4) Pass issue_type when known: client_crm | trading_account | trading_app.",
+        "workflowId": {
+          "__rl": true,
+          "value": "TOOL_CREDENTIAL_RECOVERY",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/TOOL_CREDENTIAL_RECOVERY",
+          "cachedResultName": "TOOL - Credential Recovery"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "client_id": "={{ $(\"Smart Router & Prompt Builder\").item.json.user?.id || $(\"Smart Router & Prompt Builder\").item.json.db_config?.client_id || null }}",
+            "user_text": "={{ $json.user_text || $json.message_text || '' }}",
+            "issue_type": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('issue_type', ``, 'string') }}",
+            "platform": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('platform', ``, 'string') }}",
+            "login": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('login', ``, 'string') }}",
+            "error_message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('error_message', ``, 'string') }}",
+            "draft_recovery": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('draft_recovery', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "client_id"
+          ],
+          "schema": [
+            {
+              "id": "client_id",
+              "displayName": "client_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number"
+            },
+            {
+              "id": "user_text",
+              "displayName": "user_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "issue_type",
+              "displayName": "issue_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "platform",
+              "displayName": "platform",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "login",
+              "displayName": "login",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "error_message",
+              "displayName": "error_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "draft_recovery",
+              "displayName": "draft_recovery",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2,
+      "position": [
+        -12256,
+        4128
+      ],
+      "id": "f6c8f9f2-61a8-4f8b-a820-3b77f7c01f35",
+      "name": "Tool - Credential Recovery"
+    },
+    {
+      "parameters": {
+        "description": "Create support tickets through the support ticket API.\n\nRules:\n1) Use this tool only after explicit user confirmation to create a ticket.\n2) Ensure subject and description are clear and specific.\n3) Set category to technical for credential/login cases unless user asks another category.\n4) Return ticket ID and ETA when available; if API fails, return normalized error.",
+        "workflowId": {
+          "__rl": true,
+          "value": "TOOL_SUPPORT_TICKET_API",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/TOOL_SUPPORT_TICKET_API",
+          "cachedResultName": "TOOL - Support Ticket API"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "client_id": "={{ $(\"Smart Router & Prompt Builder\").item.json.user?.id || $(\"Smart Router & Prompt Builder\").item.json.db_config?.client_id || null }}",
+            "category": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('category', `technical`, 'string') }}",
+            "priority": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('priority', `medium`, 'string') }}",
+            "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('subject', ``, 'string') }}",
+            "description": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('description', ``, 'string') }}",
+            "issue_type": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('issue_type', ``, 'string') }}",
+            "platform": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('platform', ``, 'string') }}",
+            "login": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('login', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "client_id"
+          ],
+          "schema": [
+            {
+              "id": "client_id",
+              "displayName": "client_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number"
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "subject",
+              "displayName": "subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "issue_type",
+              "displayName": "issue_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "platform",
+              "displayName": "platform",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "login",
+              "displayName": "login",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2,
+      "position": [
+        -11968,
+        4240
+      ],
+      "id": "2fc34d93-c167-456a-a89d-cf4ca0e86f5a",
+      "name": "Tool - Support Ticket API"
     }
   ],
   "pinData": {
@@ -1972,6 +2190,11 @@
             "node": "AI Agent",
             "type": "ai_tool",
             "index": 0
+          },
+          {
+            "node": "admin agent",
+            "type": "ai_tool",
+            "index": 0
           }
         ]
       ]
@@ -1981,6 +2204,11 @@
         [
           {
             "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "admin agent",
             "type": "ai_tool",
             "index": 0
           }
@@ -2324,6 +2552,22 @@
           {
             "node": "Compliance Filter",
             "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool - Support Ticket API": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "admin agent",
+            "type": "ai_tool",
             "index": 0
           }
         ]

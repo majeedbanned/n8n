@@ -1,0 +1,222 @@
+{
+  "name": "TOOL - Support Ticket API",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "client_id",
+              "type": "number"
+            },
+            {
+              "name": "category",
+              "type": "string"
+            },
+            {
+              "name": "priority",
+              "type": "string"
+            },
+            {
+              "name": "subject",
+              "type": "string"
+            },
+            {
+              "name": "description",
+              "type": "string"
+            },
+            {
+              "name": "issue_type",
+              "type": "string"
+            },
+            {
+              "name": "platform",
+              "type": "string"
+            },
+            {
+              "name": "login",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -500,
+        320
+      ],
+      "id": "support-ticket-api-trigger",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize and validate support ticket API input\nconst input = $input.first().json || {};\n\nconst client_id = Number(input.client_id ?? input.clientId ?? null);\nif (!client_id || !Number.isFinite(client_id)) {\n  return [{\n    ok: false,\n    ticket_created: false,\n    error: 'missing_client_id',\n    message: 'Missing or invalid client_id.',\n    status: 'failed',\n    eta: null\n  }];\n}\n\nconst validCategories = ['technical', 'account', 'trading', 'funding', 'complaint', 'verification', 'other'];\nlet category = String(input.category || 'technical').trim().toLowerCase();\nif (!validCategories.includes(category)) category = 'technical';\n\nconst validPriorities = ['low', 'medium', 'high', 'urgent'];\nlet priority = String(input.priority || 'medium').trim().toLowerCase();\nif (!validPriorities.includes(priority)) priority = 'medium';\n\nconst subject = String(input.subject || '').trim().slice(0, 200);\nconst description = String(input.description || '').trim().slice(0, 5000);\n\nif (!subject || !description) {\n  return [{\n    ok: false,\n    ticket_created: false,\n    error: 'missing_subject_or_description',\n    message: 'Both subject and description are required for ticket creation.',\n    status: 'failed',\n    eta: null\n  }];\n}\n\nconst payload = {\n  client_id,\n  category,\n  priority,\n  subject,\n  description,\n  metadata: {\n    issue_type: String(input.issue_type || '').trim() || null,\n    platform: String(input.platform || '').trim() || null,\n    login: String(input.login || '').trim() || null,\n    source: 'ai_bot'\n  }\n};\n\nreturn [{\n  ok: true,\n  client_id,\n  category,\n  priority,\n  subject,\n  description,\n  payload,\n  submitted_at: new Date().toISOString()\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -280,
+        320
+      ],
+      "id": "support-ticket-api-normalize",
+      "name": "Normalize Input"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.ok}}",
+              "value2": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -60,
+        320
+      ],
+      "id": "support-ticket-api-if-input-error",
+      "name": "IF - Input Error?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json || {};\n\nreturn [{\n  ok: false,\n  ticket_created: false,\n  ticket_id: null,\n  status: 'failed',\n  eta: null,\n  error: String(input.error || 'invalid_input'),\n  message: String(input.message || 'Invalid input for support ticket creation.')\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        432
+      ],
+      "id": "support-ticket-api-input-error-format",
+      "name": "Format Input Error"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.CMS_SUPPORT_TICKET_API_URL || 'https://mycms.cmsprime.com/rest/support/tickets?version=1.0.0' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.CMS_SUPPORT_TICKET_API_TOKEN || ''}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{$json.payload}}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        160,
+        200
+      ],
+      "id": "support-ticket-api-request",
+      "name": "API - Create Support Ticket",
+      "continueOnFail": true,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1000
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize support ticket API response\nconst req = $('Normalize Input').item.json || {};\nconst raw = $input.first().json || {};\n\nif (raw.error) {\n  return [{\n    ok: false,\n    ticket_created: false,\n    ticket_id: null,\n    status: 'failed',\n    eta: null,\n    error: 'ticket_api_unavailable',\n    message: String(raw.error?.message || raw.error || 'Support ticket API request failed')\n  }];\n}\n\nlet data = raw.data || raw.ticket || raw;\nif (Array.isArray(data)) data = data[0] || {};\n\nconst ticketId = data.ticket_id || data.ticketId || data.id || data.reference || null;\nconst responseTimes = {\n  urgent: '1-2 hours',\n  high: '4-6 hours',\n  medium: '12-24 hours',\n  low: '24-48 hours'\n};\n\nconst status = String(data.status || (ticketId ? 'open' : 'failed')).toLowerCase();\nconst eta = data.eta || data.estimated_response || responseTimes[req.priority] || '24-48 hours';\n\nif (!ticketId) {\n  return [{\n    ok: false,\n    ticket_created: false,\n    ticket_id: null,\n    status: 'failed',\n    eta: null,\n    error: 'invalid_api_response',\n    message: 'Support ticket API responded without a ticket ID.'\n  }];\n}\n\nreturn [{\n  ok: true,\n  ticket_created: true,\n  ticket_id: ticketId,\n  status,\n  eta,\n  category: req.category || null,\n  priority: req.priority || null,\n  subject: req.subject || null,\n  submitted_at: req.submitted_at || new Date().toISOString()\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        420,
+        200
+      ],
+      "id": "support-ticket-api-format",
+      "name": "Format API Response"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "IF - Input Error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Input Error?": {
+      "main": [
+        [
+          {
+            "node": "Format Input Error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "API - Create Support Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API - Create Support Ticket": {
+      "main": [
+        [
+          {
+            "node": "Format API Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1.0.0",
+  "meta": {
+    "instanceId": "broker-ai-tool-support-ticket-api"
+  },
+  "id": "TOOL_SUPPORT_TICKET_API",
+  "tags": [
+    "tool",
+    "technical",
+    "ticket"
+  ]
+}
